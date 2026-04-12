@@ -1,0 +1,481 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ExperimentaJoão — Catálogo de Experimentos</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+      background: #f0f4f8;
+      color: #1a1a2e;
+    }
+
+    /* ── Header ─────────────────────────────────────────── */
+    header {
+      background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+      color: white;
+      padding: 2.5rem 2rem;
+      text-align: center;
+    }
+
+    .profile-section {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 1.5rem;
+      flex-wrap: wrap;
+    }
+
+    .profile-photo {
+      width: 100px;
+      height: 100px;
+      border-radius: 50%;
+      object-fit: cover;
+      border: 3px solid #e94560;
+      flex-shrink: 0;
+    }
+
+    .header-text h1 {
+      font-size: 2.5rem;
+      font-weight: 800;
+      letter-spacing: -0.5px;
+    }
+
+    .header-text h1 span { color: #e94560; }
+
+    .header-text .subtitle {
+      font-size: 1.05rem;
+      opacity: 0.75;
+      margin-top: 0.4rem;
+    }
+
+    /* ── Controls (sticky) ───────────────────────────────── */
+    .controls {
+      background: white;
+      padding: 1.25rem 2rem;
+      display: flex;
+      flex-direction: column;
+      gap: 0.9rem;
+      box-shadow: 0 2px 12px rgba(0,0,0,0.09);
+      position: sticky;
+      top: 0;
+      z-index: 10;
+    }
+
+    .search-wrapper {
+      max-width: 580px;
+      width: 100%;
+      margin: 0 auto;
+      position: relative;
+    }
+
+    .search-wrapper .search-icon {
+      position: absolute;
+      left: 1rem;
+      top: 50%;
+      transform: translateY(-50%);
+      font-size: 1.1rem;
+      pointer-events: none;
+    }
+
+    .search-wrapper input {
+      width: 100%;
+      padding: 0.75rem 1.25rem 0.75rem 2.8rem;
+      border: 2px solid #e0e0e0;
+      border-radius: 50px;
+      font-size: 0.95rem;
+      outline: none;
+      transition: border-color 0.2s;
+      color: #1a1a2e;
+    }
+
+    .search-wrapper input:focus { border-color: #e94560; }
+
+    .search-wrapper input::placeholder { color: #aaa; }
+
+    .filters {
+      display: flex;
+      gap: 0.5rem;
+      justify-content: center;
+      flex-wrap: wrap;
+    }
+
+    .filter-btn {
+      padding: 0.45rem 1.2rem;
+      border: 2px solid #ccc;
+      border-radius: 50px;
+      cursor: pointer;
+      font-size: 0.88rem;
+      font-weight: 600;
+      background: white;
+      color: #555;
+      transition: all 0.18s;
+    }
+
+    .filter-btn:hover { opacity: 0.8; }
+
+    /* per-discipline colors */
+    .filter-btn[data-d="all"]        { border-color: #555; }
+    .filter-btn[data-d="all"].active { background: #555; color: white; }
+
+    .filter-btn[data-d="fisica"]        { border-color: #1e88e5; color: #1e88e5; }
+    .filter-btn[data-d="fisica"].active { background: #1e88e5; color: white; }
+
+    .filter-btn[data-d="quimica"]        { border-color: #e64a19; color: #e64a19; }
+    .filter-btn[data-d="quimica"].active { background: #e64a19; color: white; }
+
+    .filter-btn[data-d="biologia"]        { border-color: #2e7d32; color: #2e7d32; }
+    .filter-btn[data-d="biologia"].active { background: #2e7d32; color: white; }
+
+    .filter-btn[data-d="matematica"]        { border-color: #7b1fa2; color: #7b1fa2; }
+    .filter-btn[data-d="matematica"].active { background: #7b1fa2; color: white; }
+
+    /* ── Catalog ─────────────────────────────────────────── */
+    .catalog {
+      padding: 2rem 1.5rem;
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+
+    .results-info {
+      font-size: 0.88rem;
+      color: #999;
+      margin-bottom: 1.25rem;
+      text-align: center;
+    }
+
+    .projects-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(270px, 1fr));
+      gap: 1.5rem;
+    }
+
+    /* ── Project Card ────────────────────────────────────── */
+    .project-card {
+      background: white;
+      border-radius: 14px;
+      overflow: hidden;
+      box-shadow: 0 2px 14px rgba(0,0,0,0.07);
+      transition: transform 0.2s, box-shadow 0.2s;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .project-card:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 10px 32px rgba(0,0,0,0.12);
+    }
+
+    .card-image {
+      width: 100%;
+      height: 175px;
+      object-fit: cover;
+      display: block;
+    }
+
+    .card-placeholder {
+      width: 100%;
+      height: 175px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 3.5rem;
+    }
+
+    .card-body {
+      padding: 1.2rem;
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .discipline-badge {
+      display: inline-block;
+      padding: 0.22rem 0.7rem;
+      border-radius: 50px;
+      font-size: 0.72rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      color: white;
+      margin-bottom: 0.7rem;
+      width: fit-content;
+    }
+
+    .badge-fisica     { background: #1e88e5; }
+    .badge-quimica    { background: #e64a19; }
+    .badge-biologia   { background: #2e7d32; }
+    .badge-matematica { background: #7b1fa2; }
+
+    .card-title {
+      font-size: 1.05rem;
+      font-weight: 700;
+      margin-bottom: 0.5rem;
+      line-height: 1.3;
+    }
+
+    .card-description {
+      font-size: 0.875rem;
+      color: #666;
+      line-height: 1.55;
+      flex: 1;
+      margin-bottom: 1rem;
+    }
+
+    .card-themes {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.35rem;
+    }
+
+    .theme-tag {
+      padding: 0.2rem 0.55rem;
+      background: #f0f4f8;
+      border-radius: 4px;
+      font-size: 0.72rem;
+      color: #555;
+    }
+
+    /* ── Empty state ─────────────────────────────────────── */
+    .empty-state {
+      grid-column: 1 / -1;
+      text-align: center;
+      padding: 4rem 2rem;
+      color: #aaa;
+    }
+
+    .empty-state .big-icon { font-size: 3.5rem; margin-bottom: 1rem; }
+    .empty-state p { font-size: 1rem; line-height: 1.6; }
+
+    /* ── Footer ──────────────────────────────────────────── */
+    footer {
+      text-align: center;
+      padding: 2rem;
+      background: #1a1a2e;
+      color: rgba(255,255,255,0.5);
+      font-size: 0.82rem;
+      margin-top: 3rem;
+    }
+
+    /* ── Responsive ──────────────────────────────────────── */
+    @media (max-width: 540px) {
+      .header-text h1 { font-size: 1.9rem; }
+      .controls { padding: 1rem; }
+      .catalog { padding: 1rem; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- ═══════════════════════════ HEADER ═══════════════════════════ -->
+<header>
+  <div class="profile-section">
+    <img src="IMG_3999.jpeg" alt="João" class="profile-photo">
+    <div class="header-text">
+      <h1>Experimenta<span>João</span></h1>
+      <p class="subtitle">Catálogo de Experimentos Científicos</p>
+    </div>
+  </div>
+</header>
+
+<!-- ═══════════════════════════ CONTROLS ═════════════════════════ -->
+<div class="controls">
+  <div class="search-wrapper">
+    <span class="search-icon">🔍</span>
+    <input
+      type="text"
+      id="searchInput"
+      placeholder="Buscar por tema, título ou palavra-chave..."
+      oninput="applyFilters()"
+    >
+  </div>
+
+  <div class="filters">
+    <button class="filter-btn active" data-d="all"       onclick="setFilter('all')">Todos</button>
+    <button class="filter-btn"        data-d="fisica"    onclick="setFilter('fisica')">⚡ Física</button>
+    <button class="filter-btn"        data-d="quimica"   onclick="setFilter('quimica')">🧪 Química</button>
+    <button class="filter-btn"        data-d="biologia"  onclick="setFilter('biologia')">🌱 Biologia</button>
+    <button class="filter-btn"        data-d="matematica" onclick="setFilter('matematica')">📐 Matemática</button>
+  </div>
+</div>
+
+<!-- ═══════════════════════════ CATALOG ══════════════════════════ -->
+<main class="catalog">
+  <p class="results-info" id="resultsInfo"></p>
+  <div class="projects-grid" id="projectsGrid"></div>
+</main>
+
+<footer>
+  ExperimentaJoão &copy; 2026 — Ciência para todos
+</footer>
+
+<!-- ═══════════════════════════ SCRIPT ═══════════════════════════ -->
+<script>
+  /*
+   * COMO ADICIONAR UM PROJETO:
+   * 1. Coloque a imagem na pasta  images/  (ex: images/pendulo.jpg)
+   * 2. Adicione um objeto ao array abaixo seguindo o modelo:
+   *
+   *   {
+   *     id: <número único>,
+   *     title: "Nome do Experimento",
+   *     discipline: "fisica" | "quimica" | "biologia" | "matematica",
+   *     description: "Breve descrição do experimento.",
+   *     themes: ["tema1", "tema2", "tema3"],
+   *     image: "images/nome-da-imagem.jpg"   // ou null para usar o ícone padrão
+   *   }
+   */
+  const projects = [
+    {
+      id: 1,
+      title: "Pêndulo Simples",
+      discipline: "fisica",
+      description: "Estude o movimento oscilatório e a relação entre comprimento e período. Meça a aceleração da gravidade com materiais simples.",
+      themes: ["oscilação", "gravitação", "mecânica"],
+      image: null
+    },
+    {
+      id: 2,
+      title: "Torre de Líquidos",
+      discipline: "fisica",
+      description: "Empilhe líquidos de diferentes densidades e visualize a estratificação em camadas coloridas.",
+      themes: ["densidade", "fluidos", "pressão"],
+      image: null
+    },
+    {
+      id: 3,
+      title: "Vulcão de Bicarbonato",
+      discipline: "quimica",
+      description: "Reação ácido-base entre vinagre e bicarbonato de sódio simulando uma erupção vulcânica espumante.",
+      themes: ["reação química", "ácido-base", "efervescência"],
+      image: null
+    },
+    {
+      id: 4,
+      title: "Cromatografia em Papel",
+      discipline: "quimica",
+      description: "Separe os pigmentos de tintas e marcadores usando papel e solvente, revelando as cores ocultas.",
+      themes: ["separação de misturas", "pigmentos", "polaridade"],
+      image: null
+    },
+    {
+      id: 5,
+      title: "Germinação de Sementes",
+      discipline: "biologia",
+      description: "Acompanhe as etapas da germinação e investigue como luz, água e temperatura influenciam o desenvolvimento.",
+      themes: ["plantas", "germinação", "ecossistema"],
+      image: null
+    },
+    {
+      id: 6,
+      title: "Extração de DNA de Morango",
+      discipline: "biologia",
+      description: "Extraia e visualize o DNA de um morango usando apenas materiais domésticos e observe a molécula da vida.",
+      themes: ["DNA", "células", "genética"],
+      image: null
+    },
+    {
+      id: 7,
+      title: "Sequência de Fibonacci na Natureza",
+      discipline: "matematica",
+      description: "Descubra como a sequência de Fibonacci aparece em conchas, flores e outros elementos do mundo natural.",
+      themes: ["sequências", "padrões", "natureza"],
+      image: null
+    },
+    {
+      id: 8,
+      title: "Probabilidade com Moedas",
+      discipline: "matematica",
+      description: "Experimento estatístico lançando moedas e comparando resultados empíricos com a probabilidade teórica.",
+      themes: ["probabilidade", "estatística", "aleatoriedade"],
+      image: null
+    }
+  ];
+
+  /* ── Config por disciplina ──────────────────────────────── */
+  const DISC = {
+    fisica:     { icon: "⚡", bg: "#EBF5FB", label: "Física" },
+    quimica:    { icon: "🧪", bg: "#FBE8E3", label: "Química" },
+    biologia:   { icon: "🌱", bg: "#E8F5E9", label: "Biologia" },
+    matematica: { icon: "📐", bg: "#F3E5F5", label: "Matemática" }
+  };
+
+  let activeFilter = "all";
+
+  /* ── Mudar filtro de disciplina ─────────────────────────── */
+  function setFilter(d) {
+    activeFilter = d;
+    document.querySelectorAll('.filter-btn').forEach(btn => {
+      btn.classList.toggle('active', btn.dataset.d === d);
+    });
+    applyFilters();
+  }
+
+  /* ── Aplicar filtro + busca ─────────────────────────────── */
+  function applyFilters() {
+    const query = document.getElementById('searchInput').value.toLowerCase().trim();
+
+    const result = projects.filter(p => {
+      if (activeFilter !== "all" && p.discipline !== activeFilter) return false;
+      if (!query) return true;
+      return (
+        p.title.toLowerCase().includes(query) ||
+        p.description.toLowerCase().includes(query) ||
+        p.themes.some(t => t.toLowerCase().includes(query))
+      );
+    });
+
+    renderProjects(result);
+  }
+
+  /* ── Renderizar cards ───────────────────────────────────── */
+  function renderProjects(list) {
+    const grid  = document.getElementById('projectsGrid');
+    const info  = document.getElementById('resultsInfo');
+    const total = projects.length;
+
+    info.textContent = list.length === total
+      ? `${total} experimentos`
+      : list.length === 1
+        ? `1 experimento encontrado de ${total}`
+        : `${list.length} experimentos encontrados de ${total}`;
+
+    if (list.length === 0) {
+      grid.innerHTML = `
+        <div class="empty-state">
+          <div class="big-icon">🔬</div>
+          <p>Nenhum experimento encontrado.<br>Tente outro filtro ou termo de busca.</p>
+        </div>`;
+      return;
+    }
+
+    grid.innerHTML = list.map(p => {
+      const d = DISC[p.discipline];
+
+      const imageHtml = p.image
+        ? `<img src="${p.image}" alt="${p.title}" class="card-image">`
+        : `<div class="card-placeholder" style="background:${d.bg}">${d.icon}</div>`;
+
+      const tags = p.themes.map(t => `<span class="theme-tag">${t}</span>`).join('');
+
+      return `
+        <article class="project-card">
+          ${imageHtml}
+          <div class="card-body">
+            <span class="discipline-badge badge-${p.discipline}">${d.label}</span>
+            <h2 class="card-title">${p.title}</h2>
+            <p class="card-description">${p.description}</p>
+            <div class="card-themes">${tags}</div>
+          </div>
+        </article>`;
+    }).join('');
+  }
+
+  /* ── Inicializar ────────────────────────────────────────── */
+  applyFilters();
+</script>
+</body>
+</html>
