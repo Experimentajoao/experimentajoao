@@ -1,0 +1,904 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>@Experimentajoao | Simuladores & Recursos Didáticos</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    :root {
+      --amber-50: #fffbeb;
+      --amber-100: #fef3c7;
+      --amber-200: #fde68a;
+      --amber-300: #fcd34d;
+      --amber-400: #fbbf24;
+      --amber-500: #f59e0b;
+      --amber-600: #d97706;
+      --amber-700: #b45309;
+      --orange-500: #f97316;
+      --orange-600: #ea580c;
+      --dark-900: #0c0a09;
+      --dark-800: #1c1917;
+      --dark-700: #292524;
+      --dark-600: #3f3a36;
+    }
+
+    html {
+      scroll-behavior: smooth;
+    }
+
+    body {
+      font-family: 'Inter', sans-serif;
+      background: var(--dark-900);
+      color: #fafaf9;
+      overflow-x: hidden;
+      line-height: 1.6;
+    }
+
+    /* ===== STARFIELD CANVAS ===== */
+    #starfield {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      z-index: 0;
+      pointer-events: none;
+    }
+
+    /* ===== NAVIGATION ===== */
+    nav {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      z-index: 100;
+      padding: 1rem 2rem;
+      background: rgba(12, 10, 9, 0.6);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      border-bottom: 1px solid rgba(251, 191, 36, 0.08);
+      transition: all 0.3s ease;
+    }
+
+    nav.scrolled {
+      background: rgba(12, 10, 9, 0.9);
+      border-bottom: 1px solid rgba(251, 191, 36, 0.15);
+    }
+
+    .nav-inner {
+      max-width: 1200px;
+      margin: 0 auto;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .logo {
+      font-family: 'Space Grotesk', sans-serif;
+      font-weight: 700;
+      font-size: 1.4rem;
+      background: linear-gradient(135deg, var(--amber-400), var(--orange-500));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      letter-spacing: -0.5px;
+    }
+
+    .nav-links {
+      display: flex;
+      gap: 2rem;
+      list-style: none;
+    }
+
+    .nav-links a {
+      color: rgba(250, 250, 249, 0.7);
+      text-decoration: none;
+      font-size: 0.9rem;
+      font-weight: 500;
+      transition: color 0.3s ease;
+      position: relative;
+    }
+
+    .nav-links a::after {
+      content: '';
+      position: absolute;
+      bottom: -4px;
+      left: 0;
+      width: 0;
+      height: 2px;
+      background: linear-gradient(90deg, var(--amber-400), var(--orange-500));
+      border-radius: 1px;
+      transition: width 0.3s ease;
+    }
+
+    .nav-links a:hover {
+      color: var(--amber-400);
+    }
+
+    .nav-links a:hover::after {
+      width: 100%;
+    }
+
+    /* ===== HERO SECTION ===== */
+    .hero {
+      position: relative;
+      z-index: 1;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      padding: 6rem 2rem 4rem;
+    }
+
+    .hero-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0.4rem 1rem;
+      background: rgba(251, 191, 36, 0.08);
+      border: 1px solid rgba(251, 191, 36, 0.15);
+      border-radius: 100px;
+      font-size: 0.8rem;
+      font-weight: 500;
+      color: var(--amber-400);
+      margin-bottom: 2rem;
+      letter-spacing: 0.5px;
+      text-transform: uppercase;
+    }
+
+    .hero-badge .dot {
+      width: 6px;
+      height: 6px;
+      background: var(--amber-400);
+      border-radius: 50%;
+      animation: pulse-dot 2s ease-in-out infinite;
+    }
+
+    @keyframes pulse-dot {
+      0%, 100% { opacity: 1; transform: scale(1); }
+      50% { opacity: 0.5; transform: scale(0.8); }
+    }
+
+    .hero h1 {
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: clamp(2.5rem, 6vw, 4.5rem);
+      font-weight: 800;
+      line-height: 1.1;
+      margin-bottom: 1.5rem;
+      letter-spacing: -2px;
+    }
+
+    .hero h1 .gradient-text {
+      background: linear-gradient(135deg, var(--amber-300), var(--orange-500), var(--amber-400));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    .hero p {
+      font-size: clamp(1rem, 2vw, 1.2rem);
+      color: rgba(250, 250, 249, 0.6);
+      max-width: 600px;
+      margin-bottom: 2.5rem;
+      font-weight: 300;
+      line-height: 1.7;
+    }
+
+    .hero-buttons {
+      display: flex;
+      gap: 1rem;
+      flex-wrap: wrap;
+      justify-content: center;
+    }
+
+    .btn-primary {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0.85rem 2rem;
+      background: linear-gradient(135deg, var(--amber-500), var(--orange-600));
+      color: #fff;
+      font-weight: 600;
+      font-size: 0.95rem;
+      border: none;
+      border-radius: 12px;
+      text-decoration: none;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      box-shadow: 0 4px 24px rgba(249, 115, 22, 0.25);
+    }
+
+    .btn-primary:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 32px rgba(249, 115, 22, 0.35);
+    }
+
+    .btn-secondary {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0.85rem 2rem;
+      background: rgba(250, 250, 249, 0.05);
+      color: rgba(250, 250, 249, 0.85);
+      font-weight: 600;
+      font-size: 0.95rem;
+      border: 1px solid rgba(250, 250, 249, 0.1);
+      border-radius: 12px;
+      text-decoration: none;
+      cursor: pointer;
+      transition: all 0.3s ease;
+    }
+
+    .btn-secondary:hover {
+      background: rgba(250, 250, 249, 0.1);
+      border-color: rgba(251, 191, 36, 0.3);
+      transform: translateY(-2px);
+    }
+
+    /* ===== SECTION COMMON ===== */
+    section {
+      position: relative;
+      z-index: 1;
+    }
+
+    .section-header {
+      text-align: center;
+      margin-bottom: 3.5rem;
+    }
+
+    .section-label {
+      display: inline-block;
+      font-size: 0.75rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 2px;
+      color: var(--amber-500);
+      margin-bottom: 0.75rem;
+    }
+
+    .section-title {
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: clamp(1.8rem, 4vw, 2.8rem);
+      font-weight: 700;
+      letter-spacing: -1px;
+      margin-bottom: 1rem;
+    }
+
+    .section-subtitle {
+      color: rgba(250, 250, 249, 0.5);
+      font-size: 1.05rem;
+      max-width: 550px;
+      margin: 0 auto;
+      font-weight: 300;
+    }
+
+    /* ===== CATALOG CTA ===== */
+    .catalog-cta {
+      padding: 5rem 2rem 6rem;
+      max-width: 900px;
+      margin: 0 auto;
+      text-align: center;
+    }
+
+    .catalog-cta-box {
+      position: relative;
+      background: linear-gradient(135deg, rgba(251, 191, 36, 0.06), rgba(249, 115, 22, 0.06));
+      border: 1px solid rgba(251, 191, 36, 0.12);
+      border-radius: 28px;
+      padding: 4rem 3rem;
+      overflow: hidden;
+    }
+
+    .catalog-cta-box::before {
+      content: '';
+      position: absolute;
+      top: -50%;
+      left: -50%;
+      width: 200%;
+      height: 200%;
+      background: radial-gradient(circle at 30% 40%, rgba(251, 191, 36, 0.04), transparent 50%);
+      pointer-events: none;
+    }
+
+    .catalog-cta-box h2 {
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: clamp(1.6rem, 3.5vw, 2.2rem);
+      font-weight: 700;
+      margin-bottom: 1rem;
+      letter-spacing: -0.5px;
+    }
+
+    .catalog-cta-box p {
+      color: rgba(250, 250, 249, 0.55);
+      font-size: 1.05rem;
+      margin-bottom: 2rem;
+      max-width: 520px;
+      margin-left: auto;
+      margin-right: auto;
+      font-weight: 300;
+      line-height: 1.7;
+    }
+
+    .catalog-stats {
+      display: flex;
+      justify-content: center;
+      gap: 3rem;
+      margin-bottom: 2.5rem;
+      flex-wrap: wrap;
+    }
+
+    .catalog-stat {
+      text-align: center;
+    }
+
+    .catalog-stat .number {
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: 2.5rem;
+      font-weight: 700;
+      background: linear-gradient(135deg, var(--amber-400), var(--orange-500));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      line-height: 1.2;
+    }
+
+    .catalog-stat .label {
+      font-size: 0.8rem;
+      color: rgba(250, 250, 249, 0.4);
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      font-weight: 500;
+    }
+
+    .btn-catalog {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.65rem;
+      padding: 1rem 2.5rem;
+      background: linear-gradient(135deg, var(--amber-500), var(--orange-600));
+      color: #fff;
+      font-weight: 700;
+      font-size: 1.05rem;
+      border: none;
+      border-radius: 14px;
+      text-decoration: none;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      box-shadow: 0 4px 24px rgba(249, 115, 22, 0.25);
+    }
+
+    .btn-catalog:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 32px rgba(249, 115, 22, 0.35);
+    }
+
+    .btn-catalog svg {
+      width: 20px;
+      height: 20px;
+      transition: transform 0.3s ease;
+    }
+
+    .btn-catalog:hover svg {
+      transform: translateX(3px);
+    }
+
+    /* ===== CTA / CONTACT ===== */
+    .cta {
+      padding: 5rem 2rem 6rem;
+      max-width: 800px;
+      margin: 0 auto;
+      text-align: center;
+    }
+
+    .cta-box {
+      position: relative;
+      background: linear-gradient(135deg, rgba(251, 191, 36, 0.06), rgba(249, 115, 22, 0.06));
+      border: 1px solid rgba(251, 191, 36, 0.12);
+      border-radius: 28px;
+      padding: 4rem 3rem;
+      overflow: hidden;
+    }
+
+    .cta-box::before {
+      content: '';
+      position: absolute;
+      top: -50%;
+      left: -50%;
+      width: 200%;
+      height: 200%;
+      background: radial-gradient(circle at 30% 40%, rgba(251, 191, 36, 0.04), transparent 50%);
+      pointer-events: none;
+    }
+
+    .cta-box h2 {
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: clamp(1.6rem, 3.5vw, 2.2rem);
+      font-weight: 700;
+      margin-bottom: 1rem;
+      letter-spacing: -0.5px;
+    }
+
+    .cta-box p {
+      color: rgba(250, 250, 249, 0.55);
+      font-size: 1.05rem;
+      margin-bottom: 2rem;
+      max-width: 480px;
+      margin-left: auto;
+      margin-right: auto;
+      font-weight: 300;
+      line-height: 1.7;
+    }
+
+    .whatsapp-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.65rem;
+      padding: 1rem 2.2rem;
+      background: linear-gradient(135deg, #25d366, #128c7e);
+      color: #fff;
+      font-weight: 700;
+      font-size: 1rem;
+      border: none;
+      border-radius: 14px;
+      text-decoration: none;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      box-shadow: 0 4px 24px rgba(37, 211, 102, 0.25);
+    }
+
+    .whatsapp-btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 32px rgba(37, 211, 102, 0.35);
+    }
+
+    .whatsapp-btn svg {
+      width: 22px;
+      height: 22px;
+    }
+
+    /* ===== ABOUT SECTION ===== */
+    .about {
+      padding: 5rem 2rem 5rem;
+      max-width: 1000px;
+      margin: 0 auto;
+    }
+
+    .about-content {
+      display: grid;
+      grid-template-columns: 280px 1fr;
+      gap: 3rem;
+      align-items: center;
+    }
+
+    .about-photo {
+      position: relative;
+    }
+
+    .about-photo-frame {
+      width: 280px;
+      height: 340px;
+      border-radius: 24px;
+      overflow: hidden;
+      border: 2px solid rgba(251, 191, 36, 0.15);
+      background: rgba(28, 25, 23, 0.6);
+      position: relative;
+    }
+
+    .about-photo-frame img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+    }
+
+    .about-photo-accent {
+      position: absolute;
+      top: -8px;
+      right: -8px;
+      width: 60px;
+      height: 60px;
+      border-radius: 16px;
+      background: linear-gradient(135deg, var(--amber-500), var(--orange-600));
+      opacity: 0.15;
+      z-index: -1;
+    }
+
+    .about-text h2 {
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: 0.75rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 2px;
+      color: var(--amber-500);
+      margin-bottom: 0.75rem;
+    }
+
+    .about-text h3 {
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: clamp(1.5rem, 3vw, 2rem);
+      font-weight: 700;
+      letter-spacing: -0.5px;
+      margin-bottom: 1.5rem;
+      line-height: 1.2;
+    }
+
+    .about-text p {
+      color: rgba(250, 250, 249, 0.5);
+      font-size: 0.95rem;
+      line-height: 1.8;
+      margin-bottom: 1rem;
+    }
+
+    .about-text p strong {
+      color: var(--amber-400);
+      font-weight: 600;
+    }
+
+    .about-divider {
+      width: 50px;
+      height: 2px;
+      background: linear-gradient(90deg, var(--amber-500), var(--orange-500));
+      border-radius: 1px;
+      margin: 1.5rem 0;
+      opacity: 0.4;
+    }
+
+    @media (max-width: 768px) {
+      .about-content {
+        grid-template-columns: 1fr;
+        text-align: center;
+      }
+
+      .about-photo {
+        display: flex;
+        justify-content: center;
+      }
+
+      .about-photo-frame {
+        width: 220px;
+        height: 270px;
+      }
+
+      .about-divider {
+        margin: 1.5rem auto;
+      }
+    }
+
+    /* ===== FOOTER ===== */
+    footer {
+      position: relative;
+      z-index: 1;
+      text-align: center;
+      padding: 2rem;
+      border-top: 1px solid rgba(250, 250, 249, 0.04);
+      color: rgba(250, 250, 249, 0.25);
+      font-size: 0.8rem;
+    }
+
+    footer span {
+      color: var(--amber-500);
+    }
+
+    /* ===== DIVIDER ===== */
+    .divider {
+      width: 60px;
+      height: 3px;
+      background: linear-gradient(90deg, var(--amber-500), var(--orange-500));
+      border-radius: 2px;
+      margin: 0 auto 3rem;
+      opacity: 0.5;
+    }
+
+    /* ===== SCROLL ANIMATIONS ===== */
+    .fade-up {
+      opacity: 0;
+      transform: translateY(30px);
+      transition: opacity 0.7s ease, transform 0.7s ease;
+    }
+
+    .fade-up.visible {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    /* ===== RESPONSIVE ===== */
+    @media (max-width: 768px) {
+      .nav-links {
+        display: none;
+      }
+
+      .cta-box {
+        padding: 3rem 1.5rem;
+      }
+
+      .catalog-cta-box {
+        padding: 3rem 1.5rem;
+      }
+
+      .hero {
+        padding: 5rem 1.5rem 3rem;
+      }
+
+      .catalog-stats {
+        gap: 2rem;
+      }
+    }
+
+    @media (max-width: 480px) {
+      .hero-buttons {
+        flex-direction: column;
+        width: 100%;
+        padding: 0 1rem;
+      }
+
+      .btn-primary, .btn-secondary {
+        width: 100%;
+        justify-content: center;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Starfield Background -->
+  <canvas id="starfield"></canvas>
+
+  <!-- Navigation -->
+  <nav>
+    <div class="nav-inner">
+      <div class="logo">@experimentajoao</div>
+      <ul class="nav-links">
+        <li><a href="catalogo.html">Materiais Gratuitos</a></li>
+        <li><a href="#sobre">Sobre</a></li>
+        <li><a href="#contato">Contato</a></li>
+      </ul>
+    </div>
+  </nav>
+
+  <!-- Hero Section -->
+  <section class="hero">
+    <div class="hero-badge">
+      <span class="dot"></span>
+      Recursos educacionais gratuitos
+    </div>
+    <h1>
+      O ensino que<br>
+      <span class="gradient-text">transforma</span> começa<br>
+      com a <span class="gradient-text">experiência</span> certa
+    </h1>
+    <p>
+      Simuladores, jogos e laboratórios virtuais para reinventar o ensino de Física, Matemática e Tecnologia.
+      Explore gratuitamente ou encomende seu próprio projeto.
+    </p>
+    <div class="hero-buttons">
+      <a href="catalogo.html" class="btn-primary">
+        <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+        Acessar Materiais Gratuitos
+      </a>
+      <a href="#contato" class="btn-secondary">
+        <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+        Encomendar Projeto
+      </a>
+    </div>
+  </section>
+
+  <!-- Catalog CTA Section -->
+  <section class="catalog-cta" id="catalogo">
+    <div class="catalog-cta-box fade-up">
+      <span class="section-label">Catálogo</span>
+      <h2>Recursos <span class="gradient-text" style="background: linear-gradient(135deg, var(--amber-300), var(--orange-500)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;">100% gratuitos</span> para sua sala de aula</h2>
+      <div class="catalog-stats">
+        <div class="catalog-stat">
+          <div class="number">9</div>
+          <div class="label">Recursos</div>
+        </div>
+        <div class="catalog-stat">
+          <div class="number">4</div>
+          <div class="label">Disciplinas</div>
+        </div>
+        <div class="catalog-stat">
+          <div class="number">3</div>
+          <div class="label">Tipos</div>
+        </div>
+      </div>
+      <p>
+        Simuladores, jogos educativos e laboratórios virtuais prontos para uso. Filtre por disciplina e encontre o recurso ideal.
+      </p>
+      <a href="catalogo.html" class="btn-catalog">
+        Explorar Catálogo Completo
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+      </a>
+    </div>
+  </section>
+
+  <!-- CTA Section -->
+  <section class="cta" id="contato">
+    <div class="cta-box fade-up">
+      <span class="section-label">Encomendas</span>
+      <h2>Precisa de um projeto <span class="gradient-text" style="background: linear-gradient(135deg, var(--amber-300), var(--orange-500)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;">sob medida</span>?</h2>
+      <p>
+        Desenvolvo simuladores, jogos educativos, laboratórios virtuais e planos de aula interativos personalizados para sua necessidade.
+      </p>
+      <a href="https://wa.me/5561996163965?text=Ol%C3%A1!%20Tenho%20interesse%20em%20encomendar%20um%20projeto%20educacional." target="_blank" rel="noopener" class="whatsapp-btn">
+        <svg viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
+        Fale comigo no WhatsApp
+      </a>
+    </div>
+  </section>
+
+  <!-- About Section -->
+  <section class="about" id="sobre">
+    <div class="about-content fade-up">
+      <div class="about-photo">
+        <div class="about-photo-frame">
+          <img src="IMG_3999.jpeg" alt="João - Professor e Desenvolvedor">
+        </div>
+        <div class="about-photo-accent"></div>
+      </div>
+      <div class="about-text">
+        <h2>Quem está por trás disso tudo</h2>
+        <h3>Um professor que não desistiu da educação</h3>
+        <p>
+          Sou graduado em Física pela UFG e mestrando em Ensino de Física pela UnB. Ao longo da minha jornada como professor, percebi que a educação precisava de novas linguagens — e encontrei na tecnologia uma forma poderosa de reinventar o ensino sem abrir mão do que sempre me moveu: <strong>fazer o aluno entender de verdade</strong>.
+        </p>
+        <div class="about-divider"></div>
+        <p>
+          O <strong>@experimentajoao | Soluções Educacionais</strong> nasceu dessa convicção: que simuladores, ambientes virtuais e ferramentas digitais bem planejadas transformam a sala de aula em um laboratório de descobertas.
+        </p>
+      </div>
+    </div>
+  </section>
+
+  <!-- Footer -->
+  <footer>
+    <p>&copy; 2026 <span>Experimenta João</span>. Todos os direitos reservados.</p>
+  </footer>
+
+  <!-- Scripts -->
+  <script>
+    // ===== STARFIELD + COMETS =====
+    (function() {
+      const canvas = document.getElementById('starfield');
+      const ctx = canvas.getContext('2d');
+      let W, H;
+
+      function resize() {
+        W = canvas.width = window.innerWidth;
+        H = canvas.height = window.innerHeight;
+      }
+      resize();
+      window.addEventListener('resize', resize);
+
+      const STAR_COUNT = 180;
+      const stars = [];
+      for (let i = 0; i < STAR_COUNT; i++) {
+        stars.push({
+          x: Math.random() * W,
+          y: Math.random() * H,
+          r: Math.random() * 1.2 + 0.3,
+          alpha: Math.random() * 0.6 + 0.2,
+          twinkleSpeed: Math.random() * 0.02 + 0.005,
+          twinkleOffset: Math.random() * Math.PI * 2
+        });
+      }
+
+      const comets = [];
+      function spawnComet() {
+        const fromLeft = Math.random() > 0.5;
+        comets.push({
+          x: fromLeft ? -20 : W + 20,
+          y: Math.random() * H * 0.6,
+          vx: (fromLeft ? 1 : -1) * (Math.random() * 3 + 2),
+          vy: Math.random() * 1.5 + 0.5,
+          length: Math.random() * 60 + 40,
+          alpha: Math.random() * 0.4 + 0.3,
+          life: 1
+        });
+      }
+
+      function scheduleComet() {
+        const delay = Math.random() * 6000 + 3000;
+        setTimeout(function() {
+          spawnComet();
+          scheduleComet();
+        }, delay);
+      }
+      scheduleComet();
+
+      let time = 0;
+      function draw() {
+        ctx.clearRect(0, 0, W, H);
+        time += 0.016;
+
+        for (let i = 0; i < stars.length; i++) {
+          const s = stars[i];
+          const twinkle = Math.sin(time * s.twinkleSpeed * 60 + s.twinkleOffset) * 0.3 + 0.7;
+          const a = s.alpha * twinkle;
+          ctx.beginPath();
+          ctx.arc(s.x, s.y, s.r, 0, Math.PI * 2);
+          ctx.fillStyle = 'rgba(253, 230, 138, ' + a + ')';
+          ctx.fill();
+        }
+
+        for (let i = comets.length - 1; i >= 0; i--) {
+          const c = comets[i];
+          c.x += c.vx;
+          c.y += c.vy;
+          c.life -= 0.003;
+
+          if (c.life <= 0 || c.x > W + 100 || c.x < -100 || c.y > H + 100) {
+            comets.splice(i, 1);
+            continue;
+          }
+
+          const angle = Math.atan2(c.vy, c.vx);
+          const tailX = c.x - Math.cos(angle) * c.length;
+          const tailY = c.y - Math.sin(angle) * c.length;
+
+          const grad = ctx.createLinearGradient(c.x, c.y, tailX, tailY);
+          grad.addColorStop(0, 'rgba(253, 230, 138, ' + (c.alpha * c.life) + ')');
+          grad.addColorStop(0.3, 'rgba(251, 191, 36, ' + (c.alpha * c.life * 0.5) + ')');
+          grad.addColorStop(1, 'rgba(251, 191, 36, 0)');
+
+          ctx.beginPath();
+          ctx.moveTo(c.x, c.y);
+          ctx.lineTo(tailX, tailY);
+          ctx.strokeStyle = grad;
+          ctx.lineWidth = 1.5;
+          ctx.stroke();
+
+          ctx.beginPath();
+          ctx.arc(c.x, c.y, 2, 0, Math.PI * 2);
+          ctx.fillStyle = 'rgba(255, 251, 235, ' + (c.alpha * c.life) + ')';
+          ctx.fill();
+        }
+
+        requestAnimationFrame(draw);
+      }
+      draw();
+
+      window.addEventListener('resize', function() {
+        for (let i = 0; i < stars.length; i++) {
+          stars[i].x = Math.random() * W;
+          stars[i].y = Math.random() * H;
+        }
+      });
+    })();
+
+    // ===== SCROLL ANIMATIONS =====
+    const observer = new IntersectionObserver(function(entries) {
+      entries.forEach(function(entry) {
+        if (entry.isIntersecting) {
+          entry.target.classList.add('visible');
+        }
+      });
+    }, { threshold: 0.1 });
+
+    document.querySelectorAll('.fade-up').forEach(function(el) {
+      observer.observe(el);
+    });
+
+    // ===== NAV SCROLL EFFECT =====
+    window.addEventListener('scroll', function() {
+      const nav = document.querySelector('nav');
+      if (window.scrollY > 50) {
+        nav.classList.add('scrolled');
+      } else {
+        nav.classList.remove('scrolled');
+      }
+    });
+  </script>
+
+</body>
+</html>
