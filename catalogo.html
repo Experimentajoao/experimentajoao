@@ -1,0 +1,925 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Catálogo de Materiais | @Experimentajoao</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    :root {
+      --amber-50: #fffbeb;
+      --amber-100: #fef3c7;
+      --amber-200: #fde68a;
+      --amber-300: #fcd34d;
+      --amber-400: #fbbf24;
+      --amber-500: #f59e0b;
+      --amber-600: #d97706;
+      --amber-700: #b45309;
+      --orange-500: #f97316;
+      --orange-600: #ea580c;
+      --dark-900: #0c0a09;
+      --dark-800: #1c1917;
+      --dark-700: #292524;
+      --dark-600: #3f3a36;
+    }
+
+    html {
+      scroll-behavior: smooth;
+    }
+
+    body {
+      font-family: 'Inter', sans-serif;
+      background: var(--dark-900);
+      color: #fafaf9;
+      overflow-x: hidden;
+      line-height: 1.6;
+    }
+
+    /* ===== STARFIELD CANVAS ===== */
+    #starfield {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      z-index: 0;
+      pointer-events: none;
+    }
+
+    /* ===== NAVIGATION ===== */
+    nav {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      z-index: 100;
+      padding: 1rem 2rem;
+      background: rgba(12, 10, 9, 0.85);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      border-bottom: 1px solid rgba(251, 191, 36, 0.08);
+      transition: all 0.3s ease;
+    }
+
+    nav.scrolled {
+      background: rgba(12, 10, 9, 0.95);
+      border-bottom: 1px solid rgba(251, 191, 36, 0.15);
+    }
+
+    .nav-inner {
+      max-width: 1200px;
+      margin: 0 auto;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .logo {
+      font-family: 'Space Grotesk', sans-serif;
+      font-weight: 700;
+      font-size: 1.4rem;
+      background: linear-gradient(135deg, var(--amber-400), var(--orange-500));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      letter-spacing: -0.5px;
+      text-decoration: none;
+    }
+
+    .nav-links {
+      display: flex;
+      gap: 2rem;
+      list-style: none;
+    }
+
+    .nav-links a {
+      color: rgba(250, 250, 249, 0.7);
+      text-decoration: none;
+      font-size: 0.9rem;
+      font-weight: 500;
+      transition: color 0.3s ease;
+      position: relative;
+    }
+
+    .nav-links a::after {
+      content: '';
+      position: absolute;
+      bottom: -4px;
+      left: 0;
+      width: 0;
+      height: 2px;
+      background: linear-gradient(90deg, var(--amber-400), var(--orange-500));
+      border-radius: 1px;
+      transition: width 0.3s ease;
+    }
+
+    .nav-links a:hover {
+      color: var(--amber-400);
+    }
+
+    .nav-links a:hover::after {
+      width: 100%;
+    }
+
+    /* ===== PAGE HEADER ===== */
+    .page-header {
+      position: relative;
+      z-index: 1;
+      text-align: center;
+      padding: 8rem 2rem 3rem;
+    }
+
+    .page-header h1 {
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: clamp(2rem, 5vw, 3rem);
+      font-weight: 800;
+      letter-spacing: -1.5px;
+      margin-bottom: 0.75rem;
+    }
+
+    .page-header h1 .gradient-text {
+      background: linear-gradient(135deg, var(--amber-300), var(--orange-500), var(--amber-400));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    .page-header p {
+      color: rgba(250, 250, 249, 0.5);
+      font-size: 1.05rem;
+      max-width: 550px;
+      margin: 0 auto;
+      font-weight: 300;
+    }
+
+    /* ===== SEARCH & FILTERS ===== */
+    .controls {
+      position: relative;
+      z-index: 1;
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 0 2rem 2rem;
+    }
+
+    .search-bar {
+      position: relative;
+      max-width: 600px;
+      margin: 0 auto 1.5rem;
+    }
+
+    .search-bar input {
+      width: 100%;
+      padding: 0.9rem 1.2rem 0.9rem 3rem;
+      background: rgba(28, 25, 23, 0.7);
+      border: 1px solid rgba(250, 250, 249, 0.1);
+      border-radius: 14px;
+      color: #fafaf9;
+      font-family: 'Inter', sans-serif;
+      font-size: 0.95rem;
+      outline: none;
+      transition: all 0.3s ease;
+      backdrop-filter: blur(10px);
+    }
+
+    .search-bar input::placeholder {
+      color: rgba(250, 250, 249, 0.35);
+    }
+
+    .search-bar input:focus {
+      border-color: rgba(251, 191, 36, 0.4);
+      box-shadow: 0 0 0 3px rgba(251, 191, 36, 0.08);
+    }
+
+    .search-icon {
+      position: absolute;
+      left: 1rem;
+      top: 50%;
+      transform: translateY(-50%);
+      width: 18px;
+      height: 18px;
+      color: rgba(250, 250, 249, 0.35);
+      pointer-events: none;
+    }
+
+    .filters {
+      display: flex;
+      justify-content: center;
+      gap: 0.6rem;
+      flex-wrap: wrap;
+    }
+
+    .filter-btn {
+      padding: 0.5rem 1.2rem;
+      background: rgba(28, 25, 23, 0.6);
+      border: 1px solid rgba(250, 250, 249, 0.08);
+      border-radius: 10px;
+      color: rgba(250, 250, 249, 0.6);
+      font-family: 'Inter', sans-serif;
+      font-size: 0.85rem;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      backdrop-filter: blur(10px);
+    }
+
+    .filter-btn:hover {
+      border-color: rgba(251, 191, 36, 0.25);
+      color: rgba(250, 250, 249, 0.85);
+      background: rgba(251, 191, 36, 0.06);
+    }
+
+    .filter-btn.active {
+      background: linear-gradient(135deg, rgba(251, 191, 36, 0.15), rgba(249, 115, 22, 0.15));
+      border-color: rgba(251, 191, 36, 0.3);
+      color: var(--amber-400);
+      font-weight: 600;
+    }
+
+    .results-info {
+      text-align: center;
+      color: rgba(250, 250, 249, 0.35);
+      font-size: 0.85rem;
+      margin-top: 1.25rem;
+      font-weight: 400;
+    }
+
+    /* ===== CATALOG ===== */
+    .catalog {
+      position: relative;
+      z-index: 1;
+      padding: 2rem 2rem 6rem;
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+
+    .cards-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+      gap: 1.5rem;
+    }
+
+    .card {
+      position: relative;
+      background: rgba(28, 25, 23, 0.6);
+      border: 1px solid rgba(250, 250, 249, 0.06);
+      border-radius: 20px;
+      padding: 2rem;
+      transition: all 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+      overflow: hidden;
+      backdrop-filter: blur(10px);
+    }
+
+    .card::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 3px;
+      background: linear-gradient(90deg, var(--amber-500), var(--orange-500));
+      opacity: 0;
+      transition: opacity 0.4s ease;
+    }
+
+    .card:hover {
+      transform: translateY(-6px);
+      border-color: rgba(251, 191, 36, 0.15);
+      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3), 0 0 40px rgba(251, 191, 36, 0.04);
+    }
+
+    .card:hover::before {
+      opacity: 1;
+    }
+
+    .card-header {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      margin-bottom: 1rem;
+    }
+
+    .card-icon {
+      width: 44px;
+      height: 44px;
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.3rem;
+      flex-shrink: 0;
+    }
+
+    .card-icon.fisica {
+      background: rgba(59, 130, 246, 0.12);
+      border: 1px solid rgba(59, 130, 246, 0.2);
+    }
+
+    .card-icon.matematica {
+      background: rgba(168, 85, 247, 0.12);
+      border: 1px solid rgba(168, 85, 247, 0.2);
+    }
+
+    .card-icon.biologia {
+      background: rgba(34, 197, 94, 0.12);
+      border: 1px solid rgba(34, 197, 94, 0.2);
+    }
+
+    .card-icon.tecnologia {
+      background: rgba(251, 191, 36, 0.12);
+      border: 1px solid rgba(251, 191, 36, 0.2);
+    }
+
+    .card-tags {
+      display: flex;
+      gap: 0.4rem;
+      flex-wrap: wrap;
+    }
+
+    .card-tag {
+      display: inline-block;
+      padding: 0.2rem 0.65rem;
+      font-size: 0.68rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.8px;
+      border-radius: 6px;
+    }
+
+    .tag-simulador {
+      background: rgba(251, 191, 36, 0.1);
+      color: var(--amber-400);
+      border: 1px solid rgba(251, 191, 36, 0.15);
+    }
+
+    .tag-jogo {
+      background: rgba(249, 115, 22, 0.1);
+      color: var(--orange-500);
+      border: 1px solid rgba(249, 115, 22, 0.15);
+    }
+
+    .tag-laboratorio {
+      background: rgba(180, 83, 9, 0.15);
+      color: var(--amber-300);
+      border: 1px solid rgba(180, 83, 9, 0.2);
+    }
+
+    .tag-disciplina {
+      font-size: 0.68rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.8px;
+      padding: 0.2rem 0.65rem;
+      border-radius: 6px;
+    }
+
+    .tag-fisica {
+      background: rgba(59, 130, 246, 0.1);
+      color: #60a5fa;
+      border: 1px solid rgba(59, 130, 246, 0.2);
+    }
+
+    .tag-matematica {
+      background: rgba(168, 85, 247, 0.1);
+      color: #c084fc;
+      border: 1px solid rgba(168, 85, 247, 0.2);
+    }
+
+    .tag-biologia {
+      background: rgba(34, 197, 94, 0.1);
+      color: #4ade80;
+      border: 1px solid rgba(34, 197, 94, 0.2);
+    }
+
+    .tag-tecnologia {
+      background: rgba(251, 191, 36, 0.1);
+      color: var(--amber-400);
+      border: 1px solid rgba(251, 191, 36, 0.2);
+    }
+
+    .card h3 {
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: 1.2rem;
+      font-weight: 600;
+      margin-bottom: 0.6rem;
+      letter-spacing: -0.3px;
+    }
+
+    .card p {
+      color: rgba(250, 250, 249, 0.45);
+      font-size: 0.9rem;
+      line-height: 1.6;
+      margin-bottom: 1.5rem;
+    }
+
+    .card-link {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.4rem;
+      color: var(--amber-400);
+      font-weight: 600;
+      font-size: 0.88rem;
+      text-decoration: none;
+      transition: all 0.3s ease;
+    }
+
+    .card-link:hover {
+      color: var(--amber-300);
+      gap: 0.7rem;
+    }
+
+    .card-link svg {
+      width: 16px;
+      height: 16px;
+      transition: transform 0.3s ease;
+    }
+
+    .card-link:hover svg {
+      transform: translateX(3px);
+    }
+
+    /* ===== EMPTY STATE ===== */
+    .empty-state {
+      text-align: center;
+      padding: 4rem 2rem;
+      color: rgba(250, 250, 249, 0.35);
+    }
+
+    .empty-state .empty-icon {
+      font-size: 3rem;
+      margin-bottom: 1rem;
+      opacity: 0.5;
+    }
+
+    .empty-state h3 {
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: 1.3rem;
+      font-weight: 600;
+      margin-bottom: 0.5rem;
+      color: rgba(250, 250, 249, 0.5);
+    }
+
+    .empty-state p {
+      font-size: 0.95rem;
+    }
+
+    /* ===== BACK BUTTON ===== */
+    .back-link {
+      position: relative;
+      z-index: 1;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.4rem;
+      color: rgba(250, 250, 249, 0.5);
+      text-decoration: none;
+      font-size: 0.85rem;
+      font-weight: 500;
+      margin: 6.5rem 0 0 2rem;
+      transition: color 0.3s ease;
+    }
+
+    .back-link:hover {
+      color: var(--amber-400);
+    }
+
+    .back-link svg {
+      width: 16px;
+      height: 16px;
+    }
+
+    /* ===== FOOTER ===== */
+    footer {
+      position: relative;
+      z-index: 1;
+      text-align: center;
+      padding: 2rem;
+      border-top: 1px solid rgba(250, 250, 249, 0.04);
+      color: rgba(250, 250, 249, 0.25);
+      font-size: 0.8rem;
+    }
+
+    footer span {
+      color: var(--amber-500);
+    }
+
+    /* ===== SCROLL ANIMATIONS ===== */
+    .fade-up {
+      opacity: 0;
+      transform: translateY(30px);
+      transition: opacity 0.7s ease, transform 0.7s ease;
+    }
+
+    .fade-up.visible {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    /* ===== RESPONSIVE ===== */
+    @media (max-width: 768px) {
+      .nav-links {
+        display: none;
+      }
+
+      .cards-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .page-header {
+        padding: 7rem 1.5rem 2rem;
+      }
+
+      .back-link {
+        margin: 5.5rem 0 0 1.5rem;
+      }
+
+      .filters {
+        gap: 0.4rem;
+      }
+
+      .filter-btn {
+        padding: 0.45rem 0.9rem;
+        font-size: 0.8rem;
+      }
+    }
+
+    @media (max-width: 480px) {
+      .cards-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Starfield Background -->
+  <canvas id="starfield"></canvas>
+
+  <!-- Navigation -->
+  <nav>
+    <div class="nav-inner">
+      <a href="index.html" class="logo">@experimentajoao</a>
+      <ul class="nav-links">
+        <li><a href="index.html">Início</a></li>
+        <li><a href="index.html#sobre">Sobre</a></li>
+        <li><a href="index.html#contato">Contato</a></li>
+      </ul>
+    </div>
+  </nav>
+
+  <!-- Back Link -->
+  <a href="index.html" class="back-link">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg>
+    Voltar ao início
+  </a>
+
+  <!-- Page Header -->
+  <section class="page-header">
+    <h1>Catálogo de <span class="gradient-text">Materiais Gratuitos</span></h1>
+    <p>Simuladores, jogos e laboratórios virtuais prontos para uso em sala de aula. Filtre por disciplina ou pesquise pelo nome.</p>
+  </section>
+
+  <!-- Search & Filters -->
+  <div class="controls">
+    <div class="search-bar">
+      <svg class="search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+      <input type="text" id="searchInput" placeholder="Pesquisar por nome, disciplina ou tipo...">
+    </div>
+    <div class="filters" id="filters">
+      <button class="filter-btn active" data-filter="todos">Todos</button>
+      <button class="filter-btn" data-filter="fisica">Física</button>
+      <button class="filter-btn" data-filter="matematica">Matemática</button>
+      <button class="filter-btn" data-filter="biologia">Biologia</button>
+      <button class="filter-btn" data-filter="tecnologia">Tecnologia</button>
+    </div>
+    <div class="results-info" id="resultsInfo"></div>
+  </div>
+
+  <!-- Catalog -->
+  <section class="catalog">
+    <div class="cards-grid" id="cardsGrid">
+      <!-- Cards rendered by JavaScript -->
+    </div>
+  </section>
+
+  <!-- Footer -->
+  <footer>
+    <p>&copy; 2026 <span>Experimenta João</span>. Todos os direitos reservados.</p>
+  </footer>
+
+  <!-- Scripts -->
+  <script>
+    // ===== CATALOG DATA =====
+    const materials = [
+      {
+        title: "Operadores Vetoriais",
+        discipline: "fisica",
+        type: "Simulador",
+        typeClass: "tag-simulador",
+        icon: "⚡",
+        description: "Ambiente interativo para estudo de divergentes, gradientes e rotacional. Visualize campos vetoriais de forma intuitiva.",
+        url: "https://experimentajoao.github.io/Vetorial/"
+      },
+      {
+        title: "Campo Elétrico",
+        discipline: "fisica",
+        type: "Simulador + Jogo",
+        typeClass: "tag-jogo",
+        icon: "⚡",
+        description: "Simulador de campo eletrostático com jogo integrado. Aprenda sobre cargas elétricas e linhas de campo enquanto joga.",
+        url: "https://noite-eletrost-tica.vercel.app/"
+      },
+      {
+        title: "Processos Termodinâmicos",
+        discipline: "fisica",
+        type: "Laboratório Digital",
+        typeClass: "tag-laboratorio",
+        icon: "⚡",
+        description: "Laboratório virtual para simular processos isotérmicos, isobáricos, isocóricos e adiabáticos com visualizações em tempo real.",
+        url: "https://experimentajoao.github.io/Processos-termodin-micos-/"
+      },
+      {
+        title: "Ondas",
+        discipline: "fisica",
+        type: "Simulador",
+        typeClass: "tag-simulador",
+        icon: "⚡",
+        description: "Simulador interativo de ondas mecânicas e eletromagnéticas. Explore conceitos de frequência, amplitude, comprimento de onda e interferência.",
+        url: "https://experimentajoao.github.io/Ondas/"
+      },
+      {
+        title: "Funções de Guerra",
+        discipline: "matematica",
+        type: "Jogo 2 Jogadores",
+        typeClass: "tag-jogo",
+        icon: "📐",
+        description: "Jogo de dois jogadores com tanques de guerra que disparam funções matemáticas. Domine parábolas, senos e mais para vencer.",
+        url: "https://experimentajoao.github.io/Funcoesdeguerra/"
+      },
+      {
+        title: "Dama no Plano Cartesiano",
+        discipline: "matematica",
+        type: "Jogo",
+        typeClass: "tag-jogo",
+        icon: "📐",
+        description: "O clássico jogo de damas sobre um plano cartesiano. Aprenda coordenadas e estratégia ao mesmo tempo.",
+        url: "https://experimentajoao.github.io/Abacatevoador23/"
+      },
+      {
+        title: "Evolução de Darwin",
+        discipline: "biologia",
+        type: "Simulador",
+        typeClass: "tag-simulador",
+        icon: "🧬",
+        description: "Simulador interativo sobre a teoria da evolução de Darwin. Explore seleção natural, adaptação e diversidade das espécies.",
+        url: "https://experimentajoao.github.io/EvolucaodeDarwin/"
+      },
+      {
+        title: "Laboratório Digital de Biologia",
+        discipline: "biologia",
+        type: "Laboratório de Biologia",
+        typeClass: "tag-laboratorio",
+        icon: "🧬",
+        description: "Simule experimentos clássicos da Biogênese. Explore a formação da vida de forma interativa.",
+        url: "https://experimentajoao.github.io/Labdavida/"
+      },
+      {
+        title: "Placas-Mãe",
+        discipline: "tecnologia",
+        type: "Ambiente de Aprendizagem",
+        typeClass: "tag-laboratorio",
+        icon: "💻",
+        description: "Explore os componentes de uma placa-mãe de forma interativa. Ideal para aulas de hardware e arquitetura de computadores.",
+        url: "https://experimentajoao.github.io/Placa-m-e/"
+      }
+    ];
+
+    // ===== STATE =====
+    let activeFilter = 'todos';
+    let searchQuery = '';
+
+    // ===== RENDER =====
+    function renderCards(filteredMaterials) {
+      const grid = document.getElementById('cardsGrid');
+      const info = document.getElementById('resultsInfo');
+
+      if (filteredMaterials.length === 0) {
+        grid.innerHTML = '<div class="empty-state"><div class="empty-icon">🔍</div><h3>Nenhum material encontrado</h3><p>Tente ajustar os filtros ou a pesquisa.</p></div>';
+        info.textContent = '0 materiais encontrados';
+        return;
+      }
+
+      info.textContent = filteredMaterials.length + ' de ' + materials.length + ' materiais';
+
+      grid.innerHTML = filteredMaterials.map(function(m) {
+        return '<div class="card fade-up visible">' +
+          '<div class="card-header">' +
+            '<div class="card-icon ' + m.discipline + '">' + m.icon + '</div>' +
+            '<div class="card-tags">' +
+              '<span class="card-tag ' + m.typeClass + '">' + m.type + '</span>' +
+              '<span class="card-tag tag-disciplina tag-' + m.discipline + '">' + getDisciplineName(m.discipline) + '</span>' +
+            '</div>' +
+          '</div>' +
+          '<h3>' + m.title + '</h3>' +
+          '<p>' + m.description + '</p>' +
+          '<a href="' + m.url + '" target="_blank" rel="noopener" class="card-link">' +
+            'Acessar' +
+            '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>' +
+          '</a>' +
+        '</div>';
+      }).join('');
+    }
+
+    function getDisciplineName(key) {
+      var names = {
+        fisica: 'Física',
+        matematica: 'Matemática',
+        biologia: 'Biologia',
+        tecnologia: 'Tecnologia'
+      };
+      return names[key] || key;
+    }
+
+    // ===== FILTER & SEARCH =====
+    function applyFilters() {
+      var filtered = materials.filter(function(m) {
+        var matchesFilter = activeFilter === 'todos' || m.discipline === activeFilter;
+
+        var query = searchQuery.toLowerCase().trim();
+        var matchesSearch = !query ||
+          m.title.toLowerCase().indexOf(query) !== -1 ||
+          m.description.toLowerCase().indexOf(query) !== -1 ||
+          m.type.toLowerCase().indexOf(query) !== -1 ||
+          getDisciplineName(m.discipline).toLowerCase().indexOf(query) !== -1;
+
+        return matchesFilter && matchesSearch;
+      });
+
+      renderCards(filtered);
+    }
+
+    // ===== EVENT LISTENERS =====
+    // Filter buttons
+    document.getElementById('filters').addEventListener('click', function(e) {
+      var btn = e.target.closest('.filter-btn');
+      if (!btn) return;
+
+      document.querySelectorAll('.filter-btn').forEach(function(b) {
+        b.classList.remove('active');
+      });
+      btn.classList.add('active');
+
+      activeFilter = btn.dataset.filter;
+      applyFilters();
+    });
+
+    // Search input
+    document.getElementById('searchInput').addEventListener('input', function(e) {
+      searchQuery = e.target.value;
+      applyFilters();
+    });
+
+    // Initial render
+    applyFilters();
+
+    // ===== STARFIELD + COMETS =====
+    (function() {
+      const canvas = document.getElementById('starfield');
+      const ctx = canvas.getContext('2d');
+      let W, H;
+
+      function resize() {
+        W = canvas.width = window.innerWidth;
+        H = canvas.height = window.innerHeight;
+      }
+      resize();
+      window.addEventListener('resize', resize);
+
+      const STAR_COUNT = 180;
+      const stars = [];
+      for (let i = 0; i < STAR_COUNT; i++) {
+        stars.push({
+          x: Math.random() * W,
+          y: Math.random() * H,
+          r: Math.random() * 1.2 + 0.3,
+          alpha: Math.random() * 0.6 + 0.2,
+          twinkleSpeed: Math.random() * 0.02 + 0.005,
+          twinkleOffset: Math.random() * Math.PI * 2
+        });
+      }
+
+      const comets = [];
+      function spawnComet() {
+        const fromLeft = Math.random() > 0.5;
+        comets.push({
+          x: fromLeft ? -20 : W + 20,
+          y: Math.random() * H * 0.6,
+          vx: (fromLeft ? 1 : -1) * (Math.random() * 3 + 2),
+          vy: Math.random() * 1.5 + 0.5,
+          length: Math.random() * 60 + 40,
+          alpha: Math.random() * 0.4 + 0.3,
+          life: 1
+        });
+      }
+
+      function scheduleComet() {
+        const delay = Math.random() * 6000 + 3000;
+        setTimeout(function() {
+          spawnComet();
+          scheduleComet();
+        }, delay);
+      }
+      scheduleComet();
+
+      let time = 0;
+      function draw() {
+        ctx.clearRect(0, 0, W, H);
+        time += 0.016;
+
+        for (let i = 0; i < stars.length; i++) {
+          const s = stars[i];
+          const twinkle = Math.sin(time * s.twinkleSpeed * 60 + s.twinkleOffset) * 0.3 + 0.7;
+          const a = s.alpha * twinkle;
+          ctx.beginPath();
+          ctx.arc(s.x, s.y, s.r, 0, Math.PI * 2);
+          ctx.fillStyle = 'rgba(253, 230, 138, ' + a + ')';
+          ctx.fill();
+        }
+
+        for (let i = comets.length - 1; i >= 0; i--) {
+          const c = comets[i];
+          c.x += c.vx;
+          c.y += c.vy;
+          c.life -= 0.003;
+
+          if (c.life <= 0 || c.x > W + 100 || c.x < -100 || c.y > H + 100) {
+            comets.splice(i, 1);
+            continue;
+          }
+
+          const angle = Math.atan2(c.vy, c.vx);
+          const tailX = c.x - Math.cos(angle) * c.length;
+          const tailY = c.y - Math.sin(angle) * c.length;
+
+          const grad = ctx.createLinearGradient(c.x, c.y, tailX, tailY);
+          grad.addColorStop(0, 'rgba(253, 230, 138, ' + (c.alpha * c.life) + ')');
+          grad.addColorStop(0.3, 'rgba(251, 191, 36, ' + (c.alpha * c.life * 0.5) + ')');
+          grad.addColorStop(1, 'rgba(251, 191, 36, 0)');
+
+          ctx.beginPath();
+          ctx.moveTo(c.x, c.y);
+          ctx.lineTo(tailX, tailY);
+          ctx.strokeStyle = grad;
+          ctx.lineWidth = 1.5;
+          ctx.stroke();
+
+          ctx.beginPath();
+          ctx.arc(c.x, c.y, 2, 0, Math.PI * 2);
+          ctx.fillStyle = 'rgba(255, 251, 235, ' + (c.alpha * c.life) + ')';
+          ctx.fill();
+        }
+
+        requestAnimationFrame(draw);
+      }
+      draw();
+
+      window.addEventListener('resize', function() {
+        for (let i = 0; i < stars.length; i++) {
+          stars[i].x = Math.random() * W;
+          stars[i].y = Math.random() * H;
+        }
+      });
+    })();
+
+    // ===== SCROLL ANIMATIONS =====
+    const observer = new IntersectionObserver(function(entries) {
+      entries.forEach(function(entry) {
+        if (entry.isIntersecting) {
+          entry.target.classList.add('visible');
+        }
+      });
+    }, { threshold: 0.1 });
+
+    document.querySelectorAll('.fade-up').forEach(function(el) {
+      observer.observe(el);
+    });
+
+    // ===== NAV SCROLL EFFECT =====
+    window.addEventListener('scroll', function() {
+      const nav = document.querySelector('nav');
+      if (window.scrollY > 50) {
+        nav.classList.add('scrolled');
+      } else {
+        nav.classList.remove('scrolled');
+      }
+    });
+  </script>
+
+</body>
+</html>
