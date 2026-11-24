@@ -212,7 +212,7 @@
     /* ===== MATÉRIAS ===== */
     .bloco-materias { background: var(--branco); border-top: 3px solid var(--borda); border-bottom: 3px solid var(--borda); }
     .materias {
-      display: grid; grid-template-columns: repeat(5, 1fr); gap: 1.25rem; list-style: none;
+      display: grid; grid-template-columns: repeat(3, 1fr); gap: 1.25rem; list-style: none;
     }
     .materia {
       display: flex; flex-direction: column; align-items: center; text-align: center; gap: 0.5rem;
@@ -234,6 +234,7 @@
     .m-biologia { --cor: #157f3b; --fundo: #e1f5e7; }
     .m-tecnologia { --cor: #a15c00; --fundo: #fff0d6; }
     .m-professor { --cor: #6b2fa3; --fundo: #f1e6fb; }
+    .m-inclusao { --cor: #0f6e7a; --fundo: #ddf3f5; }
 
     /* ===== NOVIDADES ===== */
     .bloco-novidades { padding-top: 0; }
@@ -312,7 +313,6 @@
       .abertura-grid { grid-template-columns: 1fr; }
       .desenho-quadro { max-width: 380px; }
       .materias { grid-template-columns: repeat(2, 1fr); }
-      .materias li:last-child { grid-column: 1 / -1; }
     }
     @media (max-width: 760px) {
       .passos { grid-template-columns: 1fr; gap: 3rem; }
@@ -546,6 +546,13 @@
               <span class="bolinha" aria-hidden="true">🧑‍🏫</span>
               <strong>Para o professor</strong>
               <small data-conta="professor">&nbsp;</small>
+            </a>
+          </li>
+          <li>
+            <a class="materia m-inclusao" href="catalogo.html?materia=inclusao">
+              <span class="bolinha" aria-hidden="true">🤝</span>
+              <strong>Inclusão</strong>
+              <small data-conta="inclusao">&nbsp;</small>
             </a>
           </li>
         </ul>

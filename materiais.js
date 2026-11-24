@@ -1,7 +1,7 @@
 // ===== LISTA DE MATERIAIS DO EXPERIMENTA JOÃO =====
 // Esta lista alimenta o catálogo e os números da página inicial.
 // Para adicionar um material novo, copie um bloco { ... } e mude os textos.
-// materia: fisica, matematica, biologia, tecnologia ou professor
+// materia: fisica, matematica, biologia, tecnologia, professor ou inclusao
 // novo: true mostra a etiqueta "Novo" e coloca o material no começo da lista.
 
 var MATERIAIS = [
@@ -182,10 +182,10 @@ var MATERIAIS = [
   },
   {
     titulo: "Rede Treino",
-    materia: "professor",
-    tipo: "Educação inclusiva",
+    materia: "inclusao",
+    tipo: "Para alunos com laudo · AEE",
     icone: "🤝",
-    descricao: "Um Instagram e um WhatsApp de mentira, seguros, para ensinar o uso das redes sociais a alunos com deficiência intelectual.",
+    descricao: "Um Instagram e um WhatsApp de mentira, seguros, para ensinar o uso das redes sociais a alunos com deficiência intelectual. Tem painel para o professor ou mediador acompanhar.",
     link: "https://experimentajoao.github.io/Redeapae/"
   }
 ];
@@ -195,5 +195,6 @@ var NOMES_MATERIAS = {
   matematica: "Matemática",
   biologia: "Biologia",
   tecnologia: "Tecnologia",
-  professor: "Para o professor"
+  professor: "Para o professor",
+  inclusao: "Inclusão"
 };
