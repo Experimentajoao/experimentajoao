@@ -77,11 +77,11 @@ var MATERIAIS = [
     link: "https://experimentajoao.github.io/Pierre-/"
   },
   {
-    titulo: "Mestre da Notação",
+    titulo: "Mestre da Notação Científica",
     materia: "fisica",
-    tipo: "Simulador",
+    tipo: "Simulador + Desafio · com guia do professor",
     icone: "🔢",
-    descricao: "Treine notação científica movendo a vírgula e vendo o expoente mudar. Tem dicas visuais para quem está começando.",
+    descricao: "Ande com a vírgula e veja o expoente mudar, com exemplos reais (luz, átomo, mol). Tem desafio de 10 questões com correção explicada e sugestão de aula pronta.",
     link: "https://experimentajoao.github.io/Nota-o-cient-fica-/"
   },
   {
