@@ -1,0 +1,480 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Revisão do Ano · Física 2º ano | Experimenta João</title>
+<meta name="description" content="Revisão de Física do 2º ano em modo apresentação: termologia, termodinâmica, óptica, ondas e som, com simuladores e exercícios.">
+<meta name="theme-color" content="#1f4d3f">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&family=Kalam:wght@700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="estilo.css">
+</head>
+<body>
+<script src="motor.js"></script>
+<script>
+(function () {
+  function seta(R, pai, cor, larg) {
+    var gr = R.sv("g", null, pai);
+    var l = R.sv("line", { stroke: cor, "stroke-width": larg || 4, "stroke-linecap": "round" }, gr);
+    var p = R.sv("polygon", { fill: cor }, gr);
+    return function (x1, y1, x2, y2, tracejado) {
+      var len = Math.hypot(x2 - x1, y2 - y1);
+      gr.style.display = len < 3 ? "none" : "";
+      if (len < 3) return;
+      var ux = (x2 - x1) / len, uy = (y2 - y1) / len;
+      l.setAttribute("x1", x1); l.setAttribute("y1", y1); l.setAttribute("x2", x2 - ux * 6); l.setAttribute("y2", y2 - uy * 6);
+      l.setAttribute("stroke-dasharray", tracejado ? "8 6" : "none");
+      p.setAttribute("points", [x2, y2, x2 - ux * 13 - uy * 7, y2 - uy * 13 + ux * 7, x2 - ux * 13 + uy * 7, y2 - uy * 13 - ux * 7].join(","));
+    };
+  }
+  function termometro(R, svg, x, y, alt, cor) {
+    R.sv("rect", { x: x - 9, y: y, width: 18, height: alt, rx: 9, fill: "#fff", stroke: "#1f2328", "stroke-width": 3 }, svg);
+    R.sv("circle", { cx: x, cy: y + alt + 8, r: 16, fill: cor, stroke: "#1f2328", "stroke-width": 3 }, svg);
+    var col = R.sv("rect", { x: x - 5, width: 10, fill: cor }, svg);
+    return function (frac) { frac = Math.max(0, Math.min(1, frac)); var h = (alt - 6) * frac + 6; col.setAttribute("y", y + alt - h + 4); col.setAttribute("height", h); };
+  }
+
+  Revisao.iniciar({
+    serie: "2º ano",
+    titulo: "Revisão do Ano · Física 2º ano",
+    subtitulo: "Calor, luz, ondas e som",
+    cor: "#6b2fa3", corClara: "#f1e6fb",
+    apresentacao: "Tudo o que a turma estudou no ano, em oito paradas: do termômetro até a sirene da ambulância.",
+    slides: [
+      {
+        tema: "Termometria", icone: "🌡️", titulo: "Escalas de temperatura",
+        ideia: "<p>Temperatura mede o <strong>grau de agitação das partículas</strong>. Três escalas são usadas: Celsius, Fahrenheit e Kelvin.</p><p>O Kelvin é a escala absoluta: o <strong>zero absoluto (0 K = −273 °C)</strong> é o ponto em que a agitação seria mínima. Não existe temperatura negativa em Kelvin.</p>",
+        formula: 'C / 5 = (F − 32) / 9 = (K − 273) / 5<br><span class="giz">K = C + 273</span><small>água congela: 0 °C = 32 °F = 273 K · ferve: 100 °C = 212 °F = 373 K</small>',
+        pergunta: { p: "Existe uma temperatura em que Celsius e Fahrenheit marcam o mesmo número?", r: "Sim: −40 °C = −40 °F. Use o botão −40 no simulador e mostre os dois termômetros iguais." },
+        simTitulo: "Três termômetros",
+        sim: function (box, R) {
+          var svg = R.palco(600, 300, "Três termômetros nas escalas Celsius, Fahrenheit e Kelvin");
+          R.sv("rect", { x: 0, y: 0, width: 600, height: 300, fill: "#f6fbff" }, svg);
+          var esc = [{ n: "Celsius", x: 130, cor: "#e85d3a", u: "°C" }, { n: "Fahrenheit", x: 300, cor: "#6b2fa3", u: "°F" }, { n: "Kelvin", x: 470, cor: "#1d4ed8", u: "K" }];
+          esc.forEach(function (e) {
+            e.set = termometro(R, svg, e.x, 40, 190, e.cor);
+            R.sv("text", { x: e.x, y: 28, "text-anchor": "middle", "font-weight": 900, "font-size": 15 }, svg).textContent = e.n;
+            e.t = R.sv("text", { x: e.x + 24, "font-weight": 900, "font-size": 18, fill: e.cor }, svg);
+          });
+          var ctr = R.controles();
+          var C = R.slider(ctr, "Temperatura", -50, 150, 1, 25, function (v) { return v + " °C"; }, desenha);
+          var pres = R.el("div", { class: "opcoes", style: "margin-top:.5rem" }, box);
+          [[-40, "−40 (iguais!)"], [0, "🧊 0 gelo"], [36.5, "🤒 36,5 corpo"], [100, "♨️ 100 fervura"]].forEach(function (p) {
+            R.botao(pres, p[1], function () { C.set(p[0]); desenha(); });
+          });
+          var L = R.leituras();
+          function desenha() {
+            var c = C.v, f = c * 9 / 5 + 32, k = c + 273;
+            var frac = (c + 50) / 200;
+            [c, f, k].forEach(function (v, i) {
+              esc[i].set(frac);
+              esc[i].t.setAttribute("y", 40 + 190 - 190 * frac + 10);
+              esc[i].t.textContent = R.fmt(v, 1) + " " + esc[i].u;
+            });
+            L.set("c", "Celsius", R.fmt(c, 1) + " °C"); L.set("f", "Fahrenheit", R.fmt(f, 1) + " °F"); L.set("k", "Kelvin", R.fmt(k, 1) + " K");
+          }
+          desenha();
+        },
+        exercicios: [
+          { p: "Um dia de 25 °C corresponde a quantos kelvin?", ops: ["25 K", "248 K", "298 K", "77 K"], c: 2, exp: "K = C + 273 = 25 + 273 = 298 K." },
+          { p: "Um termômetro americano marca 212 °F. Isso equivale a:", ops: ["100 °C", "212 °C", "180 °C", "0 °C"], c: 0, exp: "C/5 = (212 − 32)/9 = 20 → C = 100 °C, a fervura da água ao nível do mar." }
+        ]
+      },
+      {
+        tema: "Calorimetria", icone: "🔥", titulo: "Calor sensível e calor latente",
+        ideia: "<p><strong>Calor</strong> é energia que passa do corpo mais quente para o mais frio.</p><p>Quando o corpo recebe calor e a temperatura sobe, é <strong>calor sensível</strong>. Cada material tem seu <strong>calor específico</strong>: a água esquenta devagar, o metal esquenta rápido.</p><p>Quando a temperatura para de subir e o material muda de estado (ferve, derrete), é <strong>calor latente</strong>.</p>",
+        formula: 'Q = m · c · ΔT<br><span class="giz">Q = m · L</span><small>c da água = 1 cal/g·°C · L de vaporização da água = 540 cal/g</small>',
+        pergunta: { p: "Por que a areia da praia queima o pé ao meio-dia, mas a água do mar continua fresca?", r: "A água tem calor específico muito maior que a areia: recebendo o mesmo calor do Sol, a temperatura dela sobe bem menos." },
+        simTitulo: "Aquecendo no fogo",
+        sim: function (box, R) {
+          var svg = R.palco(600, 300, "Recipiente sobre a chama com termômetro");
+          R.sv("rect", { x: 0, y: 0, width: 600, height: 300, fill: "#f6fbff" }, svg);
+          R.sv("rect", { x: 150, y: 250, width: 200, height: 14, fill: "#4a4f57" }, svg);
+          var chamas = R.sv("g", null, svg);
+          for (var i = 0; i < 5; i++) R.sv("path", { d: "M" + (180 + i * 35) + ",250 q10,-30 0,-45 q-10,20 -10,30 z", fill: "#f7a21e" }, chamas);
+          var corpo = R.sv("rect", { x: 170, y: 130, width: 160, height: 110, rx: 8, stroke: "#1f2328", "stroke-width": 4 }, svg);
+          var bolhas = R.sv("g", null, svg);
+          var nomeM = R.sv("text", { x: 250, y: 190, "text-anchor": "middle", "font-weight": 900, "font-size": 17, fill: "#1f2328" }, svg);
+          var setT = termometro(R, svg, 430, 50, 190, "#e85d3a");
+          var tT = R.sv("text", { x: 455, y: 150, "font-weight": 900, "font-size": 18, fill: "#e85d3a" }, svg);
+          var ctr = R.controles();
+          var mat = R.opcoes(ctr, "Material", [{ v: "agua", t: "💧 Água" }, { v: "al", t: "Alumínio" }, { v: "fe", t: "Ferro" }], "agua", desenha);
+          var m = R.slider(ctr, "Massa", 50, 1000, 50, 200, function (v) { return v + " g"; }, desenha);
+          var Q = R.slider(ctr, "Calor fornecido (Q)", 0, 40000, 500, 4000, function (v) { return R.fmt(v, 0) + " cal"; }, desenha);
+          var L = R.leituras(); var av = R.aviso();
+          var D = { agua: { c: 1, n: "Água", cor: "#9fd3ff" }, al: { c: 0.22, n: "Alumínio", cor: "#c9d1da" }, fe: { c: 0.11, n: "Ferro", cor: "#8a8f98" } };
+          var ferve = false, t = 0;
+          function desenha() {
+            var d = D[mat.v], T0 = 20;
+            var dT = Q.v / (m.v * d.c), Tf = T0 + dT, sobra = 0;
+            ferve = false;
+            if (mat.v === "agua" && Tf > 100) { sobra = Q.v - m.v * d.c * 80; Tf = 100; ferve = true; }
+            corpo.setAttribute("fill", d.cor); nomeM.textContent = d.n + " · " + m.v + " g";
+            chamas.style.opacity = 0.25 + 0.75 * Q.v / 40000;
+            var tmax = 400;
+            setT(Math.min(Tf, tmax) / tmax); tT.textContent = R.fmt(Tf, 1) + " °C";
+            L.set("c", "Calor específico", R.fmt(d.c, 2) + " cal/g·°C");
+            L.set("dt", "Variação ΔT", R.fmt(Tf - T0, 1) + " °C");
+            L.set("tf", "Temperatura final", R.fmt(Tf, 1) + " °C");
+            if (ferve) {
+              var vap = Math.min(m.v, sobra / 540);
+              av.set("A água chegou a 100 °C e está fervendo. O calor que sobra (" + R.fmt(sobra, 0) + " cal) vira calor latente: vaporiza cerca de " + R.fmt(vap, 0) + " g de água, e a temperatura não sobe mais.", "alerta");
+            } else if ((mat.v === "al" && Tf > 660) || (mat.v === "fe" && Tf > 1538)) {
+              av.set("Com tanto calor o " + d.n.toLowerCase() + " já teria derretido (alumínio funde a 660 °C, ferro a 1538 °C). Aí entra o calor latente de fusão.", "alerta");
+            } else av.set("Começou a 20 °C. ΔT = Q ÷ (m · c) = " + R.fmt(Q.v, 0) + " ÷ (" + m.v + " · " + R.fmt(d.c, 2) + ") = " + R.fmt(Tf - T0, 1) + " °C.");
+            bolhas.innerHTML = "";
+          }
+          R.animar(function (dt) {
+            if (!ferve) return;
+            t += dt;
+            if (Math.random() < 0.3) { var b = R.sv("circle", { cx: 185 + Math.random() * 130, cy: 235, r: 3 + Math.random() * 4, fill: "#fff", opacity: .8 }, bolhas); b._v = 40 + Math.random() * 40; }
+            Array.prototype.slice.call(bolhas.children).forEach(function (b) { var y = +b.getAttribute("cy") - b._v * dt; if (y < 135) b.remove(); else b.setAttribute("cy", y); });
+          });
+          desenha();
+        },
+        exercicios: [
+          { p: "Quanto calor é preciso para aquecer 200 g de água de 20 °C até 40 °C? (c = 1 cal/g·°C)", ops: ["20 cal", "200 cal", "4 000 cal", "8 000 cal"], c: 2, exp: "Q = m · c · ΔT = 200 · 1 · 20 = 4 000 cal." },
+          { p: "Durante a fervura da água, a temperatura fica em 100 °C mesmo com o fogo aceso porque:", ops: ["o fogo perde força", "o calor está sendo usado para mudar de estado (calor latente)", "a água perde massa", "o termômetro trava"], c: 1, exp: "Na mudança de estado o calor rompe as ligações entre as moléculas em vez de aumentar a agitação. Teste no simulador com muito calor." }
+        ]
+      },
+      {
+        tema: "Dilatação", icone: "🌉", titulo: "Dilatação térmica",
+        ideia: "<p>Ao esquentar, as partículas vibram mais e se afastam: o corpo <strong>aumenta de tamanho</strong>.</p><p>O aumento depende do <strong>material</strong> (coeficiente α), do <strong>tamanho inicial</strong> e da <strong>variação de temperatura</strong>. Por isso pontes e trilhos têm juntas de dilatação.</p>",
+        formula: 'ΔL = L<sub>0</sub> · α · ΔT<small>α do aço = 12 × 10⁻⁶ °C⁻¹ · ΔL e L₀ na mesma unidade</small>',
+        pergunta: { p: "Por que é mais fácil abrir um pote de vidro com tampa de metal depois de passar água quente na tampa?", r: "O metal tem coeficiente de dilatação maior que o vidro: a tampa dilata mais e afrouxa." },
+        simTitulo: "Barra de ponte",
+        sim: function (box, R) {
+          var svg = R.palco(600, 230, "Barra que aumenta de tamanho ao ser aquecida, com junta de dilatação");
+          R.sv("rect", { x: 0, y: 0, width: 600, height: 230, fill: "#f6fbff" }, svg);
+          R.sv("rect", { x: 20, y: 120, width: 30, height: 90, fill: "#9aa5b1", stroke: "#1f2328", "stroke-width": 3 }, svg);
+          R.sv("rect", { x: 540, y: 120, width: 40, height: 90, fill: "#9aa5b1", stroke: "#1f2328", "stroke-width": 3 }, svg);
+          var barra = R.sv("rect", { x: 50, y: 90, height: 30, stroke: "#1f2328", "stroke-width": 3 }, svg);
+          var orig = R.sv("line", { y1: 70, y2: 135, stroke: "#1d4ed8", "stroke-width": 2, "stroke-dasharray": "5 4" }, svg);
+          R.sv("text", { x: 300, y: 30, "text-anchor": "middle", "font-size": 13, "font-weight": 800, fill: "#4a4f57" }, svg).textContent = "Desenho com a dilatação aumentada para dar para ver";
+          var tGap = R.sv("text", { x: 520, y: 60, "text-anchor": "middle", "font-size": 13, "font-weight": 900 }, svg);
+          var ctr = R.controles();
+          var mat = R.opcoes(ctr, "Material", [{ v: 12e-6, t: "Aço" }, { v: 17e-6, t: "Cobre" }, { v: 23e-6, t: "Alumínio" }, { v: 9e-6, t: "Vidro" }], 12e-6, desenha);
+          var L0 = R.slider(ctr, "Comprimento inicial", 1, 100, 1, 10, function (v) { return v + " m"; }, desenha);
+          var dT = R.slider(ctr, "Aquecimento ΔT", 0, 100, 5, 50, function (v) { return v + " °C"; }, desenha);
+          var L = R.leituras(); var av = R.aviso();
+          function desenha() {
+            var dL = L0.v * mat.v * dT.v; // m
+            var base = 440, extra = Math.min(48, dL * 1000 * 1.5);
+            barra.setAttribute("width", base + extra);
+            var heat = dT.v / 100;
+            barra.setAttribute("fill", "rgb(" + Math.round(150 + 105 * heat) + "," + Math.round(160 - 60 * heat) + "," + Math.round(175 - 120 * heat) + ")");
+            orig.setAttribute("x1", 50 + base); orig.setAttribute("x2", 50 + base);
+            var folga = 50 - extra;
+            tGap.textContent = folga > 2 ? "junta: sobra espaço" : "encostou!";
+            L.set("dl", "Dilatação ΔL", R.fmt(dL * 1000, 2) + " mm");
+            L.set("lf", "Comprimento final", R.fmt(L0.v + dL, 5) + " m");
+            L.set("a", "Coeficiente α", R.fmt(mat.v * 1e6, 0) + " × 10⁻⁶ /°C");
+            av.set("ΔL = " + L0.v + " · " + R.fmt(mat.v * 1e6, 0) + "×10⁻⁶ · " + dT.v + " = " + R.fmt(dL * 1000, 2) + " mm", folga > 2 ? "" : "alerta");
+          }
+          desenha();
+        },
+        exercicios: [
+          { p: "Um trilho de aço de 10 m é aquecido em 50 °C. Quanto ele dilata? (α = 12 × 10⁻⁶ °C⁻¹)", ops: ["0,6 mm", "6 mm", "60 mm", "600 mm"], c: 1, exp: "ΔL = 10 · 12×10⁻⁶ · 50 = 0,006 m = 6 mm." },
+          { p: "Duas barras iguais, uma de alumínio e outra de aço, são aquecidas igualmente. Qual dilata mais?", ops: ["A de aço", "A de alumínio, que tem α maior", "As duas dilatam igual", "Nenhuma dilata"], c: 1, exp: "O alumínio tem α ≈ 23×10⁻⁶ /°C, quase o dobro do aço." }
+        ]
+      },
+      {
+        tema: "Termodinâmica", icone: "⚙️", titulo: "1ª e 2ª leis da termodinâmica",
+        ideia: "<p><strong>1ª lei:</strong> o calor que o gás recebe vira trabalho (o gás empurra o êmbolo) e aumento de energia interna (o gás esquenta). É a conservação da energia.</p><p><strong>2ª lei:</strong> o calor flui sozinho do quente para o frio, e nenhuma máquina térmica transforma 100% do calor em trabalho.</p>",
+        formula: 'Q = τ + ΔU<br><span class="giz">η = τ / Q<sub>quente</sub> &lt; 100%</span><small>Q &gt; 0: gás recebe calor · τ &gt; 0: gás se expande · ΔU &gt; 0: gás esquenta</small>',
+        pergunta: { p: "Se um gás recebe 500 J de calor e não consegue se expandir (êmbolo travado), para onde vai a energia?", r: "Toda para a energia interna: τ = 0, então ΔU = Q = 500 J e o gás esquenta. Coloque τ = 0 no simulador." },
+        simTitulo: "Gás no cilindro",
+        sim: function (box, R) {
+          var svg = R.palco(600, 280, "Cilindro com gás e êmbolo móvel");
+          R.sv("rect", { x: 0, y: 0, width: 600, height: 280, fill: "#f6fbff" }, svg);
+          var gas = R.sv("rect", { x: 160, width: 200, fill: "#ffd9c7" }, svg);
+          R.sv("path", { d: "M160,40 L160,250 L360,250 L360,40", fill: "none", stroke: "#1f2328", "stroke-width": 5 }, svg);
+          var emb = R.sv("rect", { x: 162, width: 196, height: 16, fill: "#4a4f57" }, svg);
+          var haste = R.sv("rect", { x: 254, y: 0, width: 12, fill: "#4a4f57" }, svg);
+          var partes = R.sv("g", null, svg), ps = [];
+          for (var i = 0; i < 26; i++) ps.push({ el: R.sv("circle", { r: 5, fill: "#e85d3a" }, partes), x: 170 + Math.random() * 180, y: 150 + Math.random() * 90, a: Math.random() * 6.28 });
+          var chama = R.sv("g", null, svg);
+          for (var k = 0; k < 4; k++) R.sv("path", { d: "M" + (195 + k * 45) + ",275 q10,-26 0,-38 q-10,18 -10,26 z", fill: "#f7a21e" }, chama);
+          var sQ = seta(R, svg, "#e85d3a", 5), sT = seta(R, svg, "#1d4ed8", 5);
+          var tQ = R.sv("text", { x: 440, y: 230, "font-weight": 900, "font-size": 15, fill: "#e85d3a" }, svg);
+          var tT = R.sv("text", { x: 440, y: 60, "font-weight": 900, "font-size": 15, fill: "#1d4ed8" }, svg);
+          var ctr = R.controles();
+          var Q = R.slider(ctr, "Calor recebido (Q)", -600, 1000, 50, 500, function (v) { return v + " J"; }, desenha);
+          var T = R.slider(ctr, "Trabalho do gás (τ)", -600, 1000, 50, 200, function (v) { return v + " J"; }, desenha);
+          var L = R.leituras(); var av = R.aviso();
+          var yEmb, vel;
+          function desenha() {
+            var dU = Q.v - T.v;
+            yEmb = 130 - T.v * 0.07;
+            gas.setAttribute("y", yEmb + 16); gas.setAttribute("height", 250 - yEmb - 16);
+            emb.setAttribute("y", yEmb); haste.setAttribute("height", yEmb);
+            var temp = Math.max(-1, Math.min(1, dU / 800));
+            gas.setAttribute("fill", temp >= 0 ? "rgb(255," + Math.round(217 - 110 * temp) + "," + Math.round(199 - 150 * temp) + ")" : "rgb(" + Math.round(255 + 120 * temp) + "," + Math.round(217 + 20 * temp) + ",255)");
+            vel = 60 * (1 + temp * 0.9);
+            chama.style.opacity = Q.v > 0 ? 0.3 + 0.7 * Q.v / 1000 : 0;
+            if (Q.v >= 0) sQ(420, 250, 370, 200); else sQ(370, 200, 420, 250);
+            tQ.textContent = Q.v >= 0 ? "recebe " + Q.v + " J" : "cede " + (-Q.v) + " J";
+            if (T.v >= 0) sT(300, yEmb - 10, 300, yEmb - 10 - Math.min(60, T.v * 0.06 + 10)); else sT(300, yEmb - 70, 300, yEmb - 12);
+            tT.textContent = T.v > 0 ? "gás se expande" : T.v < 0 ? "gás é comprimido" : "êmbolo parado";
+            L.set("q", "Calor Q", Q.v + " J"); L.set("t", "Trabalho τ", T.v + " J"); L.set("u", "Energia interna ΔU = Q − τ", dU + " J");
+            av.set(dU > 0 ? "ΔU positivo: o gás esquenta (partículas mais rápidas)." : dU < 0 ? "ΔU negativo: o gás esfria (partículas mais lentas)." : "ΔU = 0: temperatura constante (transformação isotérmica).", dU === 0 ? "neutro" : dU > 0 ? "alerta" : "");
+          }
+          R.animar(function (dt) {
+            ps.forEach(function (p) {
+              p.x += Math.cos(p.a) * vel * dt; p.y += Math.sin(p.a) * vel * dt;
+              if (p.x < 168 || p.x > 352) { p.a = Math.PI - p.a; p.x = Math.max(168, Math.min(352, p.x)); }
+              if (p.y < yEmb + 24 || p.y > 243) { p.a = -p.a; p.y = Math.max(yEmb + 24, Math.min(243, p.y)); }
+              p.el.setAttribute("cx", p.x); p.el.setAttribute("cy", p.y);
+            });
+          });
+          desenha();
+        },
+        exercicios: [
+          { p: "Um gás recebe 500 J de calor e realiza 200 J de trabalho. A variação da energia interna é:", ops: ["700 J", "300 J", "−300 J", "2,5 J"], c: 1, exp: "ΔU = Q − τ = 500 − 200 = 300 J. O gás esquenta." },
+          { p: "Segundo a 2ª lei da termodinâmica, uma máquina térmica:", ops: ["pode ter rendimento de 100%", "sempre rejeita parte do calor para a fonte fria", "cria energia", "funciona sem fonte quente"], c: 1, exp: "Nenhuma máquina térmica transforma todo o calor em trabalho: parte sempre vai para a fonte fria." }
+        ]
+      },
+      {
+        tema: "Óptica", icone: "🔦", titulo: "Reflexão e refração",
+        ideia: "<p>Quando a luz chega na fronteira entre dois meios, uma parte <strong>reflete</strong> (ângulo de reflexão = ângulo de incidência) e outra parte <strong>refrata</strong>, mudando de velocidade e de direção.</p><p>Indo para um meio <strong>mais refringente</strong> (n maior), a luz fica mais lenta e se <strong>aproxima da normal</strong>. Do mais para o menos refringente, acima do ângulo limite, ocorre <strong>reflexão total</strong> (fibra óptica).</p>",
+        formula: 'n<sub>1</sub> · sen θ<sub>1</sub> = n<sub>2</sub> · sen θ<sub>2</sub><br><span class="giz">n = c / v</span><small>n do ar = 1 · água = 1,33 · vidro = 1,5 · diamante = 2,42</small>',
+        pergunta: { p: "Por que um lápis dentro do copo d'água parece quebrado?", r: "A luz que vem da parte submersa refrata ao sair da água para o ar e muda de direção; o olho interpreta a imagem em outra posição." },
+        simTitulo: "Raio de luz",
+        sim: function (box, R) {
+          var svg = R.palco(600, 340, "Raio de luz passando de um meio para outro");
+          var cima = R.sv("rect", { x: 0, y: 0, width: 600, height: 170 }, svg);
+          var baixo = R.sv("rect", { x: 0, y: 170, width: 600, height: 170 }, svg);
+          R.sv("line", { x1: 300, y1: 10, x2: 300, y2: 330, stroke: "#4a4f57", "stroke-width": 2, "stroke-dasharray": "6 5" }, svg);
+          R.sv("text", { x: 306, y: 22, "font-size": 12, fill: "#4a4f57", "font-weight": 700 }, svg).textContent = "normal";
+          var tC = R.sv("text", { x: 14, y: 26, "font-weight": 900, "font-size": 15 }, svg);
+          var tB = R.sv("text", { x: 14, y: 326, "font-weight": 900, "font-size": 15 }, svg);
+          var sI = seta(R, svg, "#e8a400", 5), sR = seta(R, svg, "#e8a400", 3), sF = seta(R, svg, "#e85d3a", 5);
+          var aI = R.sv("text", { "font-size": 14, "font-weight": 900, fill: "#8a6a00" }, svg), aF = R.sv("text", { "font-size": 14, "font-weight": 900, fill: "#b42318" }, svg);
+          var ctr = R.controles();
+          var meios = [{ v: 1, t: "Ar" }, { v: 1.33, t: "Água" }, { v: 1.5, t: "Vidro" }, { v: 2.42, t: "Diamante" }];
+          var n1 = R.opcoes(ctr, "Meio de cima (de onde a luz vem)", meios, 1, desenha);
+          var n2 = R.opcoes(ctr, "Meio de baixo", meios, 1.5, desenha);
+          var ang = R.slider(ctr, "Ângulo de incidência", 0, 85, 1, 40, function (v) { return v + "°"; }, desenha);
+          var L = R.leituras(); var av = R.aviso();
+          function cor(n) { return n === 1 ? "#f6fbff" : n === 1.33 ? "#cfe9fb" : n === 1.5 ? "#dfeee9" : "#ece3fb"; }
+          function nome(n) { return meios.filter(function (m) { return m.v === n; })[0].t; }
+          function desenha() {
+            cima.setAttribute("fill", cor(n1.v)); baixo.setAttribute("fill", cor(n2.v));
+            tC.textContent = nome(n1.v) + " (n = " + R.fmt(n1.v, 2) + ")"; tB.textContent = nome(n2.v) + " (n = " + R.fmt(n2.v, 2) + ")";
+            var i = ang.v * Math.PI / 180, Lr = 150;
+            sI(300 - Lr * Math.sin(i), 170 - Lr * Math.cos(i), 300, 170);
+            sR(300, 170, 300 + Lr * Math.sin(i), 170 - Lr * Math.cos(i));
+            aI.setAttribute("x", 300 - 70 * Math.sin(i / 2) - 30); aI.setAttribute("y", 170 - 70 * Math.cos(i / 2)); aI.textContent = ang.v + "°";
+            var s = n1.v * Math.sin(i) / n2.v;
+            L.set("v2", "Velocidade embaixo", R.fmt(300000 / n2.v, 0) + " km/s");
+            if (s > 1) {
+              sF(300, 170, 300, 170); aF.textContent = "";
+              var lim = Math.asin(n2.v / n1.v) * 180 / Math.PI;
+              L.set("r", "Ângulo de refração", "não há");
+              L.set("lim", "Ângulo limite", R.fmt(lim, 1) + "°");
+              av.set("Reflexão total! O ângulo passou do limite (" + R.fmt(lim, 1) + "°) e toda a luz volta. É assim que funciona a fibra óptica.", "alerta");
+            } else {
+              var r = Math.asin(s);
+              sF(300, 170, 300 + Lr * Math.sin(r), 170 + Lr * Math.cos(r));
+              aF.setAttribute("x", 300 + 70 * Math.sin(r / 2) + 6); aF.setAttribute("y", 170 + 70 * Math.cos(r / 2) + 6); aF.textContent = R.fmt(r * 180 / Math.PI, 1) + "°";
+              L.set("r", "Ângulo de refração", R.fmt(r * 180 / Math.PI, 1) + "°");
+              L.set("lim", "Ângulo limite", n1.v > n2.v ? R.fmt(Math.asin(n2.v / n1.v) * 180 / Math.PI, 1) + "°" : "não existe");
+              av.set(n2.v > n1.v ? "A luz ficou mais lenta e se aproximou da normal." : n2.v < n1.v ? "A luz ficou mais rápida e se afastou da normal." : "Mesmo meio: a luz segue reto.", "neutro");
+            }
+          }
+          desenha();
+        },
+        exercicios: [
+          { p: "Um raio de luz passa do ar para o vidro. O que acontece com ele?", ops: ["Fica mais rápido e se afasta da normal", "Fica mais lento e se aproxima da normal", "Não muda de direção nunca", "Sempre sofre reflexão total"], c: 1, exp: "O vidro é mais refringente (n = 1,5): a luz fica mais lenta e se aproxima da normal." },
+          { p: "A velocidade da luz em um meio com n = 1,5 é (c = 300 000 km/s):", ops: ["450 000 km/s", "300 000 km/s", "200 000 km/s", "150 000 km/s"], c: 2, exp: "v = c / n = 300 000 / 1,5 = 200 000 km/s." }
+        ]
+      },
+      {
+        tema: "Óptica", icone: "🔍", titulo: "Lentes e formação de imagens",
+        ideia: "<p>Lentes <strong>convergentes</strong> (mais grossas no meio) juntam os raios no foco; <strong>divergentes</strong> espalham.</p><p>Com a convergente, objeto <strong>longe</strong> gera imagem real e invertida (câmera, olho). Objeto <strong>entre o foco e a lente</strong> gera imagem virtual, direita e maior (lupa). A divergente sempre faz imagem virtual, direita e menor.</p>",
+        formula: '1/f = 1/p + 1/p\'<br><span class="giz">A = −p\' / p</span><small>f &gt; 0 convergente · f &lt; 0 divergente · p\' &gt; 0 imagem real · A &lt; 0 invertida</small>',
+        pergunta: { p: "Uma pessoa míope enxerga mal de longe. Que tipo de lente corrige a miopia?", r: "Divergente: ela espalha os raios para que a imagem, que se formava antes da retina, passe a se formar sobre ela." },
+        simTitulo: "Banco óptico",
+        sim: function (box, R) {
+          var svg = R.palco(600, 300, "Lente com objeto, raios principais e imagem");
+          R.sv("rect", { x: 0, y: 0, width: 600, height: 300, fill: "#f6fbff" }, svg);
+          var E = 6, cx = 300, cy = 160;
+          R.sv("line", { x1: 0, y1: cy, x2: 600, y2: cy, stroke: "#4a4f57", "stroke-width": 2 }, svg);
+          var lente = R.sv("path", { fill: "#cfe9fb", stroke: "#1d4ed8", "stroke-width": 3 }, svg);
+          var focos = R.sv("g", null, svg);
+          var raios = R.sv("g", null, svg);
+          var obj = seta(R, svg, "#157f3b", 5), img = seta(R, svg, "#b42318", 5);
+          var ctr = R.controles();
+          var tipo = R.opcoes(ctr, "Lente", [{ v: 1, t: "Convergente" }, { v: -1, t: "Divergente" }], 1, desenha);
+          var f0 = R.slider(ctr, "Distância focal |f|", 5, 20, 1, 10, function (v) { return v + " cm"; }, desenha);
+          var p = R.slider(ctr, "Distância do objeto (p)", 2, 45, 0.5, 30, function (v) { return R.fmt(v, 1) + " cm"; }, desenha);
+          var L = R.leituras(); var av = R.aviso();
+          var ho = 6;
+          function linha(x1, y1, x2, y2, cor, tr) { R.sv("line", { x1: x1, y1: y1, x2: x2, y2: y2, stroke: cor, "stroke-width": 2.5, "stroke-dasharray": tr ? "6 5" : "none" }, raios); }
+          function desenha() {
+            var f = tipo.v * f0.v;
+            lente.setAttribute("d", tipo.v > 0 ? "M300,60 Q320,160 300,260 Q280,160 300,60 Z" : "M288,60 L312,60 Q296,160 312,260 L288,260 Q304,160 288,60 Z");
+            focos.innerHTML = "";
+            [-1, 1].forEach(function (s) { R.sv("circle", { cx: cx + s * f0.v * E, cy: cy, r: 5, fill: "#1f2328" }, focos); R.sv("text", { x: cx + s * f0.v * E, y: cy + 20, "text-anchor": "middle", "font-size": 13, "font-weight": 900 }, focos).textContent = "F"; });
+            raios.innerHTML = "";
+            var xo = cx - p.v * E, yo = cy - ho * E;
+            obj(xo, cy, xo, yo);
+            var inf = Math.abs(p.v - f) < 0.01;
+            var pl = inf ? Infinity : 1 / (1 / f - 1 / p.v), A = -pl / p.v;
+            // raio 1: paralelo ao eixo e depois pelo foco (ou parece vir do foco)
+            linha(xo, yo, cx, yo, "#e8a400");
+            var fx = cx + f * E;
+            var dx = 600 - cx, incl = (cy - yo) / (fx - cx);
+            linha(cx, yo, 600, yo + incl * dx, "#e8a400");
+            if (f < 0 || (pl < 0 && !inf)) linha(cx, yo, 0, yo - incl * cx, "#e8a400", true);
+            // raio 2: pelo centro óptico, sem desviar
+            var inc2 = (cy - yo) / (cx - xo);
+            linha(xo, yo, 600, yo + inc2 * (600 - xo), "#e85d3a");
+            if (pl < 0 && !inf) linha(cx, cy, 0, cy - inc2 * cx, "#e85d3a", true);
+            if (inf) {
+              img(0, 0, 0, 0);
+              L.set("pl", "Posição da imagem p'", "no infinito"); L.set("a", "Aumento A", "—"); L.set("nat", "Natureza", "imagem imprópria");
+              av.set("Objeto no foco: os raios saem paralelos e não formam imagem (imagem imprópria).", "neutro");
+              return;
+            }
+            var xi = cx + pl * E, yi = cy - A * ho * E;
+            var vis = xi > -50 && xi < 650 && Math.abs(yi - cy) < 400;
+            if (vis) img(xi, cy, xi, yi); else img(0, 0, 0, 0);
+            var real = pl > 0, inv = A < 0, maior = Math.abs(A) > 1;
+            L.set("pl", "Posição da imagem p'", R.fmt(pl, 1) + " cm");
+            L.set("a", "Aumento A", R.fmt(A, 2));
+            L.set("nat", "Natureza", (real ? "real" : "virtual") + ", " + (inv ? "invertida" : "direita") + ", " + (maior ? "maior" : Math.abs(Math.abs(A) - 1) < 0.02 ? "mesmo tamanho" : "menor"));
+            av.set(real ? "Imagem real: os raios se cruzam de verdade do outro lado. Dá para projetar numa tela." + (vis ? "" : " (fora da tela)") : "Imagem virtual: os prolongamentos (tracejados) se cruzam do mesmo lado do objeto. É o que a lupa faz.", real ? "" : "neutro");
+          }
+          desenha();
+        },
+        exercicios: [
+          { p: "Uma lente convergente tem f = 10 cm. Um objeto está a 30 cm dela. Onde se forma a imagem?", ops: ["a 7,5 cm", "a 15 cm", "a 20 cm", "a 30 cm"], c: 1, exp: "1/p' = 1/10 − 1/30 = 2/30 → p' = 15 cm. Imagem real, invertida e com metade do tamanho (A = −0,5)." },
+          { p: "Para usar uma lupa (lente convergente) e ver uma letra ampliada, a letra deve ficar:", ops: ["muito longe da lente", "exatamente no foco", "entre o foco e a lente", "do outro lado da lente"], c: 2, exp: "Entre o foco e a lente a imagem é virtual, direita e maior. Teste no simulador com p menor que f." }
+        ]
+      },
+      {
+        tema: "Ondulatória", icone: "🌊", titulo: "Ondas: frequência, comprimento e velocidade",
+        ideia: "<p>Uma onda transporta <strong>energia sem transportar matéria</strong>.</p><p><strong>Comprimento de onda (λ)</strong> é a distância entre duas cristas. <strong>Frequência (f)</strong> é quantas oscilações acontecem por segundo. A velocidade da onda depende do meio, e no mesmo meio, <strong>aumentar a frequência diminui o comprimento de onda</strong>.</p>",
+        formula: 'v = λ · f<br><span class="giz">T = 1 / f</span><small>f em hertz (Hz) · λ em metros · som no ar ≈ 340 m/s</small>',
+        pergunta: { p: "Numa corda, se você balança a mão mais rápido (maior frequência), o que acontece com a distância entre as cristas?", r: "Diminui. A velocidade na mesma corda é a mesma, então se f aumenta, λ = v / f diminui." },
+        simTitulo: "Onda na corda",
+        sim: function (box, R) {
+          var svg = R.palco(600, 240, "Onda senoidal se propagando em uma corda");
+          R.sv("rect", { x: 0, y: 0, width: 600, height: 240, fill: "#f6fbff" }, svg);
+          for (var m = 0; m <= 6; m++) { R.sv("line", { x1: 30 + m * 90, y1: 20, x2: 30 + m * 90, y2: 220, stroke: "#e3e9f1" }, svg); R.sv("text", { x: 30 + m * 90, y: 234, "font-size": 11, "text-anchor": "middle", fill: "#4a4f57" }, svg).textContent = m + " m"; }
+          R.sv("line", { x1: 30, y1: 120, x2: 570, y2: 120, stroke: "#c9d3df", "stroke-width": 2 }, svg);
+          var onda = R.sv("polyline", { fill: "none", stroke: "#6b2fa3", "stroke-width": 5 }, svg);
+          var ponto = R.sv("circle", { r: 9, fill: "#f7c51e", stroke: "#1f2328", "stroke-width": 3 }, svg);
+          var cota = R.sv("g", null, svg);
+          var ctr = R.controles();
+          var f = R.slider(ctr, "Frequência (f)", 0.5, 4, 0.5, 1, function (v) { return R.fmt(v, 1) + " Hz"; }, info);
+          var v = R.slider(ctr, "Velocidade no meio (v)", 1, 6, 0.5, 2, function (x) { return R.fmt(x, 1) + " m/s"; }, info);
+          var A = R.slider(ctr, "Amplitude", 10, 80, 5, 50, function (x) { return x + " (energia)"; }, info);
+          var L = R.leituras(); var av = R.aviso();
+          var t = 0;
+          function info() {
+            var lam = v.v / f.v;
+            L.set("l", "Comprimento de onda λ = v/f", R.fmt(lam, 2) + " m");
+            L.set("T", "Período T = 1/f", R.fmt(1 / f.v, 2) + " s");
+            av.set("O ponto amarelo só sobe e desce: a onda leva energia, não leva a corda junto.", "neutro");
+            cota.innerHTML = "";
+            var x1 = 30 + 90 * (0.25 * lam), x2 = x1 + 90 * lam;
+            if (x2 < 570) {
+              R.sv("line", { x1: x1, y1: 28, x2: x2, y2: 28, stroke: "#b42318", "stroke-width": 3 }, cota);
+              R.sv("text", { x: (x1 + x2) / 2, y: 22, "text-anchor": "middle", "font-weight": 900, fill: "#b42318", "font-size": 14 }, cota).textContent = "λ = " + R.fmt(lam, 2) + " m";
+            }
+          }
+          R.animar(function (dt) {
+            t += dt;
+            var lam = v.v / f.v, pts = [];
+            for (var px = 0; px <= 540; px += 4) { var x = px / 90; pts.push((30 + px) + "," + (120 - A.v * Math.sin(2 * Math.PI * (x / lam - f.v * t))).toFixed(1)); }
+            onda.setAttribute("points", pts.join(" "));
+            var xp = 1.5;
+            ponto.setAttribute("cx", 30 + xp * 90); ponto.setAttribute("cy", 120 - A.v * Math.sin(2 * Math.PI * (xp / lam - f.v * t)));
+            cota.setAttribute("transform", "translate(" + (((v.v * t) % lam) * 90) + ",0)");
+          });
+          info();
+        },
+        exercicios: [
+          { p: "Uma onda tem λ = 2 m e f = 5 Hz. Qual a velocidade dela?", ops: ["2,5 m/s", "7 m/s", "10 m/s", "0,4 m/s"], c: 2, exp: "v = λ · f = 2 · 5 = 10 m/s." },
+          { p: "Um som de 170 Hz se propaga no ar a 340 m/s. Qual o comprimento de onda?", ops: ["0,5 m", "2 m", "170 m", "57 800 m"], c: 1, exp: "λ = v / f = 340 / 170 = 2 m." }
+        ]
+      },
+      {
+        tema: "Acústica", icone: "🚑", titulo: "Som e efeito Doppler",
+        ideia: "<p>O som é uma <strong>onda mecânica</strong>: precisa de um meio para se propagar (no vácuo não há som).</p><p><strong>Altura</strong> depende da frequência (grave ou agudo). <strong>Intensidade</strong> depende da amplitude (fraco ou forte). <strong>Timbre</strong> é a forma da onda (violão ou flauta na mesma nota).</p><p><strong>Efeito Doppler:</strong> quando a fonte se aproxima, as frentes de onda se apertam e o som fica <strong>mais agudo</strong>; quando se afasta, fica mais grave.</p>",
+        formula: "f' = f · v<sub>som</sub> / (v<sub>som</sub> ∓ v<sub>fonte</sub>)<small>sinal de menos: fonte se aproximando · sinal de mais: se afastando · v_som = 340 m/s</small>",
+        pergunta: { p: "Por que o som da sirene muda de repente quando a ambulância passa por você?", r: "Antes ela se aproxima (frequência percebida maior, mais aguda); depois se afasta (frequência menor, mais grave). A sirene em si não mudou." },
+        simTitulo: "Ambulância passando",
+        sim: function (box, R) {
+          var svg = R.palco(600, 260, "Ambulância emitindo frentes de onda sonora com observadores à frente e atrás");
+          R.sv("rect", { x: 0, y: 0, width: 600, height: 260, fill: "#f6fbff" }, svg);
+          var ondas = R.sv("g", null, svg);
+          var amb = R.sv("g", null, svg);
+          R.sv("rect", { x: -30, y: -18, width: 60, height: 30, rx: 5, fill: "#fff", stroke: "#1f2328", "stroke-width": 3 }, amb);
+          R.sv("rect", { x: -6, y: -26, width: 12, height: 8, fill: "#e85d3a" }, amb);
+          R.sv("text", { x: 0, y: 4, "text-anchor": "middle", "font-size": 13, "font-weight": 900, fill: "#b42318" }, amb).textContent = "+";
+          [[30, "🙂 atrás"], [570, "frente 🙂"]].forEach(function (o) { R.sv("text", { x: o[0], y: 250, "text-anchor": "middle", "font-size": 14, "font-weight": 800 }, svg).textContent = o[1]; });
+          var ctr = R.controles();
+          var vs = R.slider(ctr, "Velocidade da ambulância", 0, 120, 5, 40, function (v) { return v + " m/s (" + R.fmt(v * 3.6, 0) + " km/h)"; }, info);
+          var f0 = R.slider(ctr, "Frequência da sirene", 300, 900, 50, 600, function (v) { return v + " Hz"; }, info);
+          var bts = R.el("div", { class: "opcoes", style: "margin-top:.5rem" }, box);
+          R.botao(bts, "🔊 Ouvir chegando e indo embora", tocar, true);
+          var L = R.leituras(); var av = R.aviso();
+          var x = 120, t = 0, emit = 0, cs = [];
+          function frentes() { return { fr: f0.v * 340 / (340 - vs.v), tr: f0.v * 340 / (340 + vs.v) }; }
+          function info() {
+            var r = frentes();
+            L.set("f", "Quem está na frente ouve", R.fmt(r.fr, 0) + " Hz (mais agudo)");
+            L.set("t", "Quem está atrás ouve", R.fmt(r.tr, 0) + " Hz (mais grave)");
+            av.set(vs.v === 0 ? "Parada: todo mundo ouve " + f0.v + " Hz." : "A sirene sempre toca " + f0.v + " Hz. Quem muda é o que cada pessoa ouve.", "neutro");
+          }
+          var ctx = null;
+          function tocar() {
+            try {
+              ctx = ctx || new (window.AudioContext || window.webkitAudioContext)();
+              var r = frentes(), o = ctx.createOscillator(), gN = ctx.createGain(), t0 = ctx.currentTime;
+              o.type = "triangle"; o.frequency.setValueAtTime(r.fr, t0); o.frequency.setValueAtTime(r.tr, t0 + 1.1);
+              gN.gain.setValueAtTime(0.0001, t0); gN.gain.exponentialRampToValueAtTime(0.12, t0 + 0.05);
+              gN.gain.setValueAtTime(0.12, t0 + 1.05); gN.gain.exponentialRampToValueAtTime(0.04, t0 + 1.15);
+              gN.gain.exponentialRampToValueAtTime(0.0001, t0 + 2.2);
+              o.connect(gN); gN.connect(ctx.destination); o.start(t0); o.stop(t0 + 2.25);
+            } catch (e) { av.set("Este aparelho não permitiu tocar o som.", "alerta"); }
+          }
+          R.animar(function (dt) {
+            t += dt; emit += dt;
+            var esc = 0.9; // pixels por metro, com o tempo desacelerado
+            x += vs.v * esc * dt * 0.6;
+            if (x > 520) { x = 80; cs.forEach(function (c) { c.el.remove(); }); cs = []; }
+            if (emit > 0.35) { emit = 0; cs.push({ x: x, r: 0, el: R.sv("circle", { cx: x, cy: 120, fill: "none", stroke: "#6b2fa3", "stroke-width": 2 }, ondas) }); }
+            cs = cs.filter(function (c) { c.r += 340 * esc * dt * 0.6; if (c.r > 600) { c.el.remove(); return false; } c.el.setAttribute("r", c.r); c.el.setAttribute("opacity", Math.max(0.1, 1 - c.r / 600)); return true; });
+            amb.setAttribute("transform", "translate(" + x + ",120)");
+          });
+          info();
+        },
+        exercicios: [
+          { p: "Uma ambulância com sirene de 600 Hz se aproxima a 40 m/s. Quem está na frente ouve aproximadamente: (v_som = 340 m/s)", ops: ["600 Hz", "537 Hz", "680 Hz", "40 Hz"], c: 2, exp: "f' = 600 · 340 / (340 − 40) = 600 · 340 / 300 = 680 Hz, mais agudo." },
+          { p: "No espaço, uma explosão longe da nave não é ouvida pelos astronautas porque:", ops: ["o som é rápido demais", "o som precisa de um meio material para se propagar", "a frequência é muito alta", "o capacete bloqueia a luz"], c: 1, exp: "O som é onda mecânica: no vácuo não há partículas para vibrar." }
+        ]
+      }
+    ],
+    quiz: [
+      { tema: "Termometria", p: "O zero absoluto corresponde a:", ops: ["0 °C", "−100 °C", "−273 °C", "−32 °F"], c: 2, exp: "0 K = −273 °C (mais exatamente −273,15 °C)." },
+      { tema: "Calorimetria", p: "Dois blocos de mesma massa, um de ferro e outro de alumínio, recebem o mesmo calor. Qual esquenta mais?", ops: ["O de alumínio", "O de ferro, que tem menor calor específico", "Os dois igualmente", "Nenhum"], c: 1, exp: "ΔT = Q/(m·c): com c menor (ferro, 0,11), a variação de temperatura é maior." },
+      { tema: "Calorimetria", p: "Em um dia frio, a maçaneta de metal parece mais fria que a porta de madeira, mesmo estando à mesma temperatura. Isso porque:", ops: ["o metal está mais frio", "o metal conduz calor melhor e tira calor da mão mais rápido", "a madeira produz calor", "o metal tem menos massa"], c: 1, exp: "As duas estão na mesma temperatura; o metal é bom condutor e retira calor da mão mais rapidamente." },
+      { tema: "Propagação do calor", p: "O aquecimento da água em uma panela, com a água quente subindo e a fria descendo, é um exemplo de:", ops: ["condução", "convecção", "irradiação", "dilatação"], c: 1, exp: "Convecção: correntes de fluido mais quente (menos denso) sobem e as mais frias descem." },
+      { tema: "Dilatação", p: "Fios de alta tensão ficam mais esticados no inverno e mais curvados no verão porque:", ops: ["no verão eles dilatam", "no inverno eles dilatam", "o vento estica os fios", "a corrente muda"], c: 0, exp: "No calor o metal dilata, o fio fica mais comprido e curva mais." },
+      { tema: "Termodinâmica", p: "Em uma transformação isotérmica de um gás ideal, a variação da energia interna é:", ops: ["máxima", "zero", "igual ao calor", "negativa"], c: 1, exp: "A energia interna do gás ideal depende só da temperatura: temperatura constante, ΔU = 0 e Q = τ." },
+      { tema: "Óptica", p: "A imagem de uma pessoa em um espelho plano é:", ops: ["real e invertida", "virtual, direita e do mesmo tamanho", "virtual e maior", "real e menor"], c: 1, exp: "Espelho plano: imagem virtual, direita, do mesmo tamanho e simétrica em relação ao espelho." },
+      { tema: "Óptica da visão", p: "Na hipermetropia, a imagem se forma depois da retina. A lente corretora é:", ops: ["divergente", "convergente", "plana", "cilíndrica"], c: 1, exp: "A lente convergente antecipa a convergência dos raios para que a imagem se forme na retina." },
+      { tema: "Ondas", p: "Ondas de rádio, luz e raios X têm em comum:", ops: ["a mesma frequência", "são ondas eletromagnéticas e viajam a 300 000 km/s no vácuo", "precisam de um meio material", "são ondas sonoras"], c: 1, exp: "Todas são ondas eletromagnéticas; no vácuo, todas viajam com a velocidade da luz." },
+      { tema: "Acústica", p: "Duas pessoas cantam a mesma nota com o mesmo volume, mas dá para saber quem é quem. A qualidade que diferencia as vozes é:", ops: ["a altura", "a intensidade", "o timbre", "a frequência fundamental"], c: 2, exp: "O timbre depende da forma da onda (harmônicos) e diferencia fontes na mesma nota e volume." }
+    ]
+  });
+})();
+</script>
+</body>
+</html>

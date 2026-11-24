@@ -236,6 +236,16 @@
     .m-professor { --cor: #6b2fa3; --fundo: #f1e6fb; }
     .m-inclusao { --cor: #0f6e7a; --fundo: #ddf3f5; }
 
+    /* ===== REVISÃO POR SÉRIE ===== */
+    .series { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1.25rem; list-style: none; }
+    .serie { display: flex; flex-direction: column; align-items: center; text-align: center; gap: .35rem; text-decoration: none; color: var(--texto); background: var(--branco); border: 3px solid var(--texto); border-radius: 20px; padding: 1.6rem 1rem; box-shadow: 0 6px 0 var(--c); transition: transform .15s ease; height: 100%; }
+    .serie:hover { transform: translateY(-4px); }
+    .serie .num { width: 84px; height: 84px; border-radius: 50%; background: var(--c); color: #fff; display: flex; align-items: center; justify-content: center; font-size: 2.1rem; font-weight: 900; }
+    .serie strong { font-size: 1.45rem; font-weight: 900; }
+    .serie small { font-size: 1.02rem; font-weight: 700; color: var(--texto-suave); }
+    .s1 { --c: #1d4ed8; } .s2 { --c: #6b2fa3; } .s3 { --c: #0f6e5c; }
+    @media (max-width: 760px) { .series { grid-template-columns: 1fr; } }
+
     /* ===== NOVIDADES ===== */
     .bloco-novidades { padding-top: 0; }
     .novidades { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 1.25rem; list-style: none; }
@@ -491,6 +501,22 @@
       </div>
     </section>
 
+    <!-- REVISÃO DO ANO -->
+    <section class="bloco bloco-revisao" id="revisao">
+      <div class="container">
+        <div class="titulo-secao">
+          <span class="etiqueta">Fim de ano</span>
+          <h2>Revisão do ano de Física, <span class="marca">por série</span></h2>
+          <p>Escolha a série da sua turma. Abre como apresentação, com simuladores, perguntas para a turma e exercícios corrigidos na hora.</p>
+        </div>
+        <ul class="series">
+          <li><a class="serie s1" href="revisao/1ano.html"><span class="num">1º</span><strong>1º ano</strong><small>Movimento, forças, energia e fluidos</small></a></li>
+          <li><a class="serie s2" href="revisao/2ano.html"><span class="num">2º</span><strong>2º ano</strong><small>Calor, luz, ondas e som</small></a></li>
+          <li><a class="serie s3" href="revisao/3ano.html"><span class="num">3º</span><strong>3º ano</strong><small>Eletricidade, magnetismo e física moderna</small></a></li>
+        </ul>
+      </div>
+    </section>
+
     <!-- NOVIDADES -->
     <section class="bloco bloco-novidades" id="novidades">
       <div class="container">
@@ -624,7 +650,7 @@
         el.textContent = n + (n === 1 ? " material" : " materiais");
       });
       var lista = document.getElementById("novidades-lista");
-      var novos = MATERIAIS.filter(function (m) { return m.novo; });
+      var novos = MATERIAIS.filter(function (m) { return m.novo && m.titulo.indexOf("Revisão do Ano") !== 0; });
       if (!novos.length) { document.getElementById("novidades").style.display = "none"; return; }
       lista.innerHTML = novos.map(function (m) {
         return '<li><a class="novidade" href="' + m.link + '" target="_blank" rel="noopener">' +

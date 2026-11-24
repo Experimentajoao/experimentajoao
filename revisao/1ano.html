@@ -1,0 +1,485 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Revisão do Ano · Física 1º ano | Experimenta João</title>
+<meta name="description" content="Revisão de Física do 1º ano em modo apresentação: cinemática, leis de Newton, energia, trabalho e potência, impulso e hidrostática, com simuladores e exercícios.">
+<meta name="theme-color" content="#1f4d3f">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&family=Kalam:wght@700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="estilo.css">
+</head>
+<body>
+<script src="motor.js"></script>
+<script>
+(function () {
+  var g = 10;
+
+  // Desenha eixos de um gráfico simples dentro do SVG
+  function grafico(R, svg, x0, y0, w, h, tMax, yMin, yMax, rotY) {
+    var gr = R.sv("g", null, svg);
+    R.sv("rect", { x: x0, y: y0, width: w, height: h, fill: "#fff", stroke: "#c9d3df" }, gr);
+    var yZero = y0 + h * (yMax / (yMax - yMin));
+    R.sv("line", { x1: x0, y1: yZero, x2: x0 + w, y2: yZero, stroke: "#1f2328", "stroke-width": 2 }, gr);
+    R.sv("line", { x1: x0, y1: y0, x2: x0, y2: y0 + h, stroke: "#1f2328", "stroke-width": 2 }, gr);
+    for (var t = 0; t <= tMax; t += 2) {
+      var x = x0 + w * t / tMax;
+      R.sv("line", { x1: x, y1: y0, x2: x, y2: y0 + h, stroke: "#eef2f7" }, gr);
+      R.sv("text", { x: x, y: y0 + h + 14, "font-size": 11, "text-anchor": "middle", fill: "#4a4f57" }, gr).textContent = t;
+    }
+    R.sv("text", { x: x0 + w, y: y0 + h + 28, "font-size": 12, "text-anchor": "end", fill: "#4a4f57", "font-weight": 700 }, gr).textContent = "tempo (s)";
+    R.sv("text", { x: x0 + 4, y: y0 + 13, "font-size": 12, fill: "#4a4f57", "font-weight": 700 }, gr).textContent = rotY;
+    R.sv("text", { x: x0 - 5, y: y0 + 4, "font-size": 11, "text-anchor": "end", fill: "#4a4f57" }, gr).textContent = yMax;
+    R.sv("text", { x: x0 - 5, y: y0 + h, "font-size": 11, "text-anchor": "end", fill: "#4a4f57" }, gr).textContent = yMin;
+    var linha = R.sv("polyline", { fill: "none", stroke: "#1d4ed8", "stroke-width": 3, points: "" }, gr);
+    return {
+      ponto: function (pts) {
+        linha.setAttribute("points", pts.map(function (p) {
+          var yy = Math.max(yMin, Math.min(yMax, p[1]));
+          return (x0 + w * p[0] / tMax).toFixed(1) + "," + (y0 + h * (yMax - yy) / (yMax - yMin)).toFixed(1);
+        }).join(" "));
+      }
+    };
+  }
+  function carro(R, svg, cor) {
+    var gr = R.sv("g", null, svg);
+    R.sv("rect", { x: -22, y: -26, width: 44, height: 18, rx: 5, fill: cor, stroke: "#1f2328", "stroke-width": 2 }, gr);
+    R.sv("rect", { x: -12, y: -36, width: 22, height: 12, rx: 3, fill: "#cfe3ff", stroke: "#1f2328", "stroke-width": 2 }, gr);
+    R.sv("circle", { cx: -12, cy: -6, r: 6, fill: "#1f2328" }, gr);
+    R.sv("circle", { cx: 12, cy: -6, r: 6, fill: "#1f2328" }, gr);
+    return gr;
+  }
+  function seta(R, pai, cor) {
+    var gr = R.sv("g", null, pai);
+    var l = R.sv("line", { stroke: cor, "stroke-width": 5, "stroke-linecap": "round" }, gr);
+    var p = R.sv("polygon", { fill: cor }, gr);
+    var t = R.sv("text", { "font-size": 14, "font-weight": 800, fill: cor, "text-anchor": "middle" }, gr);
+    return function (x1, y1, x2, y2, rot) {
+      var len = Math.hypot(x2 - x1, y2 - y1);
+      gr.style.display = len < 3 ? "none" : "";
+      if (len < 3) return;
+      var ux = (x2 - x1) / len, uy = (y2 - y1) / len;
+      l.setAttribute("x1", x1); l.setAttribute("y1", y1); l.setAttribute("x2", x2 - ux * 8); l.setAttribute("y2", y2 - uy * 8);
+      p.setAttribute("points", [x2, y2, x2 - ux * 14 - uy * 8, y2 - uy * 14 + ux * 8, x2 - ux * 14 + uy * 8, y2 - uy * 14 - ux * 8].join(","));
+      t.setAttribute("x", (x1 + x2) / 2 + uy * 18); t.setAttribute("y", (y1 + y2) / 2 - ux * 16 + 5); t.textContent = rot || "";
+    };
+  }
+
+  Revisao.iniciar({
+    serie: "1º ano",
+    titulo: "Revisão do Ano · Física 1º ano",
+    subtitulo: "Movimento, forças, energia e fluidos",
+    cor: "#1d4ed8", corClara: "#e3ecff",
+    apresentacao: "Tudo o que a turma estudou no ano, em sete paradas: do carrinho que anda em linha reta até o navio que flutua.",
+    slides: [
+      {
+        tema: "Cinemática", icone: "🚗", titulo: "Movimento uniforme",
+        ideia: "<p>No movimento uniforme a <strong>velocidade é constante</strong>: o corpo anda distâncias iguais em tempos iguais.</p><p>O gráfico da posição pelo tempo vira uma <strong>reta</strong>. Quanto mais inclinada, maior a velocidade. Velocidade negativa quer dizer andar para trás (para a esquerda).</p>",
+        formula: 's = s<sub>0</sub> + v · t<small>s: posição (m) · s₀: posição inicial · v: velocidade (m/s) · t: tempo (s)</small>',
+        pergunta: { p: "Dois carros andam a 10 m/s, um saindo do marco 0 e outro do marco 20 m. Os gráficos deles são parecidos em quê? E diferentes em quê?", r: "As retas são paralelas (mesma inclinação = mesma velocidade) e começam em alturas diferentes (posição inicial diferente)." },
+        simTitulo: "Carrinho na pista",
+        sim: function (box, R) {
+          var svg = R.palco(600, 300, "Carrinho em uma pista graduada e gráfico da posição pelo tempo");
+          R.sv("rect", { x: 0, y: 0, width: 600, height: 110, fill: "#e8f4ff" }, svg);
+          R.sv("rect", { x: 0, y: 92, width: 600, height: 18, fill: "#9aa5b1" }, svg);
+          for (var m = 0; m <= 100; m += 10) {
+            var x = 40 + m * 5.2;
+            R.sv("line", { x1: x, y1: 92, x2: x, y2: 100, stroke: "#fff", "stroke-width": 2 }, svg);
+            R.sv("text", { x: x, y: 124, "font-size": 11, "text-anchor": "middle", fill: "#4a4f57" }, svg).textContent = m + " m";
+          }
+          var gr = grafico(R, svg, 50, 140, 520, 120, 10, 0, 100, "posição (m)");
+          var c = carro(R, svg, "#f7c51e");
+          var ctr = R.controles();
+          var s0 = R.slider(ctr, "Posição inicial (s₀)", 0, 50, 5, 10, function (v) { return v + " m"; }, reset);
+          var vv = R.slider(ctr, "Velocidade (v)", -10, 10, 1, 8, function (v) { return v + " m/s"; }, reset);
+          var bts = R.el("div", { class: "opcoes", style: "margin-top:.6rem" }, box);
+          R.botao(bts, "▶ Soltar", function () { if (t >= 10 || fora) reset(); rodando = true; }, true);
+          R.botao(bts, "↺ Reiniciar", reset);
+          var L = R.leituras();
+          var t = 0, rodando = false, pts = [], fora = false;
+          function pos() { return s0.v + vv.v * t; }
+          function desenha() {
+            var s = pos();
+            c.setAttribute("transform", "translate(" + (40 + Math.max(-5, Math.min(105, s)) * 5.2) + ",92)" + (vv.v < 0 ? " scale(-1,1)" : ""));
+            gr.ponto(pts);
+            L.set("t", "Tempo", R.fmt(t, 1) + " s");
+            L.set("s", "Posição", R.fmt(s, 1) + " m");
+            L.set("v", "Velocidade", vv.v + " m/s");
+          }
+          function reset() { t = 0; rodando = false; fora = false; pts = [[0, s0.v]]; desenha(); }
+          R.animar(function (dt) {
+            if (!rodando) return;
+            t = Math.min(10, t + dt * 1.5);
+            var s = pos();
+            pts.push([t, s]);
+            if (s > 100 || s < 0) { fora = true; rodando = false; }
+            if (t >= 10) rodando = false;
+            desenha();
+          });
+          reset();
+        },
+        exercicios: [
+          { p: "Um ciclista segue a função s = 20 + 5t (SI). Qual a posição dele em t = 4 s?", ops: ["25 m", "29 m", "40 m", "45 m"], c: 2, exp: "s = 20 + 5 · 4 = 20 + 20 = 40 m." },
+          { p: "No gráfico s × t de um movimento uniforme, a reta desce com o tempo. Isso significa que:", ops: ["o corpo está parado", "a velocidade é negativa (anda para trás)", "o corpo está acelerando", "a posição inicial é zero"], c: 1, exp: "Reta descendo = posição diminuindo = velocidade negativa. Teste no simulador com v negativo." }
+        ]
+      },
+      {
+        tema: "Cinemática", icone: "🏎️", titulo: "Movimento uniformemente variado",
+        ideia: "<p>Agora a velocidade <strong>muda sempre do mesmo jeito</strong>: a aceleração é constante.</p><p>O gráfico velocidade × tempo é uma reta, e a <strong>área embaixo dele é o deslocamento</strong>. Aceleração negativa com velocidade positiva quer dizer frear.</p>",
+        formula: 'v = v<sub>0</sub> + a · t<br><span class="giz">s = v<sub>0</sub>t + a t² / 2</span><small>a: aceleração (m/s²) · v₀: velocidade inicial</small>',
+        pergunta: { p: "Um carro freia com aceleração de −2 m/s². O que acontece com a velocidade a cada segundo?", r: "Diminui 2 m/s a cada segundo, até parar. Mostre no simulador com v₀ = 10 e a = −2: para em 5 s." },
+        simTitulo: "Acelerando e freando",
+        sim: function (box, R) {
+          var svg = R.palco(600, 300, "Carro acelerando na pista e gráfico da velocidade pelo tempo");
+          R.sv("rect", { x: 0, y: 0, width: 600, height: 110, fill: "#e8f4ff" }, svg);
+          R.sv("rect", { x: 0, y: 92, width: 600, height: 18, fill: "#9aa5b1" }, svg);
+          for (var m = 0; m <= 100; m += 20) R.sv("text", { x: 40 + m * 5.2, y: 124, "font-size": 11, "text-anchor": "middle", fill: "#4a4f57" }, svg).textContent = m + " m";
+          var gr = grafico(R, svg, 50, 140, 520, 120, 10, -10, 30, "velocidade (m/s)");
+          var area = R.sv("polygon", { fill: "rgba(247,197,30,.35)" }, svg);
+          var c = carro(R, svg, "#e85d3a");
+          var ctr = R.controles();
+          var v0 = R.slider(ctr, "Velocidade inicial (v₀)", 0, 15, 1, 2, function (v) { return v + " m/s"; }, reset);
+          var a = R.slider(ctr, "Aceleração (a)", -3, 3, 0.5, 2, function (v) { return R.fmt(v, 1) + " m/s²"; }, reset);
+          var bts = R.el("div", { class: "opcoes", style: "margin-top:.6rem" }, box);
+          R.botao(bts, "▶ Acelerar", function () { if (t >= 10 || fim) reset(); rodando = true; }, true);
+          R.botao(bts, "↺ Reiniciar", reset);
+          var L = R.leituras();
+          var av = R.aviso();
+          var t = 0, rodando = false, pts = [], fim = false;
+          function vel() { return v0.v + a.v * t; }
+          function des() { return v0.v * t + a.v * t * t / 2; }
+          function desenha() {
+            var s = des();
+            c.setAttribute("transform", "translate(" + (40 + Math.max(-5, Math.min(105, s)) * 5.2) + ",92)");
+            gr.ponto(pts);
+            var yz = 140 + 120 * 30 / 40;
+            area.setAttribute("points", [50 + ",", yz].join("") + " " + pts.map(function (p) { return (50 + 52 * p[0]).toFixed(1) + "," + (140 + 120 * (30 - Math.max(-10, Math.min(30, p[1]))) / 40).toFixed(1); }).join(" ") + " " + (50 + 52 * t).toFixed(1) + "," + yz);
+            L.set("t", "Tempo", R.fmt(t, 1) + " s");
+            L.set("v", "Velocidade", R.fmt(vel(), 1) + " m/s");
+            L.set("s", "Deslocamento (área amarela)", R.fmt(s, 1) + " m");
+          }
+          function reset() {
+            t = 0; rodando = false; fim = false; pts = [[0, v0.v]];
+            av.set(a.v > 0 ? "Aceleração a favor do movimento: a velocidade aumenta." : a.v < 0 ? "Aceleração contra o movimento: o carro está freando." : "Aceleração zero: é movimento uniforme!", "neutro");
+            desenha();
+          }
+          R.animar(function (dt) {
+            if (!rodando) return;
+            t = Math.min(10, t + dt * 1.5);
+            pts.push([t, vel()]);
+            var s = des();
+            if (s > 100 || s < -5) { rodando = false; fim = true; }
+            if (t >= 10) rodando = false;
+            desenha();
+          });
+          reset();
+        },
+        exercicios: [
+          { p: "Um carro parte com 2 m/s e acelera 3 m/s². Qual a velocidade dele após 4 s?", ops: ["5 m/s", "12 m/s", "14 m/s", "24 m/s"], c: 2, exp: "v = v₀ + a·t = 2 + 3·4 = 14 m/s." },
+          { p: "No gráfico velocidade × tempo, a área entre a linha e o eixo do tempo representa:", ops: ["a aceleração", "o deslocamento", "a força", "a massa"], c: 1, exp: "A área sob o gráfico v × t é o deslocamento. No simulador ela aparece em amarelo." }
+        ]
+      },
+      {
+        tema: "Dinâmica", icone: "📦", titulo: "Leis de Newton",
+        ideia: "<p><strong>1ª lei (inércia):</strong> sem força resultante, o corpo continua parado ou em movimento uniforme.</p><p><strong>2ª lei:</strong> a força resultante produz aceleração, F = m · a. <strong>3ª lei:</strong> toda ação tem reação de mesmo valor e sentido oposto, em corpos diferentes.</p><p>O <strong>atrito</strong> sempre se opõe ao deslizamento.</p>",
+        formula: 'F<sub>R</sub> = m · a<br><span class="giz">F<sub>at</sub> = μ · N</span><small>F_R: força resultante (N) · m: massa (kg) · μ: coeficiente de atrito · N: normal</small>',
+        pergunta: { p: "Se você empurra um armário e ele não sai do lugar, a sua força é menor que a força do atrito?", r: "Não: o atrito estático fica igual à sua força (até um limite). A resultante é zero, por isso não há aceleração. Mostre com F pequena no simulador." },
+        simTitulo: "Empurrando a caixa",
+        sim: function (box, R) {
+          var svg = R.palco(600, 230, "Caixa sendo empurrada sobre o chão com setas de força");
+          R.sv("rect", { x: 0, y: 0, width: 600, height: 230, fill: "#f6fbff" }, svg);
+          R.sv("rect", { x: 0, y: 170, width: 600, height: 60, fill: "#c8b28c" }, svg);
+          for (var k = 0; k < 600; k += 24) R.sv("line", { x1: k, y1: 170, x2: k + 12, y2: 182, stroke: "#a68d63", "stroke-width": 2 }, svg);
+          var cx = R.sv("g", null, svg);
+          R.sv("rect", { x: -40, y: -70, width: 80, height: 70, rx: 4, fill: "#d9a35b", stroke: "#1f2328", "stroke-width": 3 }, cx);
+          var tm = R.sv("text", { x: 0, y: -28, "text-anchor": "middle", "font-size": 18, "font-weight": 900, fill: "#1f2328" }, cx);
+          var sF = seta(R, svg, "#1d4ed8"), sA = seta(R, svg, "#b42318");
+          var ctr = R.controles();
+          var F = R.slider(ctr, "Força aplicada (F)", 0, 120, 5, 60, function (v) { return v + " N"; }, reset);
+          var m = R.slider(ctr, "Massa da caixa (m)", 2, 30, 1, 10, function (v) { return v + " kg"; }, reset);
+          var mu = R.slider(ctr, "Coeficiente de atrito (μ)", 0, 0.6, 0.05, 0.2, function (v) { return R.fmt(v, 2); }, reset);
+          var bts = R.el("div", { class: "opcoes", style: "margin-top:.6rem" }, box);
+          R.botao(bts, "↺ Voltar a caixa", reset);
+          var L = R.leituras(); var av = R.aviso();
+          var x = 80, v = 0;
+          function calc() {
+            var N = m.v * g, max = mu.v * N, fat, a;
+            if (F.v <= max) { fat = F.v; a = 0; } else { fat = max; a = (F.v - max) / m.v; }
+            return { N: N, fat: fat, a: a, fr: F.v - fat };
+          }
+          function desenha() {
+            var r = calc();
+            cx.setAttribute("transform", "translate(" + x + ",170)");
+            tm.textContent = m.v + " kg";
+            sF.call(null, x - 40 - F.v * 1.3 - 4, 135, x - 44, 135, "F = " + F.v + " N");
+            sA.call(null, x - 40, 186, x - 40 - r.fat * 1.3, 186, r.fat > 0 ? "atrito " + R.fmt(r.fat, 0) + " N" : "");
+            L.set("p", "Peso = normal", R.fmt(r.N, 0) + " N");
+            L.set("fat", "Atrito", R.fmt(r.fat, 1) + " N");
+            L.set("fr", "Força resultante", R.fmt(r.fr, 1) + " N");
+            L.set("a", "Aceleração", R.fmt(r.a, 2) + " m/s²");
+            if (r.a === 0) av.set(F.v === 0 ? "Sem força aplicada: a caixa fica parada (inércia)." : "O atrito equilibra a força: resultante zero, a caixa fica parada.", "neutro");
+            else av.set("Resultante de " + R.fmt(r.fr, 1) + " N ÷ " + m.v + " kg = " + R.fmt(r.a, 2) + " m/s² de aceleração.");
+          }
+          function reset() { x = 220; v = 0; desenha(); }
+          R.animar(function (dt) {
+            var r = calc();
+            v += r.a * dt; x += v * dt * 12;
+            if (x > 640) x = -40;
+            if (r.a > 0) desenha();
+          });
+          reset();
+        },
+        exercicios: [
+          { p: "Uma caixa de 10 kg é empurrada com força resultante de 50 N. Qual a aceleração?", ops: ["0,2 m/s²", "5 m/s²", "40 m/s²", "500 m/s²"], c: 1, exp: "a = F / m = 50 / 10 = 5 m/s²." },
+          { p: "Um livro em repouso sobre a mesa. A reação ao peso do livro (força que a Terra faz nele) é:", ops: ["a força normal da mesa", "a força que o livro faz na Terra", "o atrito", "não existe reação"], c: 1, exp: "Ação e reação agem em corpos diferentes: a Terra puxa o livro e o livro puxa a Terra. A normal não é a reação do peso." }
+        ]
+      },
+      {
+        tema: "Energia", icone: "🛹", titulo: "Conservação da energia mecânica",
+        ideia: "<p>Na pista de skate, a energia <strong>troca de forma</strong>: lá em cima é potencial gravitacional, embaixo vira cinética.</p><p>Sem atrito, a <strong>energia mecânica total fica constante</strong>. Com atrito, uma parte vira calor e o skatista não volta à mesma altura.</p>",
+        formula: 'E<sub>c</sub> = m v² / 2 &nbsp; · &nbsp; E<sub>p</sub> = m g h<br><span class="giz">E<sub>mec</sub> = E<sub>c</sub> + E<sub>p</sub></span><small>g = 10 m/s² · energia em joules (J)</small>',
+        pergunta: { p: "Se o skatista soltar de uma altura 4 vezes maior, a velocidade lá embaixo fica 4 vezes maior?", r: "Não, fica 2 vezes maior, porque v = √(2gh). A energia cresce 4 vezes, mas a velocidade entra ao quadrado." },
+        simTitulo: "Pista de skate",
+        sim: function (box, R) {
+          var svg = R.palco(600, 300, "Skatista em uma pista em U com barras de energia");
+          var H = 10, X = 10; // pista: y = H x² / X², x de -10 a 10 m
+          function px(x) { return 40 + (x + X) / (2 * X) * 380; }
+          function py(y) { return 270 - y * 22; }
+          R.sv("rect", { x: 0, y: 0, width: 600, height: 300, fill: "#f6fbff" }, svg);
+          var d = "";
+          for (var k = -X; k <= X + 0.01; k += 0.25) d += (k === -X ? "M" : "L") + px(k).toFixed(1) + "," + py(H * k * k / (X * X)).toFixed(1);
+          R.sv("path", { d: d + " L420,290 L40,290 Z", fill: "#d8dee6" }, svg);
+          R.sv("path", { d: d, fill: "none", stroke: "#1f2328", "stroke-width": 4 }, svg);
+          for (var hh = 0; hh <= 10; hh += 2) R.sv("text", { x: 30, y: py(hh) + 4, "font-size": 11, "text-anchor": "end", fill: "#4a4f57" }, svg).textContent = hh + " m";
+          var sk = R.sv("g", null, svg);
+          R.sv("circle", { cx: 0, cy: -26, r: 7, fill: "#f2c9a0", stroke: "#1f2328", "stroke-width": 2 }, sk);
+          R.sv("line", { x1: 0, y1: -19, x2: 0, y2: -8, stroke: "#1f2328", "stroke-width": 4 }, sk);
+          R.sv("rect", { x: -12, y: -8, width: 24, height: 5, rx: 2, fill: "#e85d3a" }, sk);
+          // barras
+          var bx = 455, nomes = [["Ep", "#1d4ed8"], ["Ec", "#e85d3a"], ["Total", "#157f3b"]], barras = [];
+          R.sv("text", { x: 515, y: 24, "font-size": 13, "font-weight": 800, "text-anchor": "middle", fill: "#1f2328" }, svg).textContent = "Energia (J)";
+          nomes.forEach(function (n, i) {
+            R.sv("rect", { x: bx + i * 42, y: 40, width: 30, height: 220, fill: "#fff", stroke: "#c9d3df" }, svg);
+            barras.push(R.sv("rect", { x: bx + i * 42, width: 30, fill: n[1] }, svg));
+            R.sv("text", { x: bx + i * 42 + 15, y: 278, "font-size": 12, "font-weight": 800, "text-anchor": "middle", fill: n[1] }, svg).textContent = n[0];
+          });
+          var ctr = R.controles();
+          var h0 = R.slider(ctr, "Altura de largada (h)", 1, 10, 0.5, 8, function (v) { return R.fmt(v, 1) + " m"; }, reset);
+          var m = R.slider(ctr, "Massa do skatista", 30, 90, 5, 50, function (v) { return v + " kg"; }, reset);
+          var at = R.opcoes(ctr, "Atrito", [{ v: 0, t: "Sem atrito" }, { v: 1, t: "Com atrito" }], 0, reset);
+          var L = R.leituras();
+          var x, dir, E, Emax;
+          function y(xx) { return H * xx * xx / (X * X); }
+          function reset() { x = -X * Math.sqrt(h0.v / H) * 0.995; dir = 1; E = m.v * g * h0.v; Emax = m.v * g * 10; desenha(0); }
+          function desenha(v) {
+            var yy = y(x);
+            var ang = Math.atan(2 * H * x / (X * X) * 22 / 19) * 180 / Math.PI;
+            sk.setAttribute("transform", "translate(" + px(x) + "," + py(yy) + ") rotate(" + (-ang) + ")");
+            var ep = m.v * g * yy, ec = Math.max(0, E - ep);
+            [ep, ec, E].forEach(function (val, i) { var hgt = 220 * val / Emax; barras[i].setAttribute("y", 260 - hgt); barras[i].setAttribute("height", hgt); });
+            L.set("h", "Altura agora", R.fmt(yy, 1) + " m");
+            L.set("v", "Velocidade", R.fmt(v, 1) + " m/s");
+            L.set("ep", "Potencial", R.fmt(ep, 0) + " J");
+            L.set("ec", "Cinética", R.fmt(ec, 0) + " J");
+          }
+          R.animar(function (dt) {
+            var sub = 8, v = 0;
+            for (var i = 0; i < sub; i++) {
+              var h = E / (m.v * g) - y(x);
+              v = Math.sqrt(Math.max(0, 2 * g * h));
+              var incl = 2 * H * x / (X * X);
+              var dx = dir * v * dt / sub / Math.sqrt(1 + incl * incl);
+              var xn = x + dx;
+              if (E / (m.v * g) - y(xn) <= 0) { dir = -dir; continue; }
+              if (at.v) E = Math.max(0, E - 0.04 * m.v * g * Math.abs(dx) * Math.sqrt(1 + incl * incl));
+              x = xn;
+            }
+            if (E < m.v * g * 0.02) { E = 0; x = 0; }
+            desenha(v);
+          });
+          reset();
+        },
+        exercicios: [
+          { p: "Um skatista (sem atrito) sai do repouso de 5 m de altura. Qual a velocidade dele no ponto mais baixo? (g = 10 m/s²)", ops: ["5 m/s", "10 m/s", "50 m/s", "100 m/s"], c: 1, exp: "m g h = m v² / 2 → v = √(2 · 10 · 5) = √100 = 10 m/s. Repare que a massa nem entra na conta." },
+          { p: "Se a velocidade de um carro dobra, a energia cinética:", ops: ["dobra", "fica igual", "fica 4 vezes maior", "cai pela metade"], c: 2, exp: "Ec = m v² / 2: a velocidade é elevada ao quadrado, então 2² = 4 vezes mais energia." }
+        ]
+      },
+      {
+        tema: "Energia", icone: "🏗️", titulo: "Trabalho e potência",
+        ideia: "<p><strong>Trabalho</strong> é a energia transferida por uma força ao longo de um deslocamento. Para erguer um corpo, o trabalho é m · g · h.</p><p><strong>Potência</strong> é a rapidez dessa transferência: o mesmo trabalho feito em menos tempo exige mais potência.</p>",
+        formula: 'τ = F · d · cos θ &nbsp; · &nbsp; τ<sub>peso</sub> = m g h<br><span class="giz">P = τ / Δt</span><small>trabalho em joules (J) · potência em watts (W = J/s)</small>',
+        pergunta: { p: "Subir a escada da escola correndo ou andando: em qual caso o seu trabalho é maior? E a potência?", r: "O trabalho é o mesmo (mesmo peso, mesma altura). A potência é maior correndo, porque o tempo é menor." },
+        simTitulo: "Guindaste",
+        sim: function (box, R) {
+          var svg = R.palco(600, 300, "Guindaste erguendo uma carga");
+          R.sv("rect", { x: 0, y: 0, width: 600, height: 300, fill: "#f6fbff" }, svg);
+          R.sv("rect", { x: 0, y: 270, width: 600, height: 30, fill: "#9aa5b1" }, svg);
+          R.sv("rect", { x: 140, y: 20, width: 18, height: 250, fill: "#f7c51e", stroke: "#1f2328", "stroke-width": 3 }, svg);
+          R.sv("rect", { x: 100, y: 20, width: 260, height: 16, fill: "#f7c51e", stroke: "#1f2328", "stroke-width": 3 }, svg);
+          var cabo = R.sv("line", { x1: 320, y1: 36, x2: 320, stroke: "#1f2328", "stroke-width": 3 }, svg);
+          var carga = R.sv("g", null, svg);
+          R.sv("rect", { x: -32, y: 0, width: 64, height: 40, fill: "#d9a35b", stroke: "#1f2328", "stroke-width": 3 }, carga);
+          var tm = R.sv("text", { x: 0, y: 26, "text-anchor": "middle", "font-size": 14, "font-weight": 900 }, carga);
+          var marcaH = R.sv("line", { x1: 380, x2: 380, y2: 270, stroke: "#1d4ed8", "stroke-width": 3, "stroke-dasharray": "6 4" }, svg);
+          var txtH = R.sv("text", { x: 388, "font-size": 14, "font-weight": 900, fill: "#1d4ed8" }, svg);
+          var ctr = R.controles();
+          var m = R.slider(ctr, "Massa da carga", 10, 500, 10, 100, function (v) { return v + " kg"; }, reset);
+          var h = R.slider(ctr, "Altura", 1, 20, 1, 10, function (v) { return v + " m"; }, reset);
+          var dt0 = R.slider(ctr, "Tempo para subir", 2, 40, 1, 10, function (v) { return v + " s"; }, reset);
+          var bts = R.el("div", { class: "opcoes", style: "margin-top:.6rem" }, box);
+          R.botao(bts, "▶ Erguer", function () { if (sub >= 1) reset(); rodando = true; }, true);
+          R.botao(bts, "↺ Baixar", reset);
+          var L = R.leituras(); var av = R.aviso();
+          var sub = 0, rodando = false;
+          function desenha() {
+            var yTopo = 270 - 40 - sub * h.v * 10;
+            carga.setAttribute("transform", "translate(320," + yTopo + ")");
+            cabo.setAttribute("y2", yTopo);
+            tm.textContent = m.v + " kg";
+            marcaH.setAttribute("y1", 270 - h.v * 10); txtH.setAttribute("y", 270 - h.v * 5); txtH.textContent = "h = " + h.v + " m";
+            var W = m.v * g * h.v, P = W / dt0.v;
+            L.set("w", "Trabalho (m g h)", R.fmt(W, 0) + " J");
+            L.set("p", "Potência", R.fmt(P, 0) + " W");
+            L.set("t", "Tempo decorrido", R.fmt(sub * dt0.v, 1) + " s");
+            av.set("Isso equivale a " + R.fmt(P / 10, 0) + " lâmpadas LED de 10 W acesas ao mesmo tempo.", "neutro");
+          }
+          function reset() { sub = 0; rodando = false; desenha(); }
+          R.animar(function (dt) { if (!rodando) return; sub = Math.min(1, sub + dt * 2 / dt0.v * 2); if (sub >= 1) rodando = false; desenha(); });
+          reset();
+        },
+        exercicios: [
+          { p: "Um motor ergue 50 kg a 3 m de altura em 10 s. Qual a potência? (g = 10 m/s²)", ops: ["15 W", "150 W", "1500 W", "500 W"], c: 1, exp: "τ = m g h = 50 · 10 · 3 = 1500 J. P = 1500 / 10 = 150 W." },
+          { p: "Uma pessoa segura uma mochila parada, sem se mover. O trabalho da força que ela faz na mochila é:", ops: ["positivo", "negativo", "nulo, porque não há deslocamento", "igual ao peso"], c: 2, exp: "Sem deslocamento, τ = F · d = F · 0 = 0. Cansar não é o mesmo que realizar trabalho no sentido da Física." }
+        ]
+      },
+      {
+        tema: "Quantidade de movimento", icone: "🎱", titulo: "Impulso e colisões",
+        ideia: "<p>A <strong>quantidade de movimento</strong> (Q = m · v) mede o quanto é difícil parar um corpo.</p><p>Em uma colisão sem forças externas, a <strong>Q total antes é igual à Q total depois</strong>. Já a energia cinética só se conserva se a colisão for elástica.</p><p><strong>Impulso</strong> (I = F · Δt) é o que muda a quantidade de movimento.</p>",
+        formula: 'Q = m · v &nbsp; · &nbsp; I = F · Δt = ΔQ<br><span class="giz">Q<sub>antes</sub> = Q<sub>depois</sub></span><small>Q em kg·m/s · I em N·s</small>',
+        pergunta: { p: "Por que o airbag protege, se a velocidade do carro antes da batida é a mesma?", r: "O impulso para parar a pessoa é o mesmo, mas o airbag aumenta o tempo de contato. Com Δt maior, a força média F = ΔQ/Δt fica menor." },
+        simTitulo: "Carrinhos que colidem",
+        sim: function (box, R) {
+          var svg = R.palco(600, 170, "Dois carrinhos em um trilho que colidem");
+          R.sv("rect", { x: 0, y: 0, width: 600, height: 170, fill: "#f6fbff" }, svg);
+          R.sv("rect", { x: 0, y: 130, width: 600, height: 12, fill: "#9aa5b1" }, svg);
+          function cart(cor) { var gr = R.sv("g", null, svg); var r = R.sv("rect", { y: -40, height: 34, rx: 5, fill: cor, stroke: "#1f2328", "stroke-width": 3 }, gr); R.sv("circle", { cx: 12, cy: -4, r: 6, fill: "#1f2328" }, gr); var w2 = R.sv("circle", { cy: -4, r: 6, fill: "#1f2328" }, gr); var t = R.sv("text", { y: -18, "text-anchor": "middle", "font-size": 13, "font-weight": 900, fill: "#fff" }, gr); return { g: gr, r: r, w2: w2, t: t }; }
+          var A = cart("#1d4ed8"), B = cart("#e85d3a");
+          var ctr = R.controles();
+          var m1 = R.slider(ctr, "Massa azul", 1, 5, 1, 2, function (v) { return v + " kg"; }, reset);
+          var v1 = R.slider(ctr, "Velocidade azul", 0, 8, 1, 6, function (v) { return v + " m/s"; }, reset);
+          var m2 = R.slider(ctr, "Massa laranja", 1, 5, 1, 1, function (v) { return v + " kg"; }, reset);
+          var v2 = R.slider(ctr, "Velocidade laranja", -6, 4, 1, 0, function (v) { return v + " m/s"; }, reset);
+          var tipo = R.opcoes(ctr, "Tipo de colisão", [{ v: "in", t: "Grudam" }, { v: "el", t: "Quicam (elástica)" }], "in", reset);
+          var bts = R.el("div", { class: "opcoes", style: "margin-top:.6rem" }, box);
+          R.botao(bts, "▶ Soltar", function () { if (acabou) reset(); rodando = true; }, true);
+          R.botao(bts, "↺ Reiniciar", reset);
+          var L = R.leituras();
+          var xa, xb, va, vb, bateu, rodando, acabou;
+          function larg(m) { return 40 + m * 8; }
+          function desenha() {
+            [[A, xa, m1.v], [B, xb, m2.v]].forEach(function (c) {
+              var w = larg(c[2]);
+              c[0].r.setAttribute("x", 0); c[0].r.setAttribute("width", w); c[0].w2.setAttribute("cx", w - 12);
+              c[0].t.setAttribute("x", w / 2); c[0].t.textContent = c[2] + " kg";
+              c[0].g.setAttribute("transform", "translate(" + c[1] + ",130)");
+            });
+            var qa = m1.v * v1.v + m2.v * v2.v;
+            var eca = m1.v * v1.v * v1.v / 2 + m2.v * v2.v * v2.v / 2;
+            L.set("qa", "Q total antes", R.fmt(qa, 1) + " kg·m/s");
+            L.set("ea", "Ec total antes", R.fmt(eca, 1) + " J");
+            if (bateu) {
+              L.set("qd", "Q total depois", R.fmt(m1.v * va + m2.v * vb, 1) + " kg·m/s");
+              L.set("ed", "Ec total depois", R.fmt(m1.v * va * va / 2 + m2.v * vb * vb / 2, 1) + " J");
+              L.set("vd", "Velocidades depois", R.fmt(va, 2) + " e " + R.fmt(vb, 2) + " m/s");
+            } else { L.set("qd", "Q total depois", "?"); L.set("ed", "Ec total depois", "?"); L.set("vd", "Velocidades depois", "?"); }
+          }
+          function reset() { xa = 40; xb = 330; va = v1.v; vb = v2.v; bateu = false; rodando = false; acabou = false; desenha(); }
+          R.animar(function (dt) {
+            if (!rodando) return;
+            var esc = 35;
+            xa += va * dt * esc; xb += vb * dt * esc;
+            if (!bateu && xa + larg(m1.v) >= xb) {
+              bateu = true; xa = xb - larg(m1.v);
+              var M = m1.v + m2.v;
+              if (tipo.v === "in") { va = vb = (m1.v * v1.v + m2.v * v2.v) / M; }
+              else { va = ((m1.v - m2.v) * v1.v + 2 * m2.v * v2.v) / M; vb = ((m2.v - m1.v) * v2.v + 2 * m1.v * v1.v) / M; }
+            }
+            if (xa < -120 || xb > 640 || xa > 640 || (!bateu && va <= vb && xa + larg(m1.v) < xb && Math.abs(va - vb) < 1e-9)) { rodando = false; acabou = true; }
+            if (xa < -120 || xb > 640) { rodando = false; acabou = true; }
+            desenha();
+          });
+          reset();
+        },
+        exercicios: [
+          { p: "Um carrinho de 2 kg a 6 m/s bate em outro de 1 kg parado e eles grudam. Qual a velocidade do conjunto?", ops: ["2 m/s", "3 m/s", "4 m/s", "6 m/s"], c: 2, exp: "Q antes = 2 · 6 = 12 kg·m/s. Depois: 3 kg · v = 12 → v = 4 m/s. Confira no simulador." },
+          { p: "Na colisão em que os carrinhos grudam, a energia cinética total:", ops: ["se conserva", "diminui, parte vira calor e deformação", "aumenta", "vira quantidade de movimento"], c: 1, exp: "A quantidade de movimento se conserva, mas a energia cinética não: parte dela vira calor, som e deformação." }
+        ]
+      },
+      {
+        tema: "Hidrostática", icone: "🚢", titulo: "Pressão, Stevin e empuxo",
+        ideia: "<p>Quanto <strong>mais fundo</strong>, maior a pressão: cada 10 m de água somam cerca de 1 atmosfera (Stevin).</p><p>O <strong>empuxo</strong> é a força para cima que o líquido faz e vale o peso do líquido deslocado (Arquimedes). O corpo <strong>flutua</strong> quando é menos denso que o líquido.</p>",
+        formula: 'p = p<sub>atm</sub> + ρ g h<br><span class="giz">E = ρ<sub>líquido</sub> · g · V<sub>imerso</sub></span><small>ρ: densidade (kg/m³) · p em pascal (Pa) · 1 atm ≈ 100 000 Pa</small>',
+        pergunta: { p: "Um navio de aço (aço é 8 vezes mais denso que a água) flutua. Como isso é possível?", r: "O casco é oco: o que importa é a densidade média do navio (aço + ar), que fica menor que a da água. Ele desloca muita água, e o empuxo equilibra o peso." },
+        simTitulo: "Tanque de água",
+        sim: function (box, R) {
+          var svg = R.palco(600, 320, "Tanque com líquido, um mergulhador e um bloco que flutua ou afunda");
+          R.sv("rect", { x: 0, y: 0, width: 600, height: 320, fill: "#f6fbff" }, svg);
+          var liq = R.sv("rect", { x: 40, y: 60, width: 520, height: 240, fill: "#9fd3ff" }, svg);
+          R.sv("rect", { x: 40, y: 40, width: 520, height: 260, fill: "none", stroke: "#1f2328", "stroke-width": 4 }, svg);
+          for (var p = 0; p <= 20; p += 5) R.sv("text", { x: 34, y: 64 + p * 11.5, "font-size": 11, "text-anchor": "end", fill: "#4a4f57" }, svg).textContent = p + " m";
+          var sensor = R.sv("g", null, svg);
+          R.sv("circle", { cx: 0, cy: 0, r: 12, fill: "#f7c51e", stroke: "#1f2328", "stroke-width": 3 }, sensor);
+          R.sv("text", { x: 0, y: 5, "text-anchor": "middle", "font-size": 13, "font-weight": 900 }, sensor).textContent = "p";
+          var bloco = R.sv("rect", { x: 380, width: 80, height: 80, fill: "#d9a35b", stroke: "#1f2328", "stroke-width": 3 }, svg);
+          var sE = seta(R, svg, "#157f3b"), sP = seta(R, svg, "#b42318");
+          var ctr = R.controles();
+          var hS = R.slider(ctr, "Profundidade do sensor", 0, 20, 1, 10, function (v) { return v + " m"; }, desenha);
+          var rho = R.slider(ctr, "Densidade do bloco", 200, 3000, 50, 600, function (v) { return v + " kg/m³"; }, desenha);
+          var liqSel = R.opcoes(ctr, "Líquido", [{ v: 1000, t: "Água doce" }, { v: 1030, t: "Água do mar" }, { v: 900, t: "Óleo" }], 1000, desenha);
+          var L = R.leituras(); var av = R.aviso();
+          var V = 0.001; // 1 litro de bloco
+          function desenha() {
+            var rl = liqSel.v;
+            liq.setAttribute("fill", rl === 900 ? "#f3d27a" : rl === 1030 ? "#7fc0e8" : "#9fd3ff");
+            sensor.setAttribute("transform", "translate(160," + (60 + hS.v * 11.5) + ")");
+            var pr = 100000 + rl * g * hS.v;
+            var fr = rho.v / rl, yb, E;
+            if (fr < 1) { yb = 60 - 80 * (1 - fr); E = rl * g * V * fr; }
+            else { yb = 300 - 80; E = rl * g * V; }
+            bloco.setAttribute("y", yb);
+            var P = rho.v * g * V;
+            sP.call(null, 420, yb + 40, 420, yb + 40 + Math.min(110, P * 4), "P");
+            sE.call(null, 420, yb + 40, 420, yb + 40 - Math.min(110, E * 4), "E");
+            L.set("p", "Pressão no sensor", R.fmt(pr, 0) + " Pa (" + R.fmt(pr / 100000, 2) + " atm)");
+            L.set("P", "Peso do bloco (1 L)", R.fmt(P, 1) + " N");
+            L.set("E", "Empuxo", R.fmt(E, 1) + " N");
+            if (fr < 1) av.set("Flutua: " + R.fmt(fr * 100, 0) + "% do bloco fica submerso, e o empuxo iguala o peso.");
+            else av.set("Afunda: o bloco é mais denso que o líquido. Empuxo máximo (" + R.fmt(E, 1) + " N) menor que o peso.", "alerta");
+          }
+          desenha();
+        },
+        exercicios: [
+          { p: "Um mergulhador está a 10 m de profundidade no mar. A pressão sobre ele é de aproximadamente:", ops: ["1 atm", "2 atm", "10 atm", "0,1 atm"], c: 1, exp: "1 atm do ar + cerca de 1 atm de cada 10 m de água = 2 atm (≈ 200 000 Pa)." },
+          { p: "Um bloco de densidade 600 kg/m³ é colocado em água (1000 kg/m³). O que acontece?", ops: ["Afunda", "Flutua com 60% submerso", "Flutua com 40% submerso", "Fica no meio da água"], c: 1, exp: "Fração submersa = 600 / 1000 = 0,6, ou seja, 60% do bloco fica dentro da água." }
+        ]
+      }
+    ],
+    quiz: [
+      { tema: "Cinemática", p: "Um ônibus percorre 120 km em 2 h. Qual a velocidade média?", ops: ["240 km/h", "60 km/h", "122 km/h", "30 km/h"], c: 1, exp: "v = Δs / Δt = 120 / 2 = 60 km/h." },
+      { tema: "Cinemática", p: "Para converter 72 km/h em m/s, fazemos:", ops: ["72 × 3,6 = 259,2 m/s", "72 ÷ 3,6 = 20 m/s", "72 ÷ 60 = 1,2 m/s", "72 × 1000 = 72 000 m/s"], c: 1, exp: "De km/h para m/s divide-se por 3,6: 72 ÷ 3,6 = 20 m/s." },
+      { tema: "Cinemática", p: "Um carro freia de 20 m/s até parar em 4 s. Qual a aceleração?", ops: ["5 m/s²", "−5 m/s²", "80 m/s²", "−80 m/s²"], c: 1, exp: "a = Δv / Δt = (0 − 20) / 4 = −5 m/s². O sinal negativo indica freada." },
+      { tema: "Leis de Newton", p: "Num ônibus que freia de repente, os passageiros são jogados para a frente por causa:", ops: ["da força de reação", "da inércia", "do atrito do banco", "da gravidade"], c: 1, exp: "Pela 1ª lei, o corpo tende a continuar em movimento quando o ônibus para." },
+      { tema: "Leis de Newton", p: "Uma força resultante de 30 N age em um corpo de 6 kg. A aceleração é:", ops: ["180 m/s²", "0,2 m/s²", "5 m/s²", "36 m/s²"], c: 2, exp: "a = F / m = 30 / 6 = 5 m/s²." },
+      { tema: "Energia", p: "Uma bola de 2 kg está a 5 m de altura. A energia potencial gravitacional é (g = 10 m/s²):", ops: ["10 J", "25 J", "100 J", "50 J"], c: 2, exp: "Ep = m g h = 2 · 10 · 5 = 100 J." },
+      { tema: "Energia", p: "Um carro de 1000 kg a 10 m/s tem energia cinética de:", ops: ["5 000 J", "10 000 J", "50 000 J", "100 000 J"], c: 2, exp: "Ec = m v² / 2 = 1000 · 100 / 2 = 50 000 J." },
+      { tema: "Trabalho e potência", p: "Dois motores erguem a mesma carga à mesma altura. O motor A leva 5 s e o B leva 10 s. Então:", ops: ["A realiza mais trabalho", "B realiza mais trabalho", "o trabalho é igual, mas A tem o dobro da potência", "a potência é igual"], c: 2, exp: "Mesmo trabalho (m g h). Potência = trabalho / tempo, então A (metade do tempo) tem o dobro." },
+      { tema: "Impulso", p: "Uma força de 200 N age por 0,1 s em uma bola. O impulso é:", ops: ["20 N·s", "2000 N·s", "200 N·s", "2 N·s"], c: 0, exp: "I = F · Δt = 200 · 0,1 = 20 N·s." },
+      { tema: "Hidrostática", p: "Uma prensa hidráulica tem êmbolos de 10 cm² e 200 cm². Aplicando 50 N no menor, o maior recebe:", ops: ["50 N", "250 N", "1000 N", "2,5 N"], c: 2, exp: "Pascal: F₁/A₁ = F₂/A₂ → F₂ = 50 · 200 / 10 = 1000 N." }
+    ]
+  });
+})();
+</script>
+</body>
+</html>

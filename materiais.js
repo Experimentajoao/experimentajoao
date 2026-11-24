@@ -5,6 +5,35 @@
 // novo: true mostra a etiqueta "Novo" e coloca o material no começo da lista.
 
 var MATERIAIS = [
+  // ---------- REVISÃO DO ANO ----------
+  {
+    titulo: "Revisão do Ano · Física 1º ano",
+    materia: "fisica",
+    tipo: "Apresentação + simuladores + exercícios",
+    icone: "1️⃣",
+    novo: true,
+    descricao: "Cinemática, leis de Newton, energia, trabalho e potência, impulso e hidrostática. Pronto para projetar: cada tema tem ideia central, simulador, pergunta para a turma e exercícios com correção, e no fim um quiz do ano.",
+    link: "https://experimentajoao.github.io/experimentajoao/revisao/1ano.html"
+  },
+  {
+    titulo: "Revisão do Ano · Física 2º ano",
+    materia: "fisica",
+    tipo: "Apresentação + simuladores + exercícios",
+    icone: "2️⃣",
+    novo: true,
+    descricao: "Escalas de temperatura, calorimetria, dilatação, termodinâmica, refração, lentes, ondas, som e efeito Doppler. Pronto para projetar, com exercícios corrigidos na hora e quiz final.",
+    link: "https://experimentajoao.github.io/experimentajoao/revisao/2ano.html"
+  },
+  {
+    titulo: "Revisão do Ano · Física 3º ano",
+    materia: "fisica",
+    tipo: "Apresentação + simuladores + exercícios",
+    icone: "3️⃣",
+    novo: true,
+    descricao: "Lei de Coulomb, Lei de Ohm, associação de resistores, conta de luz, indução, transformadores, espectro eletromagnético e efeito fotoelétrico. Pronto para projetar, com exercícios e quiz final.",
+    link: "https://experimentajoao.github.io/experimentajoao/revisao/3ano.html"
+  },
+
   // ---------- NOVOS ----------
   {
     titulo: "Física 1º ano · 3º Trimestre",

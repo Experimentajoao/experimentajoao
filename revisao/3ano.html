@@ -1,0 +1,442 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Revisão do Ano · Física 3º ano | Experimenta João</title>
+<meta name="description" content="Revisão de Física do 3º ano em modo apresentação: eletrostática, circuitos, consumo de energia, eletromagnetismo e física moderna, com simuladores e exercícios.">
+<meta name="theme-color" content="#1f4d3f">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&family=Kalam:wght@700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="estilo.css">
+</head>
+<body>
+<script src="motor.js"></script>
+<script>
+(function () {
+  function seta(R, pai, cor, larg) {
+    var gr = R.sv("g", null, pai);
+    var l = R.sv("line", { stroke: cor, "stroke-width": larg || 5, "stroke-linecap": "round" }, gr);
+    var p = R.sv("polygon", { fill: cor }, gr);
+    return function (x1, y1, x2, y2) {
+      var len = Math.hypot(x2 - x1, y2 - y1);
+      gr.style.display = len < 3 ? "none" : "";
+      if (len < 3) return;
+      var ux = (x2 - x1) / len, uy = (y2 - y1) / len;
+      l.setAttribute("x1", x1); l.setAttribute("y1", y1); l.setAttribute("x2", x2 - ux * 6); l.setAttribute("y2", y2 - uy * 6);
+      p.setAttribute("points", [x2, y2, x2 - ux * 14 - uy * 8, y2 - uy * 14 + ux * 8, x2 - ux * 14 + uy * 8, y2 - uy * 14 - ux * 8].join(","));
+    };
+  }
+  // percurso retangular para os elétrons de um circuito
+  function noLaco(s, x0, y0, w, h) {
+    var per = 2 * (w + h); s = ((s % per) + per) % per;
+    if (s < w) return [x0 + s, y0];
+    if (s < w + h) return [x0 + w, y0 + s - w];
+    if (s < 2 * w + h) return [x0 + w - (s - w - h), y0 + h];
+    return [x0, y0 + h - (s - 2 * w - h)];
+  }
+  function corDoComprimento(nm) {
+    var r = 0, g = 0, b = 0;
+    if (nm >= 380 && nm < 440) { r = -(nm - 440) / 60; b = 1; }
+    else if (nm < 490) { g = (nm - 440) / 50; b = 1; }
+    else if (nm < 510) { g = 1; b = -(nm - 510) / 20; }
+    else if (nm < 580) { r = (nm - 510) / 70; g = 1; }
+    else if (nm < 645) { r = 1; g = -(nm - 645) / 65; }
+    else if (nm <= 750) { r = 1; }
+    return "rgb(" + Math.round(255 * r) + "," + Math.round(255 * g) + "," + Math.round(255 * b) + ")";
+  }
+
+  Revisao.iniciar({
+    serie: "3º ano",
+    titulo: "Revisão do Ano · Física 3º ano",
+    subtitulo: "Eletricidade, magnetismo e física moderna",
+    cor: "#0f6e5c", corClara: "#dcf2ec",
+    apresentacao: "Tudo o que a turma estudou no ano, em oito paradas: da carga elétrica até o fóton que arranca elétrons do metal.",
+    slides: [
+      {
+        tema: "Eletrostática", icone: "⚡", titulo: "Cargas elétricas e Lei de Coulomb",
+        ideia: "<p>Cargas de <strong>sinais iguais se repelem</strong> e de <strong>sinais opostos se atraem</strong>.</p><p>A força cresce com o valor das cargas e <strong>diminui com o quadrado da distância</strong>: dobrando a distância, a força cai para um quarto.</p>",
+        formula: 'F = k · |q<sub>1</sub> · q<sub>2</sub>| / d²<small>k = 9 × 10⁹ N·m²/C² · cargas em coulombs (μC = 10⁻⁶ C) · d em metros</small>',
+        pergunta: { p: "Se a distância entre duas cargas cair pela metade, a força dobra?", r: "Não, fica 4 vezes maior, porque a distância está ao quadrado no denominador. Mostre no simulador indo de 0,6 m para 0,3 m." },
+        simTitulo: "Duas cargas",
+        sim: function (box, R) {
+          var svg = R.palco(600, 220, "Duas cargas elétricas com as setas de força entre elas");
+          R.sv("rect", { x: 0, y: 0, width: 600, height: 220, fill: "#f6fbff" }, svg);
+          R.sv("line", { x1: 20, y1: 110, x2: 580, y2: 110, stroke: "#dbe3ec", "stroke-width": 2 }, svg);
+          function bola() { var gr = R.sv("g", null, svg); var c = R.sv("circle", { r: 26, stroke: "#1f2328", "stroke-width": 3 }, gr); var t = R.sv("text", { y: 9, "text-anchor": "middle", "font-size": 26, "font-weight": 900, fill: "#fff" }, gr); var v = R.sv("text", { y: 52, "text-anchor": "middle", "font-size": 13, "font-weight": 800, fill: "#1f2328" }, gr); return { g: gr, c: c, t: t, v: v }; }
+          var A = bola(), B = bola();
+          var s1 = seta(R, svg, "#0f6e5c"), s2 = seta(R, svg, "#0f6e5c");
+          var cota = R.sv("text", { y: 200, "text-anchor": "middle", "font-size": 14, "font-weight": 900, fill: "#4a4f57" }, svg);
+          var ctr = R.controles();
+          var q1 = R.slider(ctr, "Carga 1 (q₁)", -5, 5, 1, 2, function (v) { return (v > 0 ? "+" : "") + v + " μC"; }, desenha);
+          var q2 = R.slider(ctr, "Carga 2 (q₂)", -5, 5, 1, -3, function (v) { return (v > 0 ? "+" : "") + v + " μC"; }, desenha);
+          var d = R.slider(ctr, "Distância (d)", 0.1, 1, 0.05, 0.3, function (v) { return R.fmt(v, 2) + " m"; }, desenha);
+          var L = R.leituras(); var av = R.aviso();
+          function pint(b, q) { b.c.setAttribute("fill", q > 0 ? "#e85d3a" : q < 0 ? "#1d4ed8" : "#9aa5b1"); b.t.textContent = q > 0 ? "+" : q < 0 ? "−" : "0"; b.v.textContent = (q > 0 ? "+" : "") + q + " μC"; }
+          function desenha() {
+            var dx = d.v * 420, xa = 300 - dx / 2, xb = 300 + dx / 2;
+            A.g.setAttribute("transform", "translate(" + xa + ",110)"); B.g.setAttribute("transform", "translate(" + xb + ",110)");
+            pint(A, q1.v); pint(B, q2.v);
+            cota.setAttribute("x", 300); cota.textContent = "d = " + R.fmt(d.v, 2) + " m";
+            var F = 9e9 * Math.abs(q1.v * q2.v) * 1e-12 / (d.v * d.v);
+            var len = Math.min(140, 14 + 50 * Math.sqrt(F));
+            var sinal = q1.v * q2.v;
+            if (sinal === 0) { s1(0, 0, 0, 0); s2(0, 0, 0, 0); }
+            else if (sinal > 0) { s1(xa - 28, 70, xa - 28 - len, 70); s2(xb + 28, 70, xb + 28 + len, 70); }
+            else { var l2 = Math.min(len, dx / 2 - 30); s1(xa + 28, 70, xa + 28 + Math.max(8, l2), 70); s2(xb - 28, 70, xb - 28 - Math.max(8, l2), 70); }
+            L.set("f", "Força elétrica", R.fmt(F, 3) + " N");
+            L.set("r", "Comparando com d = 1 m", R.fmt(1 / (d.v * d.v), 1) + " vezes maior");
+            av.set(sinal === 0 ? "Uma carga é zero: não há força elétrica." : sinal > 0 ? "Sinais iguais: as cargas se repelem." : "Sinais opostos: as cargas se atraem.", sinal < 0 ? "" : "neutro");
+          }
+          desenha();
+        },
+        exercicios: [
+          { p: "Duas cargas se atraem com força F. Se a distância entre elas dobrar, a nova força será:", ops: ["2F", "F/2", "F/4", "4F"], c: 2, exp: "F ∝ 1/d²: com 2d, a força fica 1/2² = 1/4 da original." },
+          { p: "Um bastão de vidro atritado com lã fica positivo porque:", ops: ["ganhou prótons da lã", "perdeu elétrons para a lã", "ganhou elétrons", "criou cargas positivas"], c: 1, exp: "Na eletrização só os elétrons se movem: o vidro perdeu elétrons e ficou com falta deles (positivo)." }
+        ]
+      },
+      {
+        tema: "Eletrodinâmica", icone: "💡", titulo: "Corrente elétrica e Lei de Ohm",
+        ideia: "<p><strong>Corrente elétrica</strong> é o movimento ordenado de elétrons, empurrados pela <strong>tensão</strong> (ddp) da pilha ou da tomada.</p><p>O <strong>resistor</strong> dificulta a passagem: com a mesma tensão, mais resistência significa menos corrente. A <strong>potência</strong> diz quanta energia por segundo é usada.</p>",
+        formula: 'U = R · i<br><span class="giz">P = U · i</span><small>U: tensão (V) · R: resistência (Ω) · i: corrente (A) · P: potência (W)</small>',
+        pergunta: { p: "O que acontece com o brilho da lâmpada se a resistência do circuito aumenta e a tensão continua a mesma?", r: "A corrente diminui (i = U/R), a potência cai e a lâmpada brilha menos." },
+        simTitulo: "Circuito com lâmpada",
+        sim: function (box, R) {
+          var svg = R.palco(600, 260, "Circuito com pilha, fios e lâmpada, com elétrons se movendo");
+          R.sv("rect", { x: 0, y: 0, width: 600, height: 260, fill: "#f6fbff" }, svg);
+          R.sv("rect", { x: 100, y: 50, width: 400, height: 160, fill: "none", stroke: "#c08a2e", "stroke-width": 8, rx: 10 }, svg);
+          R.sv("rect", { x: 80, y: 95, width: 40, height: 70, fill: "#1f2328" }, svg);
+          R.sv("rect", { x: 90, y: 85, width: 20, height: 10, fill: "#9aa5b1" }, svg);
+          var tV = R.sv("text", { x: 60, y: 135, "text-anchor": "end", "font-weight": 900, "font-size": 15 }, svg);
+          var brilho = R.sv("circle", { cx: 300, cy: 50, r: 60, fill: "#f7c51e" }, svg);
+          R.sv("circle", { cx: 300, cy: 50, r: 22, fill: "#fff8d6", stroke: "#1f2328", "stroke-width": 3 }, svg);
+          R.sv("path", { d: "M290,52 q5,-12 10,0 q5,-12 10,0", fill: "none", stroke: "#1f2328", "stroke-width": 2 }, svg);
+          R.sv("rect", { x: 380, y: 196, width: 70, height: 28, fill: "#fff", stroke: "#1f2328", "stroke-width": 3 }, svg);
+          var tR = R.sv("text", { x: 415, y: 216, "text-anchor": "middle", "font-weight": 900, "font-size": 13 }, svg);
+          var eletrons = [], gE = R.sv("g", null, svg);
+          for (var i = 0; i < 24; i++) eletrons.push({ s: i * 50, el: R.sv("circle", { r: 5, fill: "#1d4ed8" }, gE) });
+          var ctr = R.controles();
+          var U = R.slider(ctr, "Tensão da fonte (U)", 1.5, 24, 1.5, 12, function (v) { return R.fmt(v, 1) + " V"; }, desenha);
+          var Rr = R.slider(ctr, "Resistência (R)", 1, 100, 1, 4, function (v) { return v + " Ω"; }, desenha);
+          var L = R.leituras(); var av = R.aviso();
+          var i0 = 0;
+          function desenha() {
+            i0 = U.v / Rr.v; var P = U.v * i0;
+            tV.textContent = R.fmt(U.v, 1) + " V"; tR.textContent = Rr.v + " Ω";
+            brilho.setAttribute("opacity", Math.min(0.95, P / 60)); brilho.setAttribute("r", 26 + Math.min(50, P / 3));
+            L.set("i", "Corrente i = U / R", R.fmt(i0, 2) + " A");
+            L.set("p", "Potência P = U · i", R.fmt(P, 1) + " W");
+            av.set(P > 100 ? "Corrente alta: em uma casa, um disjuntor desligaria para proteger os fios." : "Os elétrons (azul) andam mais rápido quando a corrente é maior.", P > 100 ? "alerta" : "neutro");
+          }
+          R.animar(function (dt) {
+            eletrons.forEach(function (e) { e.s -= i0 * 25 * dt; var p = noLaco(e.s, 100, 50, 400, 160); e.el.setAttribute("cx", p[0]); e.el.setAttribute("cy", p[1]); });
+          });
+          desenha();
+        },
+        exercicios: [
+          { p: "Uma lâmpada de resistência 4 Ω é ligada em 12 V. Qual a corrente?", ops: ["48 A", "3 A", "0,33 A", "16 A"], c: 1, exp: "i = U / R = 12 / 4 = 3 A." },
+          { p: "Um chuveiro de 220 V puxa 25 A. Qual a potência dele?", ops: ["245 W", "8,8 W", "5 500 W", "195 W"], c: 2, exp: "P = U · i = 220 · 25 = 5 500 W." }
+        ]
+      },
+      {
+        tema: "Eletrodinâmica", icone: "🔌", titulo: "Associação de resistores",
+        ideia: "<p>Em <strong>série</strong>, a corrente passa por um resistor depois do outro: as resistências <strong>somam</strong> e, se um queimar, tudo apaga (pisca-pisca antigo).</p><p>Em <strong>paralelo</strong>, cada resistor tem seu próprio caminho: a resistência total fica <strong>menor que a menor delas</strong>, e cada aparelho funciona independente (tomadas de casa).</p>",
+        formula: 'Série: R<sub>eq</sub> = R<sub>1</sub> + R<sub>2</sub> + R<sub>3</sub><br><span class="giz">Paralelo: 1/R<sub>eq</sub> = 1/R<sub>1</sub> + 1/R<sub>2</sub> + 1/R<sub>3</sub></span><small>para dois em paralelo: R_eq = (R₁ · R₂) / (R₁ + R₂)</small>',
+        pergunta: { p: "Por que as tomadas da sua casa são ligadas em paralelo e não em série?", r: "Em paralelo todas recebem a mesma tensão (127 ou 220 V) e um aparelho desligado não interrompe os outros." },
+        simTitulo: "Série ou paralelo",
+        sim: function (box, R) {
+          var svg = R.palco(600, 250, "Três resistores ligados em série ou em paralelo");
+          var tipoAtual = "s";
+          var ctr = R.controles();
+          var tipo = R.opcoes(ctr, "Ligação", [{ v: "s", t: "Em série" }, { v: "p", t: "Em paralelo" }], "s", function (v) { tipoAtual = v; desenha(); });
+          var U = R.slider(ctr, "Tensão da fonte", 6, 24, 6, 12, function (v) { return v + " V"; }, desenha);
+          var r1 = R.slider(ctr, "R₁", 1, 30, 1, 6, function (v) { return v + " Ω"; }, desenha);
+          var r2 = R.slider(ctr, "R₂", 1, 30, 1, 3, function (v) { return v + " Ω"; }, desenha);
+          var r3 = R.slider(ctr, "R₃", 1, 30, 1, 6, function (v) { return v + " Ω"; }, desenha);
+          var L = R.leituras(); var av = R.aviso();
+          function res(x, y, v, i, vert) {
+            var w = vert ? 28 : 70, h = vert ? 60 : 28;
+            R.sv("rect", { x: x - w / 2, y: y - h / 2, width: w, height: h, fill: "#fff", stroke: "#1f2328", "stroke-width": 3 }, svg);
+            R.sv("text", { x: x + (vert ? 26 : 0), y: y + (vert ? 5 : -22), "text-anchor": vert ? "start" : "middle", "font-weight": 900, "font-size": 13 }, svg).textContent = v + " Ω";
+            R.sv("text", { x: x + (vert ? 26 : 0), y: y + (vert ? 22 : 38), "text-anchor": vert ? "start" : "middle", "font-weight": 800, "font-size": 12, fill: "#0f6e5c" }, svg).textContent = R.fmt(i, 2) + " A";
+          }
+          function desenha() {
+            svg.innerHTML = "";
+            R.sv("rect", { x: 0, y: 0, width: 600, height: 250, fill: "#f6fbff" }, svg);
+            var rs = [r1.v, r2.v, r3.v], Req, it, ic;
+            R.sv("rect", { x: 30, y: 100, width: 30, height: 50, fill: "#1f2328" }, svg);
+            R.sv("text", { x: 68, y: 130, "text-anchor": "start", "font-weight": 900, "font-size": 13 }, svg).textContent = U.v + " V";
+            if (tipoAtual === "s") {
+              Req = rs[0] + rs[1] + rs[2]; it = U.v / Req;
+              R.sv("polyline", { points: "45,100 45,50 560,50 560,210 45,210 45,150", fill: "none", stroke: "#c08a2e", "stroke-width": 5 }, svg);
+              [170, 300, 430].forEach(function (x, k) { res(x, 50, rs[k], it, false); });
+              ic = [it, it, it];
+            } else {
+              Req = 1 / (1 / rs[0] + 1 / rs[1] + 1 / rs[2]); it = U.v / Req;
+              R.sv("polyline", { points: "45,100 45,30 520,30 520,220 45,220 45,150", fill: "none", stroke: "#c08a2e", "stroke-width": 5 }, svg);
+              ic = rs.map(function (r) { return U.v / r; });
+              [200, 320, 440].forEach(function (x, k) {
+                R.sv("line", { x1: x, y1: 30, x2: x, y2: 220, stroke: "#c08a2e", "stroke-width": 5 }, svg);
+                res(x, 125, rs[k], ic[k], true);
+              });
+            }
+            L.set("req", "Resistência equivalente", R.fmt(Req, 2) + " Ω");
+            L.set("it", "Corrente total", R.fmt(it, 2) + " A");
+            L.set("p", "Potência total", R.fmt(U.v * it, 1) + " W");
+            av.set(tipoAtual === "s" ? "Em série a corrente é a mesma em todos e a tensão se divide." : "Em paralelo a tensão é a mesma em todos e a corrente se divide. R_eq (" + R.fmt(Req, 2) + " Ω) é menor que o menor resistor.", "neutro");
+          }
+          desenha();
+        },
+        exercicios: [
+          { p: "Dois resistores de 6 Ω e 3 Ω são ligados em paralelo. A resistência equivalente é:", ops: ["9 Ω", "4,5 Ω", "2 Ω", "18 Ω"], c: 2, exp: "R_eq = (6 · 3) / (6 + 3) = 18 / 9 = 2 Ω." },
+          { p: "Num pisca-pisca antigo, uma lâmpada queimou e todas apagaram. As lâmpadas estavam ligadas:", ops: ["em paralelo", "em série", "em curto-circuito", "sem fonte"], c: 1, exp: "Em série existe um caminho só: se uma lâmpada queima, o circuito abre e a corrente para em todas." }
+        ]
+      },
+      {
+        tema: "Energia elétrica", icone: "🧾", titulo: "Consumo e conta de luz",
+        ideia: "<p>A conta de luz cobra a <strong>energia</strong> consumida, em <strong>quilowatt-hora (kWh)</strong>.</p><p>Energia é potência vezes tempo: um aparelho potente ligado por pouco tempo pode gastar menos que um fraco ligado o dia inteiro. O <strong>chuveiro elétrico</strong> costuma ser o campeão da conta.</p>",
+        formula: 'E = P · Δt<br><span class="giz">E (kWh) = P (kW) × horas</span><small>1 kWh = 1000 W usados durante 1 hora · custo = kWh × tarifa</small>',
+        pergunta: { p: "Diminuir 5 minutos no banho de cada pessoa da casa faz diferença na conta?", r: "Faz: um chuveiro de 5 500 W gasta cerca de 0,46 kWh a cada 5 minutos. Para 4 pessoas em 30 dias, são quase 55 kWh por mês. Teste no simulador." },
+        simTitulo: "Calculadora da conta",
+        sim: function (box, R) {
+          var svg = R.palco(600, 200, "Medidor de energia e valor da conta");
+          R.sv("rect", { x: 0, y: 0, width: 600, height: 200, fill: "#f6fbff" }, svg);
+          R.sv("rect", { x: 40, y: 30, width: 220, height: 140, rx: 14, fill: "#fff", stroke: "#1f2328", "stroke-width": 4 }, svg);
+          R.sv("text", { x: 150, y: 60, "text-anchor": "middle", "font-weight": 900, "font-size": 14, fill: "#4a4f57" }, svg).textContent = "MEDIDOR";
+          var tK = R.sv("text", { x: 150, y: 115, "text-anchor": "middle", "font-weight": 900, "font-size": 34, fill: "#0f6e5c" }, svg);
+          R.sv("text", { x: 150, y: 145, "text-anchor": "middle", "font-weight": 800, "font-size": 14 }, svg).textContent = "kWh por mês";
+          var disco = R.sv("rect", { x: 70, y: 152, width: 160, height: 8, fill: "#9aa5b1" }, svg);
+          var marca = R.sv("rect", { x: 70, y: 152, width: 16, height: 8, fill: "#b42318" }, svg);
+          R.sv("rect", { x: 330, y: 50, width: 230, height: 100, rx: 10, fill: "#fff3c4", stroke: "#8a6a00", "stroke-width": 3, "stroke-dasharray": "8 5" }, svg);
+          R.sv("text", { x: 445, y: 82, "text-anchor": "middle", "font-weight": 900, "font-size": 14 }, svg).textContent = "Na conta do mês";
+          var tR = R.sv("text", { x: 445, y: 125, "text-anchor": "middle", "font-weight": 900, "font-size": 32, fill: "#b42318" }, svg);
+          var ctr = R.controles();
+          var ap = R.opcoes(ctr, "Aparelho", [{ v: 5500, t: "🚿 Chuveiro" }, { v: 150, t: "🧊 Geladeira" }, { v: 100, t: "📺 TV" }, { v: 1000, t: "🧺 Ferro de passar" }], 5500, function (v) { P.set(v); desenha(); });
+          var P = R.slider(ctr, "Potência", 10, 7500, 10, 5500, function (v) { return R.fmt(v, 0) + " W"; }, desenha);
+          var h = R.slider(ctr, "Tempo ligado por dia", 0.25, 24, 0.25, 0.5, function (v) { return v < 1 ? R.fmt(v * 60, 0) + " min" : R.fmt(v, 2) + " h"; }, desenha);
+          var tar = R.slider(ctr, "Tarifa", 0.5, 1.5, 0.05, 0.9, function (v) { return "R$ " + v.toFixed(2).replace(".", ",") + " por kWh"; }, desenha);
+          var L = R.leituras(); var av = R.aviso();
+          var giro = 0, kw = 0;
+          function desenha() {
+            kw = P.v / 1000;
+            var kwhDia = kw * h.v, kwhMes = kwhDia * 30, custo = kwhMes * tar.v;
+            tK.textContent = R.fmt(kwhMes, 1); tR.textContent = "R$ " + custo.toFixed(2).replace(".", ",");
+            L.set("d", "Energia por dia", R.fmt(kwhDia, 2) + " kWh");
+            L.set("m", "Energia em 30 dias", R.fmt(kwhMes, 1) + " kWh");
+            L.set("c", "Custo no mês", "R$ " + custo.toFixed(2).replace(".", ","));
+            av.set("Conta: " + R.fmt(kw, 2) + " kW × " + R.fmt(h.v, 2) + " h × 30 dias = " + R.fmt(kwhMes, 1) + " kWh.", "neutro");
+          }
+          R.animar(function (dt) { giro = (giro + kw * 30 * dt) % 144; marca.setAttribute("x", 70 + giro); });
+          desenha();
+        },
+        exercicios: [
+          { p: "Um chuveiro de 5 500 W é usado 30 minutos por dia durante 30 dias. Quanto ele consome no mês?", ops: ["82,5 kWh", "165 kWh", "5 500 kWh", "8,25 kWh"], c: 0, exp: "E = 5,5 kW × 0,5 h × 30 = 82,5 kWh." },
+          { p: "Se a tarifa é R$ 0,90 por kWh, quanto custam 100 kWh?", ops: ["R$ 9,00", "R$ 90,00", "R$ 111,11", "R$ 900,00"], c: 1, exp: "Custo = 100 × 0,90 = R$ 90,00." }
+        ]
+      },
+      {
+        tema: "Eletromagnetismo", icone: "🧲", titulo: "Indução eletromagnética",
+        ideia: "<p>Um <strong>ímã em movimento</strong> perto de uma bobina faz aparecer corrente elétrica nela. É a <strong>Lei de Faraday</strong>: só há corrente enquanto o fluxo magnético está <strong>variando</strong>.</p><p>Quanto mais rápido o ímã se move, maior a corrente. A <strong>Lei de Lenz</strong> diz que a corrente induzida sempre se opõe à variação que a criou. É assim que funcionam as usinas e os geradores.</p>",
+        formula: 'ε = − ΔΦ / Δt<small>ε: força eletromotriz induzida (V) · Φ: fluxo magnético (Wb) · o sinal de menos é a Lei de Lenz</small>',
+        pergunta: { p: "Se você deixar o ímã parado dentro da bobina, a lâmpada fica acesa?", r: "Não. Com o ímã parado o fluxo não varia e não há corrente. Só há corrente com movimento (ou variação do campo)." },
+        simTitulo: "Ímã e bobina",
+        sim: function (box, R) {
+          var svg = R.palco(600, 260, "Ímã que entra e sai de uma bobina ligada a um medidor de corrente");
+          R.sv("rect", { x: 0, y: 0, width: 600, height: 260, fill: "#f6fbff" }, svg);
+          for (var k = 0; k < 8; k++) R.sv("ellipse", { cx: 330 + k * 14, cy: 110, rx: 7, ry: 40, fill: "none", stroke: "#c08a2e", "stroke-width": 5 }, svg);
+          R.sv("polyline", { points: "330,150 330,215 250,215", fill: "none", stroke: "#c08a2e", "stroke-width": 4 }, svg);
+          R.sv("polyline", { points: "428,150 428,215 470,215", fill: "none", stroke: "#c08a2e", "stroke-width": 4 }, svg);
+          R.sv("circle", { cx: 360, cy: 215, r: 0 }, svg);
+          var gal = R.sv("g", { transform: "translate(510,215)" }, svg);
+          R.sv("circle", { r: 36, fill: "#fff", stroke: "#1f2328", "stroke-width": 3 }, gal);
+          R.sv("text", { y: 30, "text-anchor": "middle", "font-size": 11, "font-weight": 900 }, gal).textContent = "A";
+          var ponteiro = R.sv("line", { x1: 0, y1: 10, x2: 0, y2: -26, stroke: "#b42318", "stroke-width": 4, "stroke-linecap": "round" }, gal);
+          var lamp = R.sv("circle", { cx: 210, cy: 215, r: 18, fill: "#fff8d6", stroke: "#1f2328", "stroke-width": 3 }, svg);
+          var ima = R.sv("g", null, svg);
+          R.sv("rect", { x: -60, y: -16, width: 60, height: 32, fill: "#b42318", stroke: "#1f2328", "stroke-width": 3 }, ima);
+          R.sv("rect", { x: 0, y: -16, width: 60, height: 32, fill: "#1d4ed8", stroke: "#1f2328", "stroke-width": 3 }, ima);
+          R.sv("text", { x: -30, y: 6, "text-anchor": "middle", fill: "#fff", "font-weight": 900 }, ima).textContent = "N";
+          R.sv("text", { x: 30, y: 6, "text-anchor": "middle", fill: "#fff", "font-weight": 900 }, ima).textContent = "S";
+          var ctr = R.controles();
+          var modo = R.opcoes(ctr, "Movimento", [{ v: 0, t: "✋ Parado" }, { v: 1, t: "↔ Vai e volta" }], 1, function () {});
+          var vel = R.slider(ctr, "Rapidez do ímã", 0.3, 3, 0.1, 1, function (v) { return R.fmt(v, 1) + "×"; }, function () {});
+          var esp = R.slider(ctr, "Número de espiras", 1, 3, 1, 2, function (v) { return ["", "poucas", "médio", "muitas"][v]; }, function () {});
+          var L = R.leituras(); var av = R.aviso();
+          var t = 0, x = 120, xAnt = 120, fase = 0, mostra = 0;
+          function fluxo(xx) { var c = (xx + 60) - 380; return 1 / (1 + (c / 70) * (c / 70)); }
+          R.animar(function (dt) {
+            if (modo.v) { fase += dt * vel.v * 1.6; x = 230 + 150 * Math.sin(fase); }
+            var dphi = (fluxo(x) - fluxo(xAnt)) / Math.max(dt, 1e-3);
+            xAnt = x;
+            var emf = -dphi * esp.v * 3;
+            mostra += (emf - mostra) * Math.min(1, dt * 12);
+            ima.setAttribute("transform", "translate(" + x + ",110)");
+            ponteiro.setAttribute("transform", "rotate(" + Math.max(-70, Math.min(70, mostra * 30)) + ")");
+            var a = Math.min(1, Math.abs(mostra) / 2.2);
+            lamp.setAttribute("fill", "rgba(247,197,30," + (0.15 + 0.85 * a) + ")");
+            L.set("i", "Corrente induzida (relativa)", R.fmt(Math.abs(mostra), 2));
+            if (Math.abs(mostra) < 0.05) av.set("Fluxo não está variando: nenhuma corrente.", "neutro");
+            else av.set(mostra < 0 ? "Ímã se aproximando: a bobina cria um polo que o repele (Lenz)." : "Ímã se afastando: a bobina cria um polo que o atrai de volta (Lenz).");
+          });
+        },
+        exercicios: [
+          { p: "Um ímã é deixado parado dentro de uma bobina ligada a uma lâmpada. A lâmpada:", ops: ["acende forte", "acende fraco", "não acende, porque o fluxo não varia", "queima"], c: 2, exp: "Pela Lei de Faraday só há corrente induzida quando o fluxo magnético varia." },
+          { p: "Numa usina hidrelétrica, a energia da água é transformada em energia elétrica graças:", ops: ["à Lei de Coulomb", "à indução eletromagnética nos geradores", "ao efeito fotoelétrico", "à dilatação térmica"], c: 1, exp: "A água gira a turbina, que gira ímãs perto de bobinas (ou o contrário): o fluxo varia e induz corrente." }
+        ]
+      },
+      {
+        tema: "Eletromagnetismo", icone: "🔁", titulo: "Transformadores",
+        ideia: "<p>O transformador <strong>muda o valor da tensão</strong> usando duas bobinas enroladas no mesmo núcleo de ferro.</p><p>Mais espiras na saída: tensão <strong>sobe</strong> (elevador). Menos espiras: tensão <strong>desce</strong> (abaixador, como o carregador do celular). Ele só funciona com <strong>corrente alternada</strong>, porque precisa de fluxo variando.</p>",
+        formula: 'U<sub>s</sub> / U<sub>p</sub> = N<sub>s</sub> / N<sub>p</sub><br><span class="giz">U<sub>p</sub> · i<sub>p</sub> = U<sub>s</sub> · i<sub>s</sub></span><small>p: primário (entrada) · s: secundário (saída) · transformador ideal: potência se conserva</small>',
+        pergunta: { p: "Por que as linhas de transmissão levam a energia em tensões altíssimas (centenas de milhares de volts)?", r: "Com tensão alta, a mesma potência passa com corrente baixa, e a perda por aquecimento nos fios (que depende de i²) fica muito menor." },
+        simTitulo: "Bobinas no núcleo",
+        sim: function (box, R) {
+          var svg = R.palco(600, 240, "Transformador com bobina primária e secundária");
+          var ctr = R.controles();
+          var Up = R.opcoes(ctr, "Tensão de entrada", [{ v: 127, t: "127 V" }, { v: 220, t: "220 V" }, { v: 13800, t: "13 800 V (rede)" }], 220, desenha);
+          var Np = R.slider(ctr, "Espiras do primário (Nₚ)", 100, 2000, 50, 1000, function (v) { return v; }, desenha);
+          var Ns = R.slider(ctr, "Espiras do secundário (Nₛ)", 10, 4000, 10, 50, function (v) { return v; }, desenha);
+          var P = R.slider(ctr, "Potência do aparelho", 5, 2000, 5, 20, function (v) { return v + " W"; }, desenha);
+          var L = R.leituras(); var av = R.aviso();
+          function bobina(x, n, cor) { var vis = Math.max(2, Math.min(14, Math.round(n / 150))); for (var k = 0; k < vis; k++) R.sv("ellipse", { cx: x, cy: 60 + k * (120 / vis) + 60 / vis, rx: 34, ry: 6, fill: "none", stroke: cor, "stroke-width": 4 }, svg); }
+          function desenha() {
+            svg.innerHTML = "";
+            R.sv("rect", { x: 0, y: 0, width: 600, height: 240, fill: "#f6fbff" }, svg);
+            R.sv("path", { d: "M170,40 H430 V200 H170 Z M210,80 H390 V160 H210 Z", fill: "#8a8f98", "fill-rule": "evenodd", stroke: "#1f2328", "stroke-width": 3 }, svg);
+            bobina(190, Np.v, "#c08a2e"); bobina(410, Ns.v, "#b42318");
+            var Us = Up.v * Ns.v / Np.v, ip = P.v / Up.v, is = P.v / Us;
+            R.sv("text", { x: 90, y: 115, "text-anchor": "middle", "font-weight": 900, "font-size": 16 }, svg).textContent = R.fmt(Up.v, 0) + " V";
+            R.sv("text", { x: 90, y: 135, "text-anchor": "middle", "font-weight": 800, "font-size": 12, fill: "#4a4f57" }, svg).textContent = "entrada";
+            R.sv("text", { x: 515, y: 115, "text-anchor": "middle", "font-weight": 900, "font-size": 16, fill: "#b42318" }, svg).textContent = R.fmt(Us, 1) + " V";
+            R.sv("text", { x: 515, y: 135, "text-anchor": "middle", "font-weight": 800, "font-size": 12, fill: "#4a4f57" }, svg).textContent = "saída";
+            R.sv("text", { x: 190, y: 228, "text-anchor": "middle", "font-weight": 800, "font-size": 12 }, svg).textContent = Np.v + " espiras";
+            R.sv("text", { x: 410, y: 228, "text-anchor": "middle", "font-weight": 800, "font-size": 12 }, svg).textContent = Ns.v + " espiras";
+            L.set("us", "Tensão de saída", R.fmt(Us, 1) + " V");
+            L.set("ip", "Corrente no primário", R.fmt(ip, 3) + " A");
+            L.set("is", "Corrente no secundário", R.fmt(is, 3) + " A");
+            av.set(Ns.v > Np.v ? "Elevador de tensão: a tensão sobe e a corrente desce na mesma proporção." : Ns.v < Np.v ? "Abaixador de tensão: a tensão desce e a corrente sobe. É o caso do carregador de celular." : "Mesmo número de espiras: a tensão não muda.", "neutro");
+          }
+          desenha();
+        },
+        exercicios: [
+          { p: "Um transformador tem 1 000 espiras no primário e 50 no secundário. Ligado em 220 V, a saída é:", ops: ["4 400 V", "11 V", "22 V", "220 V"], c: 1, exp: "U_s = 220 · 50 / 1000 = 11 V. É um abaixador de tensão." },
+          { p: "Um transformador ligado em uma bateria de carro (corrente contínua) não funciona porque:", ops: ["a tensão é baixa", "a corrente contínua não gera fluxo variável", "o núcleo de ferro derrete", "falta espiras"], c: 1, exp: "Sem variação de fluxo não há indução no secundário. Por isso transformadores usam corrente alternada." }
+        ]
+      },
+      {
+        tema: "Ondas eletromagnéticas", icone: "🌈", titulo: "Espectro eletromagnético",
+        ideia: "<p>Rádio, micro-ondas, infravermelho, luz visível, ultravioleta, raios X e raios gama são <strong>o mesmo tipo de onda</strong>: campos elétrico e magnético oscilando, viajando a <strong>300 000 km/s</strong> no vácuo.</p><p>O que muda é a frequência. <strong>Quanto maior a frequência, menor o comprimento de onda e maior a energia</strong> de cada fóton. Por isso UV queima a pele e raio X atravessa o corpo.</p>",
+        formula: 'c = λ · f<br><span class="giz">E = h · f</span><small>c = 3 × 10⁸ m/s · h = 4,14 × 10⁻¹⁵ eV·s (constante de Planck)</small>',
+        pergunta: { p: "O forno de micro-ondas e o celular usam ondas eletromagnéticas. Por que o celular não cozinha a sua orelha?", r: "A potência do celular é milhares de vezes menor, e as micro-ondas não têm energia por fóton suficiente para ionizar. O efeito é só um aquecimento desprezível." },
+        simTitulo: "Viagem pelo espectro",
+        sim: function (box, R) {
+          var svg = R.palco(600, 230, "Faixas do espectro eletromagnético com a onda correspondente");
+          R.sv("rect", { x: 0, y: 0, width: 600, height: 230, fill: "#f6fbff" }, svg);
+          var faixas = [[-12, -11, "Gama", "#6b2fa3"], [-11, -8, "Raios X", "#8b5cf6"], [-8, -6.42, "UV", "#a78bfa"], [-6.42, -6.12, "Luz", "#f7c51e"], [-6.12, -3, "Infravermelho", "#e85d3a"], [-3, 0, "Micro-ondas", "#c2410c"], [0, 3, "Rádio", "#9a6b3f"]];
+          function xDe(l) { return 30 + (3 - l) / 15 * 540; }
+          var defs = R.sv("defs", null, svg), gr = R.sv("linearGradient", { id: "arco", x1: "0", x2: "1" }, defs);
+          for (var k = 0; k <= 10; k++) R.sv("stop", { offset: k / 10, "stop-color": corDoComprimento(750 - k * 37) }, gr);
+          faixas.forEach(function (f) {
+            var xa = xDe(f[1]), xb = xDe(f[0]);
+            R.sv("rect", { x: xa, y: 150, width: xb - xa, height: 34, fill: f[2] === "Luz" ? "url(#arco)" : f[3], opacity: .85 }, svg);
+            if (f[2] !== "Luz") R.sv("text", { x: (xa + xb) / 2, y: 172, "text-anchor": "middle", "font-size": 11, "font-weight": 900, fill: "#fff" }, svg).textContent = f[2];
+          });
+          R.sv("text", { x: 30, y: 205, "font-size": 12, "font-weight": 800, fill: "#4a4f57" }, svg).textContent = "⬅ ondas longas, pouca energia";
+          R.sv("text", { x: 570, y: 205, "text-anchor": "end", "font-size": 12, "font-weight": 800, fill: "#4a4f57" }, svg).textContent = "ondas curtas, muita energia ➡";
+          var cursor = R.sv("polygon", { fill: "#1f2328" }, svg);
+          var onda = R.sv("polyline", { fill: "none", "stroke-width": 4 }, svg);
+          var nome = R.sv("text", { x: 300, y: 24, "text-anchor": "middle", "font-size": 17, "font-weight": 900 }, svg);
+          var ctr = R.controles();
+          var lg = R.slider(ctr, "Comprimento de onda", -12, 3, 0.02, -6.27, function (v) { return fmtL(Math.pow(10, v)); }, desenha);
+          var pres = R.el("div", { class: "opcoes", style: "margin-top:.5rem" }, box);
+          [["📻 Rádio FM", 0.48], ["📶 Wi-Fi", -0.92], ["🔥 Controle remoto", -6.03], ["🟢 Luz verde", -6.27], ["☀️ UV", -6.52], ["🦴 Raio X", -10]].forEach(function (p) { R.botao(pres, p[0], function () { lg.set(p[1]); desenha(); }); });
+          var L = R.leituras(); var av = R.aviso();
+          var t = 0;
+          function fmtL(m) { if (m >= 1) return R.fmt(m, 2) + " m"; if (m >= 1e-3) return R.fmt(m * 1000, 2) + " mm"; if (m >= 1e-6) return R.fmt(m * 1e6, 2) + " μm"; return R.fmt(m * 1e9, m < 1e-9 ? 4 : 0) + " nm"; }
+          function faixa(l) { for (var i = 0; i < faixas.length; i++) if (l >= faixas[i][0] && l < faixas[i][1]) return faixas[i]; return faixas[faixas.length - 1]; }
+          function desenha() {
+            var l = lg.v, lam = Math.pow(10, l), f = 3e8 / lam, E = 4.14e-15 * f, fx = faixa(l);
+            var xc = xDe(l); cursor.setAttribute("points", [xc, 148, xc - 9, 134, xc + 9, 134].join(","));
+            var nm = lam * 1e9, cor = fx[2] === "Luz" ? corDoComprimento(nm) : fx[3];
+            onda.setAttribute("stroke", cor);
+            nome.textContent = fx[2] === "Luz" ? "Luz visível" : fx[2];
+            L.set("l", "Comprimento de onda", fmtL(lam));
+            L.set("f", "Frequência", R.fmt(f, 2) + " Hz");
+            L.set("e", "Energia de cada fóton", R.fmt(E, 3) + " eV");
+            av.set(E > 10 ? "Radiação ionizante: tem energia para arrancar elétrons dos átomos. Exige proteção." : "Radiação não ionizante: não tem energia para arrancar elétrons dos átomos.", E > 10 ? "alerta" : "neutro");
+          }
+          R.animar(function (dt) {
+            t += dt;
+            var per = 30 + (lg.v + 12) / 15 * 240, pts = [];
+            for (var x = 20; x <= 580; x += 3) pts.push(x + "," + (78 - 36 * Math.sin(2 * Math.PI * (x / per - t * 0.6))).toFixed(1));
+            onda.setAttribute("points", pts.join(" "));
+          });
+          desenha();
+        },
+        exercicios: [
+          { p: "Comparando luz azul e luz vermelha, a luz azul tem:", ops: ["maior comprimento de onda e menor energia", "maior frequência e maior energia por fóton", "a mesma energia", "velocidade maior no vácuo"], c: 1, exp: "O azul tem frequência maior (comprimento de onda menor), então cada fóton tem mais energia. No vácuo todas viajam a 300 000 km/s." },
+          { p: "Uma rádio FM transmite em 100 MHz. O comprimento de onda é: (c = 3 × 10⁸ m/s)", ops: ["3 m", "30 m", "0,3 m", "300 m"], c: 0, exp: "λ = c / f = 3×10⁸ / 1×10⁸ = 3 m." }
+        ]
+      },
+      {
+        tema: "Física moderna", icone: "☀️", titulo: "Efeito fotoelétrico",
+        ideia: "<p>Luz que bate num metal pode <strong>arrancar elétrons</strong>. Einstein explicou: a luz chega em pacotes, os <strong>fótons</strong>, cada um com energia E = h · f.</p><p>Se a energia do fóton for menor que a <strong>função trabalho</strong> do metal, nenhum elétron sai, <strong>não importa a intensidade</strong>. Mais intensidade só arranca mais elétrons quando cada fóton já tem energia suficiente.</p>",
+        formula: 'E<sub>c máx</sub> = h · f − φ<br><span class="giz">E<sub>fóton</sub> (eV) ≈ 1240 / λ (nm)</span><small>φ: função trabalho do metal (energia mínima para arrancar o elétron)</small>',
+        pergunta: { p: "Uma luz vermelha muito forte não arranca elétrons de um metal, mas uma luz ultravioleta fraquinha arranca. Como a física clássica explicaria isso?", r: "Não explicaria: pela física clássica, mais intensidade daria mais energia. O resultado só faz sentido com fótons: o que importa é a energia de cada pacote (frequência)." },
+        simTitulo: "Luz no metal",
+        sim: function (box, R) {
+          var svg = R.palco(600, 260, "Lâmpada iluminando uma placa de metal da qual saem elétrons");
+          R.sv("rect", { x: 0, y: 0, width: 600, height: 260, fill: "#1b2a38" }, svg);
+          var luz = R.sv("polygon", { points: "90,40 150,40 330,180 260,220", opacity: .45 }, svg);
+          R.sv("rect", { x: 60, y: 20, width: 100, height: 40, rx: 8, fill: "#9aa5b1", stroke: "#fff", "stroke-width": 2 }, svg);
+          var placa = R.sv("rect", { x: 250, y: 190, width: 110, height: 40, fill: "#b8c0c8", stroke: "#fff", "stroke-width": 2 }, svg);
+          var tMet = R.sv("text", { x: 305, y: 248, "text-anchor": "middle", fill: "#fff", "font-weight": 900, "font-size": 13 }, svg);
+          var gE = R.sv("g", null, svg), es = [];
+          var ctr = R.controles();
+          var met = R.opcoes(ctr, "Metal", [{ v: 2.1, t: "Césio (2,1 eV)" }, { v: 2.3, t: "Sódio (2,3 eV)" }, { v: 4.3, t: "Zinco (4,3 eV)" }], 2.3, desenha);
+          var lam = R.slider(ctr, "Cor da luz (λ)", 200, 700, 5, 450, function (v) { return v + " nm"; }, desenha);
+          var I = R.slider(ctr, "Intensidade da luz", 1, 10, 1, 5, function (v) { return v; }, desenha);
+          var L = R.leituras(); var av = R.aviso();
+          var Ec = 0, acum = 0;
+          function desenha() {
+            var Ef = 1240 / lam.v;
+            Ec = Ef - met.v;
+            luz.setAttribute("fill", lam.v < 380 ? "#c9a9ff" : corDoComprimento(lam.v));
+            luz.setAttribute("opacity", 0.12 + I.v * 0.05);
+            tMet.textContent = ["Césio", "Sódio", "Zinco"][[2.1, 2.3, 4.3].indexOf(met.v)];
+            L.set("ef", "Energia do fóton", R.fmt(Ef, 2) + " eV");
+            L.set("phi", "Função trabalho", R.fmt(met.v, 1) + " eV");
+            L.set("ec", "Energia do elétron", Ec > 0 ? R.fmt(Ec, 2) + " eV" : "nenhum sai");
+            av.set(Ec > 0 ? "Elétrons arrancados! Aumente a intensidade: saem mais elétrons, mas com a mesma energia." : "Cada fóton tem energia menor que " + R.fmt(met.v, 1) + " eV. Pode aumentar a intensidade: nenhum elétron sai.", Ec > 0 ? "" : "alerta");
+            if (lam.v < 380) L.set("uv", "Faixa", "ultravioleta (invisível)"); else L.set("uv", "Faixa", "luz visível");
+          }
+          R.animar(function (dt) {
+            if (Ec > 0) { acum += dt * I.v * 3; while (acum > 1) { acum--; es.push({ x: 260 + Math.random() * 90, y: 188, vx: (Math.random() - .5) * 60, vy: -(40 + 70 * Math.sqrt(Ec)), el: R.sv("circle", { r: 5, fill: "#7fd1ff" }, gE) }); } }
+            es = es.filter(function (e) { e.x += e.vx * dt; e.y += e.vy * dt; if (e.y < -10) { e.el.remove(); return false; } e.el.setAttribute("cx", e.x); e.el.setAttribute("cy", e.y); return true; });
+          });
+          desenha();
+        },
+        exercicios: [
+          { p: "Uma luz não arranca elétrons de um metal. Para conseguir, devemos:", ops: ["aumentar a intensidade da luz", "usar luz de maior frequência (menor λ)", "usar luz mais vermelha", "esperar mais tempo"], c: 1, exp: "O que decide é a energia de cada fóton (E = h·f). Mais intensidade sem frequência suficiente não arranca nenhum elétron." },
+          { p: "Um fóton de 3,1 eV atinge um metal com função trabalho 2,3 eV. A energia cinética máxima do elétron é:", ops: ["5,4 eV", "0,8 eV", "2,3 eV", "zero"], c: 1, exp: "Ec = E_fóton − φ = 3,1 − 2,3 = 0,8 eV." }
+        ]
+      }
+    ],
+    quiz: [
+      { tema: "Eletrostática", p: "Um corpo neutro que perde elétrons fica:", ops: ["negativo", "positivo", "neutro", "magnetizado"], c: 1, exp: "Com menos elétrons que prótons, a carga total fica positiva." },
+      { tema: "Eletrostática", p: "Num dia seco você leva choque ao tocar a maçaneta. Isso acontece porque:", ops: ["a maçaneta está ligada na tomada", "seu corpo acumulou carga por atrito e descarregou no metal", "o metal produz eletricidade", "a umidade é alta"], c: 1, exp: "O atrito (roupa, tapete) eletriza o corpo; o metal é bom condutor e a carga escoa de uma vez." },
+      { tema: "Lei de Ohm", p: "Um resistor de 10 Ω percorrido por 2 A está submetido a uma tensão de:", ops: ["5 V", "12 V", "20 V", "0,2 V"], c: 2, exp: "U = R · i = 10 · 2 = 20 V." },
+      { tema: "Potência", p: "Uma lâmpada tem a inscrição 60 W – 120 V. A corrente que passa por ela é:", ops: ["2 A", "0,5 A", "7 200 A", "180 A"], c: 1, exp: "i = P / U = 60 / 120 = 0,5 A." },
+      { tema: "Consumo", p: "Qual consome mais energia em um mês: uma TV de 100 W ligada 5 h por dia ou um chuveiro de 5 000 W ligado 6 minutos por dia?", ops: ["A TV", "O chuveiro", "Empatam: os dois gastam 15 kWh", "Nenhum dos dois gasta energia"], c: 2, exp: "TV: 0,1 kW × 5 h × 30 = 15 kWh. Chuveiro: 5 kW × 0,1 h × 30 = 15 kWh. Empate!" },
+      { tema: "Magnetismo", p: "Ao quebrar um ímã ao meio, obtemos:", ops: ["um polo norte e um polo sul separados", "dois ímãs, cada um com norte e sul", "dois pedaços sem magnetismo", "dois polos norte"], c: 1, exp: "Os polos são inseparáveis: cada pedaço vira um ímã completo." },
+      { tema: "Eletromagnetismo", p: "Um fio percorrido por corrente elétrica perto de uma bússola faz a agulha se mexer. Isso mostra que:", ops: ["a bússola está quebrada", "corrente elétrica cria campo magnético", "o fio é um ímã natural", "a Terra mudou de polo"], c: 1, exp: "É a experiência de Oersted: cargas em movimento geram campo magnético." },
+      { tema: "Ondas eletromagnéticas", p: "Qual destas radiações é ionizante?", ops: ["Ondas de rádio", "Micro-ondas", "Raios X", "Infravermelho"], c: 2, exp: "Raios X (e gama, e parte do UV) têm energia por fóton suficiente para arrancar elétrons dos átomos." },
+      { tema: "Física moderna", p: "No modelo de Bohr, um átomo emite luz quando o elétron:", ops: ["é arrancado do átomo", "salta de um nível de energia mais alto para um mais baixo", "fica parado", "entra no núcleo"], c: 1, exp: "Ao descer de nível, o elétron libera a diferença de energia como um fóton de frequência bem definida." },
+      { tema: "Física moderna", p: "A meia-vida de um material radioativo é 8 dias. De 100 g, depois de 24 dias restam:", ops: ["50 g", "25 g", "12,5 g", "0 g"], c: 2, exp: "24 dias = 3 meias-vidas: 100 → 50 → 25 → 12,5 g." }
+    ]
+  });
+})();
+</script>
+</body>
+</html>
