@@ -3,902 +3,631 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>@Experimentajoao | Simuladores & Recursos Didáticos</title>
+  <title>Experimenta João | Materiais gratuitos para professores</title>
+  <meta name="description" content="Simuladores, jogos e laboratórios virtuais gratuitos para usar em sala de aula. Não precisa instalar nada: é só abrir no celular, no computador ou projetar na TV.">
+  <meta name="theme-color" content="#1f4d3f">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&family=Kalam:wght@700&display=swap" rel="stylesheet">
   <style>
-    *, *::before, *::after {
-      margin: 0;
-      padding: 0;
-      box-sizing: border-box;
-    }
+    *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
 
     :root {
-      --amber-50: #fffbeb;
-      --amber-100: #fef3c7;
-      --amber-200: #fde68a;
-      --amber-300: #fcd34d;
-      --amber-400: #fbbf24;
-      --amber-500: #f59e0b;
-      --amber-600: #d97706;
-      --amber-700: #b45309;
-      --orange-500: #f97316;
-      --orange-600: #ea580c;
-      --dark-900: #0c0a09;
-      --dark-800: #1c1917;
-      --dark-700: #292524;
-      --dark-600: #3f3a36;
+      /* Cores da escola */
+      --quadro: #1f4d3f;          /* verde do quadro-negro */
+      --quadro-escuro: #163a2f;
+      --quadro-claro: #2e6b57;
+      --amarelo: #f7c51e;         /* amarelo lápis, a cor do João */
+      --amarelo-claro: #fff3c4;
+      --amarelo-escuro: #8a6a00;
+      --madeira: #9a6b3f;         /* moldura do quadro */
+      --papel: #fffaf0;           /* papel de caderno */
+      --linha-caderno: #dfe8f3;
+      --margem-caderno: #f2b8b5;
+      --caneta-azul: #1d4ed8;
+      --vermelho-maca: #b42318;
+      --texto: #1f2328;
+      --texto-suave: #4a4f57;
+      --borda: #e6dcc4;
+      --branco: #ffffff;
+      --whats: #128c4a;
+      --whats-escuro: #0d6b38;
+      --sombra: 0 6px 0 rgba(31, 35, 40, 0.08), 0 12px 28px rgba(31, 35, 40, 0.08);
     }
 
-    html {
-      scroll-behavior: smooth;
+    html { scroll-behavior: smooth; }
+    @media (prefers-reduced-motion: reduce) {
+      html { scroll-behavior: auto; }
+      * { transition: none !important; animation: none !important; }
     }
 
     body {
-      font-family: 'Inter', sans-serif;
-      background: var(--dark-900);
-      color: #fafaf9;
-      overflow-x: hidden;
-      line-height: 1.6;
+      font-family: 'Nunito', system-ui, -apple-system, 'Segoe UI', Roboto, Arial, sans-serif;
+      font-size: 1.125rem;          /* 18px: letra maior, mais fácil de ler */
+      line-height: 1.65;
+      color: var(--texto);
+      background-color: var(--papel);
+      /* linhas de caderno bem suaves */
+      background-image: repeating-linear-gradient(to bottom, transparent 0, transparent 35px, var(--linha-caderno) 35px, var(--linha-caderno) 36px);
     }
 
-    /* ===== STARFIELD CANVAS ===== */
-    #starfield {
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      z-index: 0;
-      pointer-events: none;
+    img { max-width: 100%; display: block; }
+
+    a { color: var(--caneta-azul); }
+
+    :focus-visible {
+      outline: 4px solid var(--caneta-azul);
+      outline-offset: 3px;
+      border-radius: 8px;
     }
 
-    /* ===== NAVIGATION ===== */
-    nav {
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 100%;
-      z-index: 100;
-      padding: 1rem 2rem;
-      background: rgba(12, 10, 9, 0.6);
-      backdrop-filter: blur(20px);
-      -webkit-backdrop-filter: blur(20px);
-      border-bottom: 1px solid rgba(251, 191, 36, 0.08);
-      transition: all 0.3s ease;
+    .pular {
+      position: absolute; left: -9999px; top: 0;
+      background: var(--amarelo); color: var(--texto);
+      padding: 0.75rem 1.25rem; font-weight: 800; z-index: 200;
     }
+    .pular:focus { left: 1rem; top: 1rem; }
 
-    nav.scrolled {
-      background: rgba(12, 10, 9, 0.9);
-      border-bottom: 1px solid rgba(251, 191, 36, 0.15);
+    .container { max-width: 1120px; margin: 0 auto; padding: 0 1.25rem; }
+
+    /* ===== TOPO ===== */
+    header.topo {
+      position: sticky; top: 0; z-index: 100;
+      background: var(--quadro);
+      border-bottom: 6px solid var(--amarelo);
     }
-
-    .nav-inner {
-      max-width: 1200px;
-      margin: 0 auto;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
+    .topo-inner {
+      display: flex; align-items: center; justify-content: space-between;
+      gap: 1rem; min-height: 72px; flex-wrap: wrap; padding-top: 0.5rem; padding-bottom: 0.5rem;
     }
-
     .logo {
-      font-family: 'Space Grotesk', sans-serif;
-      font-weight: 700;
-      font-size: 1.4rem;
-      background: linear-gradient(135deg, var(--amber-400), var(--orange-500));
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-      background-clip: text;
-      letter-spacing: -0.5px;
+      display: flex; align-items: center; gap: 0.6rem;
+      color: var(--branco); text-decoration: none;
+      font-weight: 900; font-size: 1.35rem; letter-spacing: -0.3px;
     }
+    .logo-lapis { width: 38px; height: 38px; flex-shrink: 0; }
+    .logo span { color: var(--amarelo); }
 
-    .nav-links {
-      display: flex;
-      gap: 2rem;
-      list-style: none;
+    .menu { display: flex; gap: 0.5rem; list-style: none; flex-wrap: wrap; }
+    .menu a {
+      display: inline-block; color: var(--branco); text-decoration: none;
+      font-weight: 700; font-size: 1rem;
+      padding: 0.55rem 0.9rem; border-radius: 10px;
+      border: 2px solid transparent;
     }
+    .menu a:hover { border-color: var(--amarelo); color: var(--amarelo); }
+    .menu a.destaque { background: var(--amarelo); color: var(--texto); }
+    .menu a.destaque:hover { background: var(--branco); border-color: var(--branco); color: var(--texto); }
 
-    .nav-links a {
-      color: rgba(250, 250, 249, 0.7);
-      text-decoration: none;
-      font-size: 0.9rem;
-      font-weight: 500;
-      transition: color 0.3s ease;
-      position: relative;
+    /* ===== BOTÕES ===== */
+    .btn {
+      display: inline-flex; align-items: center; justify-content: center; gap: 0.6rem;
+      min-height: 60px; padding: 0.9rem 1.6rem;
+      font-family: inherit; font-weight: 800; font-size: 1.15rem;
+      border-radius: 14px; text-decoration: none; cursor: pointer;
+      border: 3px solid var(--texto);
+      box-shadow: 0 5px 0 var(--texto);
+      transition: transform 0.12s ease, box-shadow 0.12s ease;
     }
+    .btn:hover { transform: translateY(-2px); box-shadow: 0 7px 0 var(--texto); }
+    .btn:active { transform: translateY(4px); box-shadow: 0 1px 0 var(--texto); }
+    .btn svg { width: 26px; height: 26px; flex-shrink: 0; }
+    .btn-amarelo { background: var(--amarelo); color: var(--texto); }
+    .btn-branco { background: var(--branco); color: var(--texto); }
+    .btn-whats { background: var(--whats); color: var(--branco); }
+    .btn-whats:hover { background: var(--whats-escuro); }
 
-    .nav-links a::after {
-      content: '';
-      position: absolute;
-      bottom: -4px;
-      left: 0;
-      width: 0;
-      height: 2px;
-      background: linear-gradient(90deg, var(--amber-400), var(--orange-500));
-      border-radius: 1px;
-      transition: width 0.3s ease;
+    /* ===== ABERTURA (QUADRO) ===== */
+    .abertura {
+      background: var(--quadro);
+      background-image: radial-gradient(ellipse at 20% 10%, rgba(255,255,255,0.06), transparent 55%);
+      color: var(--branco);
+      padding: 3.5rem 0 4.5rem;
     }
-
-    .nav-links a:hover {
-      color: var(--amber-400);
+    .abertura-grid {
+      display: grid; grid-template-columns: 1.1fr 0.9fr; gap: 2.5rem; align-items: center;
     }
-
-    .nav-links a:hover::after {
-      width: 100%;
-    }
-
-    /* ===== HERO SECTION ===== */
-    .hero {
-      position: relative;
-      z-index: 1;
-      min-height: 100vh;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      text-align: center;
-      padding: 6rem 2rem 4rem;
-    }
-
-    .hero-badge {
-      display: inline-flex;
-      align-items: center;
-      gap: 0.5rem;
-      padding: 0.4rem 1rem;
-      background: rgba(251, 191, 36, 0.08);
-      border: 1px solid rgba(251, 191, 36, 0.15);
-      border-radius: 100px;
-      font-size: 0.8rem;
-      font-weight: 500;
-      color: var(--amber-400);
-      margin-bottom: 2rem;
-      letter-spacing: 0.5px;
-      text-transform: uppercase;
-    }
-
-    .hero-badge .dot {
-      width: 6px;
-      height: 6px;
-      background: var(--amber-400);
-      border-radius: 50%;
-      animation: pulse-dot 2s ease-in-out infinite;
-    }
-
-    @keyframes pulse-dot {
-      0%, 100% { opacity: 1; transform: scale(1); }
-      50% { opacity: 0.5; transform: scale(0.8); }
-    }
-
-    .hero h1 {
-      font-family: 'Space Grotesk', sans-serif;
-      font-size: clamp(2.5rem, 6vw, 4.5rem);
-      font-weight: 800;
-      line-height: 1.1;
-      margin-bottom: 1.5rem;
-      letter-spacing: -2px;
-    }
-
-    .hero h1 .gradient-text {
-      background: linear-gradient(135deg, var(--amber-300), var(--orange-500), var(--amber-400));
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-      background-clip: text;
-    }
-
-    .hero p {
-      font-size: clamp(1rem, 2vw, 1.2rem);
-      color: rgba(250, 250, 249, 0.6);
-      max-width: 600px;
-      margin-bottom: 2.5rem;
-      font-weight: 300;
-      line-height: 1.7;
-    }
-
-    .hero-buttons {
-      display: flex;
-      gap: 1rem;
-      flex-wrap: wrap;
-      justify-content: center;
-    }
-
-    .btn-primary {
-      display: inline-flex;
-      align-items: center;
-      gap: 0.5rem;
-      padding: 0.85rem 2rem;
-      background: linear-gradient(135deg, var(--amber-500), var(--orange-600));
-      color: #fff;
-      font-weight: 600;
-      font-size: 0.95rem;
-      border: none;
-      border-radius: 12px;
-      text-decoration: none;
-      cursor: pointer;
-      transition: all 0.3s ease;
-      box-shadow: 0 4px 24px rgba(249, 115, 22, 0.25);
-    }
-
-    .btn-primary:hover {
-      transform: translateY(-2px);
-      box-shadow: 0 8px 32px rgba(249, 115, 22, 0.35);
-    }
-
-    .btn-secondary {
-      display: inline-flex;
-      align-items: center;
-      gap: 0.5rem;
-      padding: 0.85rem 2rem;
-      background: rgba(250, 250, 249, 0.05);
-      color: rgba(250, 250, 249, 0.85);
-      font-weight: 600;
-      font-size: 0.95rem;
-      border: 1px solid rgba(250, 250, 249, 0.1);
-      border-radius: 12px;
-      text-decoration: none;
-      cursor: pointer;
-      transition: all 0.3s ease;
-    }
-
-    .btn-secondary:hover {
-      background: rgba(250, 250, 249, 0.1);
-      border-color: rgba(251, 191, 36, 0.3);
-      transform: translateY(-2px);
-    }
-
-    /* ===== SECTION COMMON ===== */
-    section {
-      position: relative;
-      z-index: 1;
-    }
-
-    .section-header {
-      text-align: center;
-      margin-bottom: 3.5rem;
-    }
-
-    .section-label {
+    .selo {
       display: inline-block;
-      font-size: 0.75rem;
-      font-weight: 600;
-      text-transform: uppercase;
-      letter-spacing: 2px;
-      color: var(--amber-500);
-      margin-bottom: 0.75rem;
+      background: var(--amarelo); color: var(--texto);
+      font-weight: 900; font-size: 1rem;
+      padding: 0.35rem 0.9rem; border-radius: 999px;
+      margin-bottom: 1.25rem; transform: rotate(-2deg);
+    }
+    .abertura h1 {
+      font-size: clamp(2.1rem, 5vw, 3.3rem);
+      line-height: 1.12; font-weight: 900; letter-spacing: -0.5px;
+      margin-bottom: 1.25rem;
+    }
+    .abertura h1 .giz {
+      font-family: 'Kalam', 'Comic Sans MS', cursive;
+      color: var(--amarelo); font-weight: 700;
+      white-space: nowrap;
+    }
+    .abertura p.lead {
+      font-size: 1.25rem; color: #e9f3ee; max-width: 560px; margin-bottom: 2rem;
+    }
+    .abertura-botoes { display: flex; gap: 1rem; flex-wrap: wrap; }
+    .abertura .btn { border-color: var(--quadro-escuro); box-shadow: 0 5px 0 var(--quadro-escuro); }
+    .abertura .btn:hover { box-shadow: 0 7px 0 var(--quadro-escuro); }
+    .garantias {
+      display: flex; flex-wrap: wrap; gap: 0.6rem 1.4rem;
+      margin-top: 1.75rem; list-style: none; font-weight: 700; color: #e9f3ee; font-size: 1.05rem;
+    }
+    .garantias li { display: flex; align-items: center; gap: 0.45rem; }
+    .garantias li::before {
+      content: '✓'; display: inline-flex; align-items: center; justify-content: center;
+      width: 26px; height: 26px; border-radius: 50%;
+      background: var(--amarelo); color: var(--texto); font-weight: 900; font-size: 0.95rem;
     }
 
-    .section-title {
-      font-family: 'Space Grotesk', sans-serif;
-      font-size: clamp(1.8rem, 4vw, 2.8rem);
-      font-weight: 700;
-      letter-spacing: -1px;
-      margin-bottom: 1rem;
+    .desenho-quadro { width: 100%; max-width: 460px; margin: 0 auto; }
+
+    /* ===== SEÇÕES ===== */
+    section.bloco { padding: 4.5rem 0; }
+    .titulo-secao { text-align: center; margin-bottom: 2.75rem; }
+    .titulo-secao .etiqueta {
+      display: inline-block; font-weight: 900; font-size: 0.95rem;
+      text-transform: uppercase; letter-spacing: 1.5px;
+      color: var(--amarelo-escuro); margin-bottom: 0.4rem;
+    }
+    .titulo-secao h2 {
+      font-size: clamp(1.75rem, 4vw, 2.5rem); font-weight: 900; line-height: 1.2;
+    }
+    .titulo-secao h2 .marca {
+      background: linear-gradient(transparent 58%, var(--amarelo) 58%, var(--amarelo) 92%, transparent 92%);
+      padding: 0 0.15em;
+    }
+    .titulo-secao p {
+      color: var(--texto-suave); font-size: 1.2rem; max-width: 620px; margin: 0.75rem auto 0;
     }
 
-    .section-subtitle {
-      color: rgba(250, 250, 249, 0.5);
-      font-size: 1.05rem;
-      max-width: 550px;
-      margin: 0 auto;
-      font-weight: 300;
+    /* ===== COMO USAR ===== */
+    .passos {
+      display: grid; grid-template-columns: repeat(3, 1fr); gap: 1.5rem; list-style: none;
     }
-
-    /* ===== CATALOG CTA ===== */
-    .catalog-cta {
-      padding: 5rem 2rem 6rem;
-      max-width: 900px;
-      margin: 0 auto;
-      text-align: center;
-    }
-
-    .catalog-cta-box {
-      position: relative;
-      background: linear-gradient(135deg, rgba(251, 191, 36, 0.06), rgba(249, 115, 22, 0.06));
-      border: 1px solid rgba(251, 191, 36, 0.12);
-      border-radius: 28px;
-      padding: 4rem 3rem;
-      overflow: hidden;
-    }
-
-    .catalog-cta-box::before {
-      content: '';
-      position: absolute;
-      top: -50%;
-      left: -50%;
-      width: 200%;
-      height: 200%;
-      background: radial-gradient(circle at 30% 40%, rgba(251, 191, 36, 0.04), transparent 50%);
-      pointer-events: none;
-    }
-
-    .catalog-cta-box h2 {
-      font-family: 'Space Grotesk', sans-serif;
-      font-size: clamp(1.6rem, 3.5vw, 2.2rem);
-      font-weight: 700;
-      margin-bottom: 1rem;
-      letter-spacing: -0.5px;
-    }
-
-    .catalog-cta-box p {
-      color: rgba(250, 250, 249, 0.55);
-      font-size: 1.05rem;
-      margin-bottom: 2rem;
-      max-width: 520px;
-      margin-left: auto;
-      margin-right: auto;
-      font-weight: 300;
-      line-height: 1.7;
-    }
-
-    .catalog-stats {
-      display: flex;
-      justify-content: center;
-      gap: 3rem;
-      margin-bottom: 2.5rem;
-      flex-wrap: wrap;
-    }
-
-    .catalog-stat {
-      text-align: center;
-    }
-
-    .catalog-stat .number {
-      font-family: 'Space Grotesk', sans-serif;
-      font-size: 2.5rem;
-      font-weight: 700;
-      background: linear-gradient(135deg, var(--amber-400), var(--orange-500));
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-      background-clip: text;
-      line-height: 1.2;
-    }
-
-    .catalog-stat .label {
-      font-size: 0.8rem;
-      color: rgba(250, 250, 249, 0.4);
-      text-transform: uppercase;
-      letter-spacing: 1px;
-      font-weight: 500;
-    }
-
-    .btn-catalog {
-      display: inline-flex;
-      align-items: center;
-      gap: 0.65rem;
-      padding: 1rem 2.5rem;
-      background: linear-gradient(135deg, var(--amber-500), var(--orange-600));
-      color: #fff;
-      font-weight: 700;
-      font-size: 1.05rem;
-      border: none;
-      border-radius: 14px;
-      text-decoration: none;
-      cursor: pointer;
-      transition: all 0.3s ease;
-      box-shadow: 0 4px 24px rgba(249, 115, 22, 0.25);
-    }
-
-    .btn-catalog:hover {
-      transform: translateY(-2px);
-      box-shadow: 0 8px 32px rgba(249, 115, 22, 0.35);
-    }
-
-    .btn-catalog svg {
-      width: 20px;
-      height: 20px;
-      transition: transform 0.3s ease;
-    }
-
-    .btn-catalog:hover svg {
-      transform: translateX(3px);
-    }
-
-    /* ===== CTA / CONTACT ===== */
-    .cta {
-      padding: 5rem 2rem 6rem;
-      max-width: 800px;
-      margin: 0 auto;
-      text-align: center;
-    }
-
-    .cta-box {
-      position: relative;
-      background: linear-gradient(135deg, rgba(251, 191, 36, 0.06), rgba(249, 115, 22, 0.06));
-      border: 1px solid rgba(251, 191, 36, 0.12);
-      border-radius: 28px;
-      padding: 4rem 3rem;
-      overflow: hidden;
-    }
-
-    .cta-box::before {
-      content: '';
-      position: absolute;
-      top: -50%;
-      left: -50%;
-      width: 200%;
-      height: 200%;
-      background: radial-gradient(circle at 30% 40%, rgba(251, 191, 36, 0.04), transparent 50%);
-      pointer-events: none;
-    }
-
-    .cta-box h2 {
-      font-family: 'Space Grotesk', sans-serif;
-      font-size: clamp(1.6rem, 3.5vw, 2.2rem);
-      font-weight: 700;
-      margin-bottom: 1rem;
-      letter-spacing: -0.5px;
-    }
-
-    .cta-box p {
-      color: rgba(250, 250, 249, 0.55);
-      font-size: 1.05rem;
-      margin-bottom: 2rem;
-      max-width: 480px;
-      margin-left: auto;
-      margin-right: auto;
-      font-weight: 300;
-      line-height: 1.7;
-    }
-
-    .whatsapp-btn {
-      display: inline-flex;
-      align-items: center;
-      gap: 0.65rem;
-      padding: 1rem 2.2rem;
-      background: linear-gradient(135deg, #25d366, #128c7e);
-      color: #fff;
-      font-weight: 700;
-      font-size: 1rem;
-      border: none;
-      border-radius: 14px;
-      text-decoration: none;
-      cursor: pointer;
-      transition: all 0.3s ease;
-      box-shadow: 0 4px 24px rgba(37, 211, 102, 0.25);
-    }
-
-    .whatsapp-btn:hover {
-      transform: translateY(-2px);
-      box-shadow: 0 8px 32px rgba(37, 211, 102, 0.35);
-    }
-
-    .whatsapp-btn svg {
-      width: 22px;
-      height: 22px;
-    }
-
-    /* ===== ABOUT SECTION ===== */
-    .about {
-      padding: 5rem 2rem 5rem;
-      max-width: 1000px;
-      margin: 0 auto;
-    }
-
-    .about-content {
-      display: grid;
-      grid-template-columns: 280px 1fr;
-      gap: 3rem;
-      align-items: center;
-    }
-
-    .about-photo {
+    .passo {
+      background: var(--branco); border: 3px solid var(--borda); border-radius: 20px;
+      padding: 2rem 1.5rem 1.75rem; text-align: center; box-shadow: var(--sombra);
       position: relative;
     }
+    .passo-num {
+      width: 64px; height: 64px; margin: -3.6rem auto 1rem;
+      display: flex; align-items: center; justify-content: center;
+      background: var(--amarelo); border: 3px solid var(--texto); border-radius: 50%;
+      font-weight: 900; font-size: 1.8rem; color: var(--texto);
+    }
+    .passo svg { width: 92px; height: 92px; margin: 0 auto 0.75rem; }
+    .passo h3 { font-size: 1.35rem; font-weight: 900; margin-bottom: 0.4rem; }
+    .passo p { color: var(--texto-suave); }
 
-    .about-photo-frame {
-      width: 280px;
-      height: 340px;
-      border-radius: 24px;
-      overflow: hidden;
-      border: 2px solid rgba(251, 191, 36, 0.15);
-      background: rgba(28, 25, 23, 0.6);
-      position: relative;
+    .aviso-simples {
+      margin: 2.5rem auto 0; max-width: 760px;
+      background: var(--amarelo-claro); border: 3px dashed var(--amarelo-escuro);
+      border-radius: 16px; padding: 1.25rem 1.5rem;
+      display: flex; gap: 1rem; align-items: flex-start; font-size: 1.1rem;
+    }
+    .aviso-simples .icone { font-size: 2rem; line-height: 1; }
+
+    /* ===== MATÉRIAS ===== */
+    .bloco-materias { background: var(--branco); border-top: 3px solid var(--borda); border-bottom: 3px solid var(--borda); }
+    .materias {
+      display: grid; grid-template-columns: repeat(5, 1fr); gap: 1.25rem; list-style: none;
+    }
+    .materia {
+      display: flex; flex-direction: column; align-items: center; text-align: center; gap: 0.5rem;
+      text-decoration: none; color: var(--texto);
+      background: var(--papel); border: 3px solid var(--borda); border-radius: 20px;
+      padding: 1.75rem 1rem; min-height: 190px; justify-content: center;
+      transition: transform 0.15s ease, border-color 0.15s ease;
+    }
+    .materia:hover { transform: translateY(-4px); border-color: var(--cor); }
+    .materia .bolinha {
+      width: 76px; height: 76px; border-radius: 50%;
+      display: flex; align-items: center; justify-content: center; font-size: 2.3rem;
+      background: var(--fundo); border: 3px solid var(--cor);
+    }
+    .materia strong { font-size: 1.3rem; font-weight: 900; }
+    .materia small { font-size: 1rem; color: var(--texto-suave); font-weight: 700; }
+    .m-fisica { --cor: #1d4ed8; --fundo: #e3ecff; }
+    .m-matematica { --cor: #b42318; --fundo: #fde7e5; }
+    .m-biologia { --cor: #157f3b; --fundo: #e1f5e7; }
+    .m-tecnologia { --cor: #a15c00; --fundo: #fff0d6; }
+    .m-professor { --cor: #6b2fa3; --fundo: #f1e6fb; }
+
+    /* ===== NOVIDADES ===== */
+    .bloco-novidades { padding-top: 0; }
+    .novidades { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 1.25rem; list-style: none; }
+    .novidade {
+      display: flex; flex-direction: column; gap: 0.4rem; height: 100%;
+      background: var(--branco); border: 3px solid var(--texto); border-radius: 18px;
+      box-shadow: 0 6px 0 var(--amarelo); padding: 1.4rem 1.25rem; text-decoration: none; color: var(--texto);
+      position: relative; transition: transform 0.15s ease;
+    }
+    .novidade:hover { transform: translateY(-4px); }
+    .novidade .ic { font-size: 2.2rem; line-height: 1; }
+    .novidade strong { font-size: 1.2rem; font-weight: 900; line-height: 1.25; }
+    .novidade span.tp { font-size: 0.98rem; color: var(--texto-suave); font-weight: 700; }
+    .novidade .abrir { margin-top: auto; padding-top: 0.6rem; font-weight: 900; color: var(--caneta-azul); }
+    .novidade .selo-novo {
+      position: absolute; top: -12px; right: 14px; background: var(--amarelo); border: 2px solid var(--texto);
+      border-radius: 999px; font-weight: 900; font-size: 0.85rem; padding: 0.05rem 0.6rem; transform: rotate(4deg);
     }
 
-    .about-photo-frame img {
-      width: 100%;
-      height: 100%;
-      object-fit: cover;
-      display: block;
+    .centro { text-align: center; margin-top: 2.5rem; }
+
+    /* ===== ENCOMENDAS ===== */
+    .encomenda {
+      background: var(--quadro); color: var(--branco);
+      border: 12px solid var(--madeira); border-radius: 18px;
+      box-shadow: inset 0 0 0 3px rgba(0,0,0,0.25), var(--sombra);
+      padding: 3rem 2rem; text-align: center;
+    }
+    .encomenda h2 { font-size: clamp(1.7rem, 4vw, 2.4rem); font-weight: 900; margin-bottom: 0.75rem; line-height: 1.2; }
+    .encomenda h2 .giz { font-family: 'Kalam', 'Comic Sans MS', cursive; color: var(--amarelo); font-weight: 700; }
+    .encomenda p { font-size: 1.2rem; color: #e9f3ee; max-width: 600px; margin: 0 auto 2rem; }
+    .encomenda .btn { border-color: var(--quadro-escuro); box-shadow: 0 5px 0 var(--quadro-escuro); }
+    .encomenda .exemplos {
+      display: flex; flex-wrap: wrap; justify-content: center; gap: 0.6rem; list-style: none; margin-bottom: 2rem;
+    }
+    .encomenda .exemplos li {
+      border: 2px dashed rgba(255,255,255,0.55); border-radius: 999px;
+      padding: 0.35rem 1rem; font-weight: 700; font-size: 1rem;
     }
 
-    .about-photo-accent {
-      position: absolute;
-      top: -8px;
-      right: -8px;
-      width: 60px;
-      height: 60px;
-      border-radius: 16px;
-      background: linear-gradient(135deg, var(--amber-500), var(--orange-600));
-      opacity: 0.15;
-      z-index: -1;
+    /* ===== SOBRE ===== */
+    .sobre-grid { display: grid; grid-template-columns: 300px 1fr; gap: 3rem; align-items: center; }
+    .foto-polaroid {
+      background: var(--branco); padding: 14px 14px 52px; border-radius: 6px;
+      box-shadow: var(--sombra); transform: rotate(-3deg); position: relative; max-width: 300px; margin: 0 auto;
     }
-
-    .about-text h2 {
-      font-family: 'Space Grotesk', sans-serif;
-      font-size: 0.75rem;
-      font-weight: 600;
-      text-transform: uppercase;
-      letter-spacing: 2px;
-      color: var(--amber-500);
-      margin-bottom: 0.75rem;
+    .foto-polaroid img { width: 100%; aspect-ratio: 4 / 5; object-fit: cover; object-position: center top; border-radius: 2px; background: #fffdf5; }
+    .foto-polaroid figcaption {
+      position: absolute; bottom: 12px; left: 0; right: 0; text-align: center;
+      font-family: 'Kalam', 'Comic Sans MS', cursive; font-size: 1.3rem; color: var(--texto);
     }
-
-    .about-text h3 {
-      font-family: 'Space Grotesk', sans-serif;
-      font-size: clamp(1.5rem, 3vw, 2rem);
-      font-weight: 700;
-      letter-spacing: -0.5px;
-      margin-bottom: 1.5rem;
-      line-height: 1.2;
+    .foto-polaroid::before {
+      content: ''; position: absolute; top: -14px; left: 50%; transform: translateX(-50%) rotate(3deg);
+      width: 110px; height: 30px; background: rgba(247, 197, 30, 0.85);
     }
-
-    .about-text p {
-      color: rgba(250, 250, 249, 0.5);
-      font-size: 0.95rem;
-      line-height: 1.8;
-      margin-bottom: 1rem;
+    .sobre-texto .etiqueta {
+      display: inline-block; font-weight: 900; font-size: 0.95rem; text-transform: uppercase;
+      letter-spacing: 1.5px; color: var(--amarelo-escuro); margin-bottom: 0.4rem;
     }
+    .sobre-texto h2 { font-size: clamp(1.7rem, 3.5vw, 2.3rem); font-weight: 900; line-height: 1.2; margin-bottom: 1.25rem; }
+    .sobre-texto p { margin-bottom: 1rem; font-size: 1.15rem; }
+    .sobre-texto strong { background: var(--amarelo-claro); padding: 0 0.2em; border-radius: 4px; }
 
-    .about-text p strong {
-      color: var(--amber-400);
-      font-weight: 600;
-    }
-
-    .about-divider {
-      width: 50px;
-      height: 2px;
-      background: linear-gradient(90deg, var(--amber-500), var(--orange-500));
-      border-radius: 1px;
-      margin: 1.5rem 0;
-      opacity: 0.4;
-    }
-
-    @media (max-width: 768px) {
-      .about-content {
-        grid-template-columns: 1fr;
-        text-align: center;
-      }
-
-      .about-photo {
-        display: flex;
-        justify-content: center;
-      }
-
-      .about-photo-frame {
-        width: 220px;
-        height: 270px;
-      }
-
-      .about-divider {
-        margin: 1.5rem auto;
-      }
-    }
-
-    /* ===== FOOTER ===== */
+    /* ===== RODAPÉ ===== */
     footer {
-      position: relative;
-      z-index: 1;
-      text-align: center;
-      padding: 2rem;
-      border-top: 1px solid rgba(250, 250, 249, 0.04);
-      color: rgba(250, 250, 249, 0.25);
-      font-size: 0.8rem;
+      background: var(--quadro-escuro); color: #d7e6df;
+      border-top: 6px solid var(--amarelo);
+      padding: 2rem 0; text-align: center; font-size: 1rem;
     }
+    footer a { color: var(--amarelo); font-weight: 800; }
+    footer p + p { margin-top: 0.4rem; }
 
-    footer span {
-      color: var(--amber-500);
+    /* ===== CELULAR ===== */
+    @media (max-width: 900px) {
+      .abertura-grid { grid-template-columns: 1fr; }
+      .desenho-quadro { max-width: 380px; }
+      .materias { grid-template-columns: repeat(2, 1fr); }
+      .materias li:last-child { grid-column: 1 / -1; }
     }
-
-    /* ===== DIVIDER ===== */
-    .divider {
-      width: 60px;
-      height: 3px;
-      background: linear-gradient(90deg, var(--amber-500), var(--orange-500));
-      border-radius: 2px;
-      margin: 0 auto 3rem;
-      opacity: 0.5;
+    @media (max-width: 760px) {
+      .passos { grid-template-columns: 1fr; gap: 3rem; }
+      .sobre-grid { grid-template-columns: 1fr; gap: 2rem; text-align: center; }
+      .menu a { padding: 0.45rem 0.7rem; font-size: 0.95rem; }
+      .topo-inner { justify-content: center; }
     }
-
-    /* ===== SCROLL ANIMATIONS ===== */
-    .fade-up {
-      opacity: 0;
-      transform: translateY(30px);
-      transition: opacity 0.7s ease, transform 0.7s ease;
-    }
-
-    .fade-up.visible {
-      opacity: 1;
-      transform: translateY(0);
-    }
-
-    /* ===== RESPONSIVE ===== */
-    @media (max-width: 768px) {
-      .nav-links {
-        display: none;
-      }
-
-      .cta-box {
-        padding: 3rem 1.5rem;
-      }
-
-      .catalog-cta-box {
-        padding: 3rem 1.5rem;
-      }
-
-      .hero {
-        padding: 5rem 1.5rem 3rem;
-      }
-
-      .catalog-stats {
-        gap: 2rem;
-      }
-    }
-
-    @media (max-width: 480px) {
-      .hero-buttons {
-        flex-direction: column;
-        width: 100%;
-        padding: 0 1rem;
-      }
-
-      .btn-primary, .btn-secondary {
-        width: 100%;
-        justify-content: center;
-      }
+    @media (max-width: 520px) {
+      .abertura { padding-top: 2.5rem; }
+      .abertura-botoes .btn, .centro .btn, .encomenda .btn { width: 100%; }
+      .materias { gap: 0.9rem; }
+      .materia { min-height: 160px; padding: 1.25rem 0.6rem; }
+      .encomenda { padding: 2.25rem 1.1rem; border-width: 8px; }
     }
   </style>
 </head>
 <body>
 
-  <!-- Starfield Background -->
-  <canvas id="starfield"></canvas>
+  <a class="pular" href="#conteudo">Pular para o conteúdo</a>
 
-  <!-- Navigation -->
-  <nav>
-    <div class="nav-inner">
-      <div class="logo">@experimentajoao</div>
-      <ul class="nav-links">
-        <li><a href="catalogo.html">Materiais Gratuitos</a></li>
-        <li><a href="#sobre">Sobre</a></li>
-        <li><a href="#contato">Contato</a></li>
-      </ul>
-    </div>
-  </nav>
-
-  <!-- Hero Section -->
-  <section class="hero">
-    <div class="hero-badge">
-      <span class="dot"></span>
-      Recursos educacionais gratuitos
-    </div>
-    <h1>
-      O ensino que<br>
-      <span class="gradient-text">transforma</span> começa<br>
-      com a <span class="gradient-text">experiência</span> certa
-    </h1>
-    <p>
-      Simuladores, jogos e laboratórios virtuais para reinventar o ensino de Física, Matemática e Tecnologia.
-      Explore gratuitamente ou encomende seu próprio projeto.
-    </p>
-    <div class="hero-buttons">
-      <a href="catalogo.html" class="btn-primary">
-        <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
-        Acessar Materiais Gratuitos
+  <!-- TOPO -->
+  <header class="topo">
+    <div class="container topo-inner">
+      <a href="index.html" class="logo" aria-label="Experimenta João, página inicial">
+        <svg class="logo-lapis" viewBox="0 0 40 40" aria-hidden="true">
+          <circle cx="20" cy="20" r="19" fill="#f7c51e"/>
+          <g transform="rotate(-45 20 20)">
+            <rect x="9" y="16" width="18" height="8" fill="#1f2328"/>
+            <rect x="10" y="17" width="16" height="6" fill="#f7c51e"/>
+            <polygon points="27,16 33,20 27,24" fill="#f2d7a6"/>
+            <polygon points="31,18.7 33,20 31,21.3" fill="#1f2328"/>
+            <rect x="6" y="16" width="3" height="8" fill="#e8848a"/>
+          </g>
+        </svg>
+        Experimenta<span>João</span>
       </a>
-      <a href="#contato" class="btn-secondary">
-        <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
-        Encomendar Projeto
-      </a>
+      <nav aria-label="Menu principal">
+        <ul class="menu">
+          <li><a href="catalogo.html" class="destaque">Materiais grátis</a></li>
+          <li><a href="#como-usar">Como usar</a></li>
+          <li><a href="#sobre">Quem sou</a></li>
+          <li><a href="#contato">Contato</a></li>
+        </ul>
+      </nav>
     </div>
-  </section>
+  </header>
 
-  <!-- Catalog CTA Section -->
-  <section class="catalog-cta" id="catalogo">
-    <div class="catalog-cta-box fade-up">
-      <span class="section-label">Catálogo</span>
-      <h2>Recursos <span class="gradient-text" style="background: linear-gradient(135deg, var(--amber-300), var(--orange-500)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;">100% gratuitos</span> para sua sala de aula</h2>
-      <div class="catalog-stats">
-        <div class="catalog-stat">
-          <div class="number">9</div>
-          <div class="label">Recursos</div>
+  <main id="conteudo">
+
+    <!-- ABERTURA -->
+    <section class="abertura">
+      <div class="container abertura-grid">
+        <div>
+          <span class="selo">Para professores, de professor</span>
+          <h1>Materiais para sua aula, <span class="giz">sem complicação</span></h1>
+          <p class="lead">
+            Simuladores, jogos e laboratórios virtuais de Física, Matemática, Biologia e Tecnologia, além de ferramentas para o dia a dia do professor. É só abrir e usar.
+          </p>
+          <div class="abertura-botoes">
+            <a href="catalogo.html" class="btn btn-amarelo">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2 4h7a3 3 0 0 1 3 3v13a2 2 0 0 0-2-2H2z"/><path d="M22 4h-7a3 3 0 0 0-3 3v13a2 2 0 0 1 2-2h8z"/></svg>
+              Ver os materiais grátis
+            </a>
+            <a href="#como-usar" class="btn btn-branco">
+              Como funciona?
+            </a>
+          </div>
+          <ul class="garantias">
+            <li>100% gratuito</li>
+            <li>Não precisa instalar</li>
+            <li>Não precisa criar conta</li>
+          </ul>
         </div>
-        <div class="catalog-stat">
-          <div class="number">4</div>
-          <div class="label">Disciplinas</div>
+
+        <!-- Desenho: quadro-negro com lápis -->
+        <svg class="desenho-quadro" viewBox="0 0 460 360" role="img" aria-label="Desenho de um quadro-negro com fórmulas e um lápis amarelo">
+          <rect x="10" y="10" width="440" height="290" rx="14" fill="#9a6b3f"/>
+          <rect x="26" y="26" width="408" height="258" rx="6" fill="#2e6b57"/>
+          <rect x="26" y="26" width="408" height="258" rx="6" fill="url(#brilho)"/>
+          <defs>
+            <radialGradient id="brilho" cx="0.25" cy="0.2" r="0.9">
+              <stop offset="0" stop-color="#ffffff" stop-opacity="0.12"/>
+              <stop offset="1" stop-color="#ffffff" stop-opacity="0"/>
+            </radialGradient>
+          </defs>
+          <!-- átomo -->
+          <g fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round" opacity="0.92">
+            <ellipse cx="110" cy="100" rx="52" ry="20"/>
+            <ellipse cx="110" cy="100" rx="52" ry="20" transform="rotate(60 110 100)"/>
+            <ellipse cx="110" cy="100" rx="52" ry="20" transform="rotate(-60 110 100)"/>
+          </g>
+          <circle cx="110" cy="100" r="7" fill="#f7c51e"/>
+          <!-- fórmula -->
+          <text x="200" y="88" font-family="Kalam, 'Comic Sans MS', cursive" font-size="34" fill="#ffffff" opacity="0.95">F = m · a</text>
+          <text x="214" y="132" font-family="Kalam, 'Comic Sans MS', cursive" font-size="28" fill="#f7c51e">y = ax² + b</text>
+          <!-- triângulo -->
+          <g fill="none" stroke="#fff" stroke-width="3" stroke-linejoin="round" opacity="0.92">
+            <polygon points="62,250 150,250 62,180"/>
+            <rect x="62" y="236" width="14" height="14"/>
+          </g>
+          <!-- folha -->
+          <g fill="none" stroke="#9fe0b4" stroke-width="3" stroke-linecap="round">
+            <path d="M210 250 C 210 200, 250 175, 290 180 C 290 225, 255 252, 210 250 Z"/>
+            <path d="M210 250 L 270 196"/>
+          </g>
+          <!-- onda -->
+          <path d="M318 230 q 15 -30 30 0 t 30 0 t 30 0" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round" opacity="0.92"/>
+          <!-- apagador e calha -->
+          <rect x="10" y="296" width="440" height="14" rx="4" fill="#7b532f"/>
+          <rect x="70" y="282" width="70" height="20" rx="4" fill="#3b2a1a"/>
+          <rect x="70" y="282" width="70" height="8" rx="3" fill="#c9b79c"/>
+          <rect x="170" y="288" width="34" height="8" rx="3" fill="#ffffff"/>
+          <!-- lápis amarelo -->
+          <g transform="rotate(-12 330 330)">
+            <rect x="230" y="318" width="170" height="26" rx="3" fill="#f7c51e" stroke="#1f2328" stroke-width="3"/>
+            <line x1="230" y1="331" x2="400" y2="331" stroke="#d9a90b" stroke-width="3"/>
+            <rect x="206" y="318" width="26" height="26" rx="3" fill="#e8848a" stroke="#1f2328" stroke-width="3"/>
+            <rect x="226" y="318" width="10" height="26" fill="#c8c8c8" stroke="#1f2328" stroke-width="3"/>
+            <polygon points="400,318 436,331 400,344" fill="#f2d7a6" stroke="#1f2328" stroke-width="3" stroke-linejoin="round"/>
+            <polygon points="424,326.5 436,331 424,335.5" fill="#1f2328"/>
+          </g>
+        </svg>
+      </div>
+    </section>
+
+    <!-- COMO USAR -->
+    <section class="bloco" id="como-usar">
+      <div class="container">
+        <div class="titulo-secao">
+          <span class="etiqueta">Como usar</span>
+          <h2>É fácil, são só <span class="marca">3 passos</span></h2>
+          <p>Funciona no celular, no computador da escola ou projetado na TV da sala.</p>
         </div>
-        <div class="catalog-stat">
-          <div class="number">3</div>
-          <div class="label">Tipos</div>
+
+        <ol class="passos">
+          <li class="passo">
+            <div class="passo-num" aria-hidden="true">1</div>
+            <svg viewBox="0 0 100 100" aria-hidden="true">
+              <rect x="14" y="18" width="72" height="64" rx="8" fill="#fff3c4" stroke="#1f2328" stroke-width="4"/>
+              <rect x="24" y="30" width="22" height="18" rx="3" fill="#e3ecff" stroke="#1d4ed8" stroke-width="3"/>
+              <rect x="54" y="30" width="22" height="18" rx="3" fill="#fde7e5" stroke="#b42318" stroke-width="3"/>
+              <rect x="24" y="54" width="22" height="18" rx="3" fill="#e1f5e7" stroke="#157f3b" stroke-width="3"/>
+              <rect x="54" y="54" width="22" height="18" rx="3" fill="#fff0d6" stroke="#a15c00" stroke-width="3"/>
+            </svg>
+            <h3>Escolha o material</h3>
+            <p>Entre em <strong>Materiais grátis</strong> e toque na matéria que você dá aula.</p>
+          </li>
+          <li class="passo">
+            <div class="passo-num" aria-hidden="true">2</div>
+            <svg viewBox="0 0 100 100" aria-hidden="true">
+              <rect x="12" y="36" width="76" height="30" rx="10" fill="#f7c51e" stroke="#1f2328" stroke-width="4"/>
+              <text x="50" y="57" text-anchor="middle" font-family="Nunito, Arial, sans-serif" font-weight="900" font-size="17" fill="#1f2328">ABRIR</text>
+              <path d="M62 60 l0 26 l7 -7 l6 12 l6 -3 l-6 -12 l10 0 z" fill="#ffffff" stroke="#1f2328" stroke-width="3" stroke-linejoin="round"/>
+            </svg>
+            <h3>Toque em “Abrir”</h3>
+            <p>O material abre na hora, direto no navegador. Não precisa baixar nada.</p>
+          </li>
+          <li class="passo">
+            <div class="passo-num" aria-hidden="true">3</div>
+            <svg viewBox="0 0 100 100" aria-hidden="true">
+              <rect x="10" y="16" width="80" height="54" rx="6" fill="#2e6b57" stroke="#1f2328" stroke-width="4"/>
+              <circle cx="38" cy="43" r="9" fill="none" stroke="#fff" stroke-width="3"/>
+              <path d="M54 50 q6 -14 12 0 t12 0" fill="none" stroke="#f7c51e" stroke-width="3" stroke-linecap="round"/>
+              <rect x="44" y="70" width="12" height="10" fill="#1f2328"/>
+              <rect x="30" y="80" width="40" height="6" rx="3" fill="#1f2328"/>
+            </svg>
+            <h3>Use com a turma</h3>
+            <p>Mostre na TV ou no projetor, ou deixe os alunos usarem no celular.</p>
+          </li>
+        </ol>
+
+        <div class="aviso-simples">
+          <span class="icone" aria-hidden="true">💡</span>
+          <p><strong>Dica:</strong> se tiver qualquer dúvida para usar algum material, me chame no WhatsApp. Eu explico com calma, sem termos difíceis.</p>
         </div>
       </div>
-      <p>
-        Simuladores, jogos educativos e laboratórios virtuais prontos para uso. Filtre por disciplina e encontre o recurso ideal.
-      </p>
-      <a href="catalogo.html" class="btn-catalog">
-        Explorar Catálogo Completo
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
-      </a>
-    </div>
-  </section>
+    </section>
 
-  <!-- CTA Section -->
-  <section class="cta" id="contato">
-    <div class="cta-box fade-up">
-      <span class="section-label">Encomendas</span>
-      <h2>Precisa de um projeto <span class="gradient-text" style="background: linear-gradient(135deg, var(--amber-300), var(--orange-500)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;">sob medida</span>?</h2>
-      <p>
-        Desenvolvo simuladores, jogos educativos, laboratórios virtuais e planos de aula interativos personalizados para sua necessidade.
-      </p>
-      <a href="https://wa.me/5561996163965?text=Ol%C3%A1!%20Tenho%20interesse%20em%20encomendar%20um%20projeto%20educacional." target="_blank" rel="noopener" class="whatsapp-btn">
-        <svg viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
-        Fale comigo no WhatsApp
-      </a>
-    </div>
-  </section>
-
-  <!-- About Section -->
-  <section class="about" id="sobre">
-    <div class="about-content fade-up">
-      <div class="about-photo">
-        <div class="about-photo-frame">
-          <img src="IMG_3999.jpeg" alt="João - Professor e Desenvolvedor">
+    <!-- NOVIDADES -->
+    <section class="bloco bloco-novidades" id="novidades">
+      <div class="container">
+        <div class="titulo-secao">
+          <span class="etiqueta">Chegou agora</span>
+          <h2>Novidades para o <span class="marca">fim do ano</span></h2>
+          <p>Simuladores do 3º trimestre, seguindo o Plano de Curso da SEE/MG, e um corretor de provas pelo celular.</p>
         </div>
-        <div class="about-photo-accent"></div>
+        <ul class="novidades" id="novidades-lista"></ul>
       </div>
-      <div class="about-text">
-        <h2>Quem está por trás disso tudo</h2>
-        <h3>Um professor que não desistiu da educação</h3>
-        <p>
-          Sou graduado em Física pela UFG e mestrando em Ensino de Física pela UnB. Ao longo da minha jornada como professor, percebi que a educação precisava de novas linguagens — e encontrei na tecnologia uma forma poderosa de reinventar o ensino sem abrir mão do que sempre me moveu: <strong>fazer o aluno entender de verdade</strong>.
-        </p>
-        <div class="about-divider"></div>
-        <p>
-          O <strong>@experimentajoao | Soluções Educacionais</strong> nasceu dessa convicção: que simuladores, ambientes virtuais e ferramentas digitais bem planejadas transformam a sala de aula em um laboratório de descobertas.
-        </p>
-      </div>
-    </div>
-  </section>
+    </section>
 
-  <!-- Footer -->
+    <!-- MATÉRIAS -->
+    <section class="bloco bloco-materias" id="materias">
+      <div class="container">
+        <div class="titulo-secao">
+          <span class="etiqueta">Materiais grátis</span>
+          <h2>Escolha a <span class="marca">sua matéria</span></h2>
+          <p>Toque em uma matéria para ver os materiais dela.</p>
+        </div>
+
+        <ul class="materias">
+          <li>
+            <a class="materia m-fisica" href="catalogo.html?materia=fisica">
+              <span class="bolinha" aria-hidden="true">⚡</span>
+              <strong>Física</strong>
+              <small data-conta="fisica">&nbsp;</small>
+            </a>
+          </li>
+          <li>
+            <a class="materia m-matematica" href="catalogo.html?materia=matematica">
+              <span class="bolinha" aria-hidden="true">📐</span>
+              <strong>Matemática</strong>
+              <small data-conta="matematica">&nbsp;</small>
+            </a>
+          </li>
+          <li>
+            <a class="materia m-biologia" href="catalogo.html?materia=biologia">
+              <span class="bolinha" aria-hidden="true">🌱</span>
+              <strong>Biologia</strong>
+              <small data-conta="biologia">&nbsp;</small>
+            </a>
+          </li>
+          <li>
+            <a class="materia m-tecnologia" href="catalogo.html?materia=tecnologia">
+              <span class="bolinha" aria-hidden="true">💻</span>
+              <strong>Tecnologia</strong>
+              <small data-conta="tecnologia">&nbsp;</small>
+            </a>
+          </li>
+          <li>
+            <a class="materia m-professor" href="catalogo.html?materia=professor">
+              <span class="bolinha" aria-hidden="true">🧑‍🏫</span>
+              <strong>Para o professor</strong>
+              <small data-conta="professor">&nbsp;</small>
+            </a>
+          </li>
+        </ul>
+
+        <div class="centro">
+          <a href="catalogo.html" class="btn btn-amarelo">Ver todos os materiais</a>
+        </div>
+      </div>
+    </section>
+
+    <!-- ENCOMENDAS -->
+    <section class="bloco" id="contato">
+      <div class="container">
+        <div class="encomenda">
+          <h2>Quer um material <span class="giz">feito para a sua turma?</span></h2>
+          <p>Eu crio simuladores, jogos e laboratórios virtuais sob medida para o conteúdo que você precisa trabalhar.</p>
+          <ul class="exemplos" aria-label="Exemplos do que posso criar">
+            <li>Simuladores</li>
+            <li>Jogos educativos</li>
+            <li>Laboratórios virtuais</li>
+            <li>Aulas interativas</li>
+          </ul>
+          <a href="https://wa.me/5561996163965?text=Ol%C3%A1!%20Tenho%20interesse%20em%20encomendar%20um%20projeto%20educacional." target="_blank" rel="noopener" class="btn btn-whats">
+            <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
+            Falar comigo no WhatsApp
+          </a>
+        </div>
+      </div>
+    </section>
+
+    <!-- SOBRE -->
+    <section class="bloco" id="sobre">
+      <div class="container sobre-grid">
+        <figure class="foto-polaroid">
+          <img src="IMG_3999.jpeg" alt="Foto do professor João Victor sorrindo, com óculos de proteção e jaleco amarelo">
+          <figcaption>Prof. João Victor</figcaption>
+        </figure>
+        <div class="sobre-texto">
+          <span class="etiqueta">Quem sou</span>
+          <h2>Um professor que não desistiu da educação</h2>
+          <p>
+            Sou graduado em Física pela UFG e mestrando em Ensino de Física pela UnB. Ao longo da minha jornada como professor,
+            percebi que a educação precisava de novas linguagens, e encontrei na tecnologia uma forma de reinventar o ensino
+            sem abrir mão do que sempre me moveu: <strong>fazer o aluno entender de verdade</strong>.
+          </p>
+          <p>
+            O <strong>Experimenta João</strong> nasceu dessa convicção: ferramentas digitais simples e bem planejadas
+            transformam a sala de aula em um laboratório de descobertas, mesmo em escolas com poucos recursos.
+          </p>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
   <footer>
-    <p>&copy; 2026 <span>Experimenta João</span>. Todos os direitos reservados.</p>
+    <div class="container">
+      <p>&copy; 2026 Experimenta João. Materiais gratuitos para professores.</p>
+      <p>Instagram: <a href="https://instagram.com/experimentajoao" target="_blank" rel="noopener">@experimentajoao</a></p>
+    </div>
   </footer>
 
-  <!-- Scripts -->
+  <script src="materiais.js"></script>
   <script>
-    // ===== STARFIELD + COMETS =====
-    (function() {
-      const canvas = document.getElementById('starfield');
-      const ctx = canvas.getContext('2d');
-      let W, H;
-
-      function resize() {
-        W = canvas.width = window.innerWidth;
-        H = canvas.height = window.innerHeight;
-      }
-      resize();
-      window.addEventListener('resize', resize);
-
-      const STAR_COUNT = 180;
-      const stars = [];
-      for (let i = 0; i < STAR_COUNT; i++) {
-        stars.push({
-          x: Math.random() * W,
-          y: Math.random() * H,
-          r: Math.random() * 1.2 + 0.3,
-          alpha: Math.random() * 0.6 + 0.2,
-          twinkleSpeed: Math.random() * 0.02 + 0.005,
-          twinkleOffset: Math.random() * Math.PI * 2
-        });
-      }
-
-      const comets = [];
-      function spawnComet() {
-        const fromLeft = Math.random() > 0.5;
-        comets.push({
-          x: fromLeft ? -20 : W + 20,
-          y: Math.random() * H * 0.6,
-          vx: (fromLeft ? 1 : -1) * (Math.random() * 3 + 2),
-          vy: Math.random() * 1.5 + 0.5,
-          length: Math.random() * 60 + 40,
-          alpha: Math.random() * 0.4 + 0.3,
-          life: 1
-        });
-      }
-
-      function scheduleComet() {
-        const delay = Math.random() * 6000 + 3000;
-        setTimeout(function() {
-          spawnComet();
-          scheduleComet();
-        }, delay);
-      }
-      scheduleComet();
-
-      let time = 0;
-      function draw() {
-        ctx.clearRect(0, 0, W, H);
-        time += 0.016;
-
-        for (let i = 0; i < stars.length; i++) {
-          const s = stars[i];
-          const twinkle = Math.sin(time * s.twinkleSpeed * 60 + s.twinkleOffset) * 0.3 + 0.7;
-          const a = s.alpha * twinkle;
-          ctx.beginPath();
-          ctx.arc(s.x, s.y, s.r, 0, Math.PI * 2);
-          ctx.fillStyle = 'rgba(253, 230, 138, ' + a + ')';
-          ctx.fill();
-        }
-
-        for (let i = comets.length - 1; i >= 0; i--) {
-          const c = comets[i];
-          c.x += c.vx;
-          c.y += c.vy;
-          c.life -= 0.003;
-
-          if (c.life <= 0 || c.x > W + 100 || c.x < -100 || c.y > H + 100) {
-            comets.splice(i, 1);
-            continue;
-          }
-
-          const angle = Math.atan2(c.vy, c.vx);
-          const tailX = c.x - Math.cos(angle) * c.length;
-          const tailY = c.y - Math.sin(angle) * c.length;
-
-          const grad = ctx.createLinearGradient(c.x, c.y, tailX, tailY);
-          grad.addColorStop(0, 'rgba(253, 230, 138, ' + (c.alpha * c.life) + ')');
-          grad.addColorStop(0.3, 'rgba(251, 191, 36, ' + (c.alpha * c.life * 0.5) + ')');
-          grad.addColorStop(1, 'rgba(251, 191, 36, 0)');
-
-          ctx.beginPath();
-          ctx.moveTo(c.x, c.y);
-          ctx.lineTo(tailX, tailY);
-          ctx.strokeStyle = grad;
-          ctx.lineWidth = 1.5;
-          ctx.stroke();
-
-          ctx.beginPath();
-          ctx.arc(c.x, c.y, 2, 0, Math.PI * 2);
-          ctx.fillStyle = 'rgba(255, 251, 235, ' + (c.alpha * c.life) + ')';
-          ctx.fill();
-        }
-
-        requestAnimationFrame(draw);
-      }
-      draw();
-
-      window.addEventListener('resize', function() {
-        for (let i = 0; i < stars.length; i++) {
-          stars[i].x = Math.random() * W;
-          stars[i].y = Math.random() * H;
-        }
+    (function () {
+      if (typeof MATERIAIS === "undefined") return;
+      document.querySelectorAll("[data-conta]").forEach(function (el) {
+        var n = MATERIAIS.filter(function (m) { return m.materia === el.dataset.conta; }).length;
+        el.textContent = n + (n === 1 ? " material" : " materiais");
       });
+      var lista = document.getElementById("novidades-lista");
+      var novos = MATERIAIS.filter(function (m) { return m.novo; });
+      if (!novos.length) { document.getElementById("novidades").style.display = "none"; return; }
+      lista.innerHTML = novos.map(function (m) {
+        return '<li><a class="novidade" href="' + m.link + '" target="_blank" rel="noopener">' +
+          '<span class="selo-novo">Novo</span>' +
+          '<span class="ic" aria-hidden="true">' + m.icone + '</span>' +
+          '<strong>' + m.titulo + '</strong>' +
+          '<span class="tp">' + m.tipo + '</span>' +
+          '<span class="abrir">Abrir →</span></a></li>';
+      }).join("");
     })();
-
-    // ===== SCROLL ANIMATIONS =====
-    const observer = new IntersectionObserver(function(entries) {
-      entries.forEach(function(entry) {
-        if (entry.isIntersecting) {
-          entry.target.classList.add('visible');
-        }
-      });
-    }, { threshold: 0.1 });
-
-    document.querySelectorAll('.fade-up').forEach(function(el) {
-      observer.observe(el);
-    });
-
-    // ===== NAV SCROLL EFFECT =====
-    window.addEventListener('scroll', function() {
-      const nav = document.querySelector('nav');
-      if (window.scrollY > 50) {
-        nav.classList.add('scrolled');
-      } else {
-        nav.classList.remove('scrolled');
-      }
-    });
   </script>
-
 </body>
 </html>
