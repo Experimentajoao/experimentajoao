@@ -1,0 +1,362 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Física 1º ano · Simuladores</title>
+<link rel="stylesheet" href="estilo.css">
+</head>
+<body>
+<div class="topo">
+  <div class="lin"><a class="voltar" href="index.html">◀ Início</a><h1>Física 1º ano · Impulso e Hidrostática</h1></div>
+  <div class="abas" id="abas"></div>
+</div>
+<main id="main"></main>
+<footer>Prof. João Victor Mariano de Almeida · @experimentajoao</footer>
+<script src="plataforma.js"></script>
+<script>
+/* Link do desafio Kahoot no modo Atribuir (cole entre as aspas) */
+var KAHOOT_DESAFIO = '';
+
+var G = 10;
+
+/* ============ 1. COLISÕES E IMPULSO ============ */
+function simColisao(a) {
+  var T = P.tela(a.tela, 640, 300), ctx = T.ctx;
+  var modo = 'col';
+  var c = a.ctrl;
+  P.seg(c, 'O que estudar', [['col', 'Colisão de carrinhos'], ['imp', 'Impulso (chute na bola)']], 'col', function (v) { modo = v; mostra(); reinicia(); });
+  var boxCol = P.el('div'), boxImp = P.el('div'); c.appendChild(boxCol); c.appendChild(boxImp);
+  P.formula(boxCol, '<b>Q = m · v</b> &nbsp; e &nbsp; <b>Q<sub>antes</sub> = Q<sub>depois</sub></b> (sistema isolado)');
+  var m1 = P.slider(boxCol, 'Massa do carrinho azul (m₁)', { min: 1, max: 5, step: 0.5, value: 2, unit: 'kg' }, reinicia);
+  var v1 = P.slider(boxCol, 'Velocidade do azul (v₁)', { min: 0, max: 6, step: 0.5, value: 6, unit: 'm/s' }, reinicia);
+  var m2 = P.slider(boxCol, 'Massa do carrinho laranja (m₂)', { min: 1, max: 5, step: 0.5, value: 1, unit: 'kg' }, reinicia);
+  var v2 = P.slider(boxCol, 'Velocidade do laranja (v₂)', { min: -6, max: 0, step: 0.5, value: 0, unit: 'm/s' }, reinicia);
+  var tipo = P.seg(boxCol, 'Tipo de colisão', [['gruda', 'Grudam (inelástica)'], ['elast', 'Quicam (elástica)']], 'gruda', reinicia);
+  P.dica(boxCol, 'Velocidade negativa significa que o carrinho anda para a esquerda.');
+  P.formula(boxImp, '<b>I = F · Δt</b> &nbsp; e &nbsp; <b>I = ΔQ = m · Δv</b>');
+  var mb = P.slider(boxImp, 'Massa da bola', { min: 0.1, max: 1, step: 0.05, value: 0.5, unit: 'kg' }, reinicia);
+  var F = P.slider(boxImp, 'Força média do chute (F)', { min: 100, max: 3000, step: 100, value: 1500, unit: 'N' }, reinicia);
+  var dt = P.slider(boxImp, 'Tempo de contato (Δt)', { min: 0.002, max: 0.02, step: 0.001, value: 0.01, unit: 's', fmt: function (v) { return P.fmt(v, 3); } }, reinicia);
+  var b1 = P.el('button', 'bt', '▶ Soltar'); b1.onclick = function () { rodando = true; };
+  var b2 = P.el('button', 'bt sec', '↺ Reiniciar'); b2.onclick = reinicia;
+  c.appendChild(b1); c.appendChild(b2);
+  var L = P.leituras(c, [['a', ''], ['b', ''], ['c', ''], ['d', ''], ['e', ''], ['f', '']]);
+  var rot = c.querySelectorAll('.leit small');
+  function mostra() { boxCol.style.display = modo === 'col' ? '' : 'none'; boxImp.style.display = modo === 'imp' ? '' : 'none'; }
+  mostra();
+  var x1, x2, u1, u2, bateu, rodando, xb, vb, tch;
+  function reinicia() {
+    rodando = false; bateu = false; x1 = 120; x2 = 430; u1 = v1.get(); u2 = v2.get(); xb = 90; vb = 0; tch = 0;
+    atualiza();
+  }
+  function depois() {
+    var a1 = m1.get(), a2 = m2.get(), w1 = v1.get(), w2 = v2.get();
+    if (tipo.get() === 'gruda') { var v = (a1 * w1 + a2 * w2) / (a1 + a2); return [v, v]; }
+    return [((a1 - a2) * w1 + 2 * a2 * w2) / (a1 + a2), ((a2 - a1) * w2 + 2 * a1 * w1) / (a1 + a2)];
+  }
+  function atualiza() {
+    if (modo === 'col') {
+      var a1 = m1.get(), a2 = m2.get(), d = depois();
+      var tx = ['Q₁ antes', 'Q₂ antes', 'Q total antes', 'v₁ depois', 'v₂ depois', 'Q total depois'];
+      tx.forEach(function (t, i) { rot[i].textContent = t; });
+      L.set('a', P.fmt(a1 * v1.get()) + ' kg·m/s'); L.set('b', P.fmt(a2 * v2.get()) + ' kg·m/s');
+      L.set('c', P.fmt(a1 * v1.get() + a2 * v2.get()) + ' kg·m/s');
+      L.set('d', bateu ? P.fmt(d[0]) + ' m/s' : '?'); L.set('e', bateu ? P.fmt(d[1]) + ' m/s' : '?');
+      L.set('f', bateu ? P.fmt(a1 * d[0] + a2 * d[1]) + ' kg·m/s' : '?');
+    } else {
+      var I = F.get() * dt.get(), v = I / mb.get();
+      ['Impulso I', 'Variação de Q', 'Velocidade final', 'Força × tempo', 'Massa', ''].forEach(function (t, i) { rot[i].textContent = t; });
+      L.set('a', P.fmt(I) + ' N·s'); L.set('b', P.fmt(I) + ' kg·m/s'); L.set('c', P.fmt(v, 1) + ' m/s');
+      L.set('d', P.fmt(F.get()) + ' N × ' + P.fmt(dt.get(), 3) + ' s'); L.set('e', P.fmt(mb.get()) + ' kg'); L.set('f', '');
+    }
+  }
+  function carro(x, m, cor, v) {
+    var w = 40 + m * 10, h = 34;
+    ctx.fillStyle = cor; ctx.fillRect(x - w / 2, 200 - h, w, h);
+    ctx.fillStyle = '#333'; ctx.beginPath(); ctx.arc(x - w / 3, 204, 7, 0, 7); ctx.arc(x + w / 3, 204, 7, 0, 7); ctx.fill();
+    P.texto(ctx, P.fmt(m) + ' kg', x, 200 - h / 2, { cor: '#fff', tam: 13 });
+    if (Math.abs(v) > 0.01) P.seta(ctx, x, 140, x + v * 12, 140, cor, 3);
+    P.texto(ctx, P.fmt(v, 2) + ' m/s', x, 118, { cor: cor, tam: 13 });
+    return w;
+  }
+  reinicia();
+  return function (t) {
+    ctx.clearRect(0, 0, 640, 300);
+    if (modo === 'col') {
+      ctx.fillStyle = '#c9d1df'; ctx.fillRect(10, 211, 620, 6);
+      if (rodando) {
+        x1 += u1 * 30 * t; x2 += u2 * 30 * t;
+        var w1 = 40 + m1.get() * 10, w2 = 40 + m2.get() * 10;
+        if (!bateu && x1 + w1 / 2 >= x2 - w2 / 2) { bateu = true; var d = depois(); u1 = d[0]; u2 = d[1]; x1 = x2 - w2 / 2 - w1 / 2; atualiza(); }
+        if (x1 < -80 || x2 > 720 || (bateu && Math.abs(u1) < 0.01 && Math.abs(u2) < 0.01)) rodando = false;
+        if (!bateu && u1 - u2 <= 0) rodando = false;
+      }
+      carro(x1, m1.get(), '#1f5fbf', u1); carro(x2, m2.get(), '#e07a1f', u2);
+      P.texto(ctx, bateu ? 'Depois da colisão' : 'Antes da colisão', 320, 40, { tam: 16 });
+      P.texto(ctx, 'Q total = ' + P.fmt(m1.get() * u1 + m2.get() * u2) + ' kg·m/s', 320, 260, { tam: 15, cor: '#163f80' });
+    } else {
+      var I = F.get() * dt.get(), v = I / mb.get();
+      /* gráfico F x t */
+      ctx.strokeStyle = '#555'; ctx.lineWidth = 1.5;
+      ctx.beginPath(); ctx.moveTo(40, 20); ctx.lineTo(40, 140); ctx.lineTo(300, 140); ctx.stroke();
+      var hh = F.get() / 3000 * 110, ww = dt.get() / 0.02 * 220;
+      ctx.fillStyle = 'rgba(31,95,191,.35)'; ctx.fillRect(60, 140 - hh, ww, hh);
+      ctx.strokeStyle = '#1f5fbf'; ctx.strokeRect(60, 140 - hh, ww, hh);
+      P.texto(ctx, 'F (N)', 40, 12, { tam: 12 }); P.texto(ctx, 't (s)', 300, 154, { tam: 12 });
+      P.texto(ctx, 'área = I = ' + P.fmt(I) + ' N·s', 170, 170, { tam: 14, cor: '#163f80' });
+      /* campo e bola */
+      ctx.fillStyle = '#7bb661'; ctx.fillRect(320, 230, 320, 70);
+      if (rodando) { tch += t; if (tch > 0.2) xb += v * 8 * t; }
+      if (xb > 660) rodando = false;
+      ctx.fillStyle = '#fff'; ctx.strokeStyle = '#222'; ctx.lineWidth = 2;
+      ctx.beginPath(); ctx.arc(340 + xb - 90, 218, 12, 0, 7); ctx.fill(); ctx.stroke();
+      P.texto(ctx, 'v = ' + P.fmt(v, 1) + ' m/s', 480, 190, { tam: 15, cor: '#1d8a52' });
+    }
+  };
+}
+
+/* ============ 2. PRESSÃO EM SÓLIDOS E TORRICELLI ============ */
+function simPressao(a) {
+  var T = P.tela(a.tela, 640, 340), ctx = T.ctx, c = a.ctrl, modo = 'sol';
+  P.seg(c, 'O que estudar', [['sol', 'Pressão em sólidos'], ['tor', 'Experimento de Torricelli']], 'sol', function (v) { modo = v; mostra(); calc(); });
+  var bs = P.el('div'), bt = P.el('div'); c.appendChild(bs); c.appendChild(bt);
+  P.formula(bs, '<b>p = F / A</b> &nbsp; (1 Pa = 1 N/m²)');
+  var peso = P.slider(bs, 'Peso do bloco (F)', { min: 20, max: 200, step: 10, value: 60, unit: 'N' }, calc);
+  var face = P.seg(bs, 'Face apoiada na areia', [[0.08, 'Grande (0,08 m²)'], [0.04, 'Média (0,04 m²)'], [0.02, 'Pequena (0,02 m²)']], 0.08, calc);
+  P.formula(bt, '<b>p<sub>atm</sub> = d<sub>Hg</sub> · g · h</b> &nbsp; (d<sub>Hg</sub> = 13 600 kg/m³)');
+  var alt = P.slider(bt, 'Altitude do local', { min: 0, max: 4000, step: 100, value: 0, unit: 'm' }, calc);
+  P.dica(bt, 'Ao nível do mar a coluna de mercúrio tem cerca de 760 mm. Compare com a coluna de água.');
+  var L = P.leituras(c, [['a', ''], ['b', ''], ['c', ''], ['d', '']]), rot = c.querySelectorAll('.leit small');
+  function mostra() { bs.style.display = modo === 'sol' ? '' : 'none'; bt.style.display = modo === 'tor' ? '' : 'none'; }
+  mostra();
+  function patm(h) { return 101325 * Math.pow(1 - 2.25577e-5 * h, 5.25588); }
+  function calc() {
+    if (modo === 'sol') {
+      var p = peso.get() / face.get();
+      ['Força (peso)', 'Área de apoio', 'Pressão', 'Afundamento na areia'].forEach(function (t, i) { rot[i].textContent = t; });
+      L.set('a', P.fmt(peso.get()) + ' N'); L.set('b', P.fmt(face.get()) + ' m²'); L.set('c', P.fmt(p) + ' Pa'); L.set('d', P.fmt(p / 500, 1) + ' mm');
+    } else {
+      var pa = patm(alt.get());
+      ['Pressão atmosférica', 'Em atm', 'Coluna de mercúrio', 'Coluna de água'].forEach(function (t, i) { rot[i].textContent = t; });
+      L.set('a', P.fmt(pa, 0) + ' Pa'); L.set('b', P.fmt(pa / 101325, 2) + ' atm');
+      L.set('c', P.fmt(pa / (13600 * 9.8) * 1000, 0) + ' mm'); L.set('d', P.fmt(pa / (1000 * 9.8), 2) + ' m');
+    }
+  }
+  calc();
+  return function () {
+    ctx.clearRect(0, 0, 640, 340);
+    if (modo === 'sol') {
+      var A = face.get(), p = peso.get() / A, af = Math.min(p / 500, 60);
+      var dims = A === 0.08 ? [200, 50] : A === 0.04 ? [100, 100] : [50, 200];
+      ctx.fillStyle = '#e8cf95'; ctx.fillRect(0, 250, 640, 90);
+      var x = 320 - dims[0] / 2, y = 250 + af - dims[1];
+      ctx.fillStyle = '#d9b26a'; ctx.fillRect(x - 6, 250, dims[0] + 12, af);
+      ctx.fillStyle = '#b5523b'; ctx.fillRect(x, y, dims[0], dims[1]);
+      ctx.strokeStyle = '#7a3324'; ctx.strokeRect(x, y, dims[0], dims[1]);
+      P.seta(ctx, 320, y - 70, 320, y - 8, '#c0392b', 4);
+      P.texto(ctx, 'F = ' + P.fmt(peso.get()) + ' N', 400, y - 50, { cor: '#c0392b' });
+      P.texto(ctx, 'p = ' + P.fmt(p) + ' Pa', 320, 310, { tam: 18, cor: '#163f80' });
+    } else {
+      var pa = patm(alt.get()), hmm = pa / (13600 * 9.8) * 1000;
+      /* montanha */
+      ctx.fillStyle = '#dfe9f7'; ctx.fillRect(0, 0, 640, 340);
+      ctx.fillStyle = '#9bb58a'; ctx.beginPath(); ctx.moveTo(380, 320); ctx.lineTo(520, 60); ctx.lineTo(640, 320); ctx.fill();
+      var yy = 320 - alt.get() / 4000 * 250;
+      ctx.fillStyle = '#c0392b'; ctx.beginPath(); ctx.arc(380 + (320 - yy) * 140 / 260, yy, 6, 0, 7); ctx.fill();
+      P.texto(ctx, P.fmt(alt.get()) + ' m', 380 + (320 - yy) * 140 / 260 - 40, yy, { tam: 13, cor: '#c0392b' });
+      /* tubo */
+      var base = 310, esc = 0.32;
+      ctx.fillStyle = '#aaa'; ctx.fillRect(60, base - 10, 160, 20);
+      ctx.fillStyle = '#8d97a6'; ctx.fillRect(70, base - 18, 140, 18);
+      ctx.strokeStyle = '#333'; ctx.lineWidth = 2; ctx.strokeRect(128, base - 290, 24, 290);
+      ctx.fillStyle = '#9aa3ad'; ctx.fillRect(130, base - hmm * esc, 20, hmm * esc);
+      ctx.strokeStyle = '#c0392b'; ctx.setLineDash([5, 4]); ctx.beginPath(); ctx.moveTo(100, base - 760 * esc); ctx.lineTo(240, base - 760 * esc); ctx.stroke(); ctx.setLineDash([]);
+      P.texto(ctx, '760 mm', 270, base - 760 * esc, { tam: 12, cor: '#c0392b' });
+      P.texto(ctx, 'h = ' + P.fmt(hmm, 0) + ' mm', 220, base - hmm * esc + 14, { tam: 15, cor: '#163f80' });
+      P.texto(ctx, 'vácuo', 140, base - 280, { tam: 11 });
+      P.texto(ctx, 'mercúrio', 140, base + 22, { tam: 12 });
+    }
+  };
+}
+
+/* ============ 3. TEOREMA DE STEVIN ============ */
+function simStevin(a) {
+  var T = P.tela(a.tela, 640, 360), ctx = T.ctx, c = a.ctrl;
+  var liqs = { agua: [1000, 'Água doce', '#5aa9e6'], sal: [1030, 'Água do mar', '#2f7fbf'], oleo: [900, 'Óleo', '#e2c044'], gli: [1260, 'Glicerina', '#c9a7e8'] };
+  P.formula(c, '<b>p = p<sub>0</sub> + d · g · h</b> &nbsp; g = 10 m/s², p<sub>0</sub> = 1,0 × 10⁵ Pa');
+  var liq = P.seg(c, 'Líquido', Object.keys(liqs).map(function (k) { return [k, liqs[k][1] + ' (' + liqs[k][0] + ' kg/m³)']; }), 'agua', calc);
+  var h = P.slider(c, 'Profundidade do sensor (h)', { min: 0, max: 20, step: 0.5, value: 5, unit: 'm' }, calc);
+  P.dica(c, 'Arraste o sensor ou use o controle. O formato do recipiente não muda a pressão: só a profundidade e o líquido.');
+  var L = P.leituras(c, [['d', 'Densidade'], ['ph', 'Pressão do líquido (d·g·h)'], ['pa', 'Pressão absoluta'], ['atm', 'Pressão absoluta em atm']]);
+  function calc() {
+    var d = liqs[liq.get()][0], ph = d * G * h.get(), pa = 1e5 + ph;
+    L.set('d', P.fmt(d) + ' kg/m³'); L.set('ph', P.fmt(ph) + ' Pa'); L.set('pa', P.fmt(pa) + ' Pa'); L.set('atm', P.fmt(pa / 1e5, 2) + ' atm');
+  }
+  calc();
+  var arrasta = false;
+  T.cv.addEventListener('pointerdown', function (e) { arrasta = true; mover(e); });
+  window.addEventListener('pointerup', function () { arrasta = false; });
+  T.cv.addEventListener('pointermove', function (e) { if (arrasta) mover(e); });
+  function mover(e) { var p = T.ponto(e); var v = Math.round(Math.max(0, Math.min(20, (p.y - 40) / 15)) * 2) / 2; h.set(v); calc(); }
+  return function () {
+    ctx.clearRect(0, 0, 640, 360);
+    var cor = liqs[liq.get()][2];
+    ctx.fillStyle = '#dfeefa'; ctx.fillRect(0, 0, 640, 40);
+    ctx.fillStyle = cor; ctx.globalAlpha = 0.55; ctx.fillRect(60, 40, 300, 300); ctx.globalAlpha = 1;
+    ctx.strokeStyle = '#333'; ctx.lineWidth = 3; ctx.beginPath(); ctx.moveTo(60, 20); ctx.lineTo(60, 340); ctx.lineTo(360, 340); ctx.lineTo(360, 20); ctx.stroke();
+    for (var m = 0; m <= 20; m += 5) { P.texto(ctx, m + ' m', 35, 40 + m * 15, { tam: 11 }); ctx.strokeStyle = '#555'; ctx.lineWidth = 1; ctx.beginPath(); ctx.moveTo(56, 40 + m * 15); ctx.lineTo(64, 40 + m * 15); ctx.stroke(); }
+    var y = 40 + h.get() * 15;
+    ctx.strokeStyle = '#c0392b'; ctx.setLineDash([4, 4]); ctx.beginPath(); ctx.moveTo(60, y); ctx.lineTo(360, y); ctx.stroke(); ctx.setLineDash([]);
+    ctx.fillStyle = '#c0392b'; ctx.beginPath(); ctx.arc(210, y, 10, 0, 7); ctx.fill();
+    ctx.strokeStyle = '#333'; ctx.lineWidth = 2; ctx.beginPath(); ctx.moveTo(210, y - 10); ctx.lineTo(210, 10); ctx.lineTo(440, 10); ctx.stroke();
+    /* manômetro */
+    var d = liqs[liq.get()][0], pa = 1e5 + d * G * h.get();
+    ctx.fillStyle = '#fff'; ctx.strokeStyle = '#333'; ctx.beginPath(); ctx.arc(500, 120, 70, 0, 7); ctx.fill(); ctx.stroke();
+    for (var k = 0; k <= 4; k++) { var an = Math.PI * (0.75 + k * 0.375); P.texto(ctx, k + '', 500 + 52 * Math.cos(an), 120 + 52 * Math.sin(an), { tam: 12 }); }
+    var ang = Math.PI * (0.75 + Math.min(pa / 1e5, 4) * 0.375);
+    P.seta(ctx, 500, 120, 500 + 55 * Math.cos(ang), 120 + 55 * Math.sin(ang), '#c0392b', 3);
+    P.texto(ctx, 'atm', 500, 150, { tam: 12 });
+    P.texto(ctx, P.fmt(pa / 1e5, 2) + ' atm', 500, 215, { tam: 18, cor: '#163f80' });
+    /* recipientes de formatos diferentes */
+    ctx.fillStyle = cor; ctx.globalAlpha = 0.55;
+    ctx.beginPath(); ctx.moveTo(420, 260); ctx.lineTo(440, 330); ctx.lineTo(460, 330); ctx.lineTo(480, 260); ctx.fill();
+    ctx.fillRect(500, 260, 20, 70);
+    ctx.beginPath(); ctx.moveTo(540, 260); ctx.lineTo(560, 260); ctx.lineTo(600, 330); ctx.lineTo(530, 330); ctx.fill();
+    ctx.globalAlpha = 1;
+    P.texto(ctx, 'mesma altura de líquido:', 510, 238, { tam: 11 }); P.texto(ctx, 'mesma pressão no fundo', 510, 250, { tam: 11 });
+  };
+}
+
+/* ============ 4. PRINCÍPIO DE PASCAL ============ */
+function simPascal(a) {
+  var T = P.tela(a.tela, 640, 330), ctx = T.ctx, c = a.ctrl;
+  P.formula(c, '<b>F₁ / A₁ = F₂ / A₂</b> &nbsp; e &nbsp; <b>A₁ · d₁ = A₂ · d₂</b>');
+  var F1 = P.slider(c, 'Força no êmbolo pequeno (F₁)', { min: 10, max: 500, step: 10, value: 100, unit: 'N' }, calc);
+  var A1 = P.slider(c, 'Área do êmbolo pequeno (A₁)', { min: 5, max: 50, step: 5, value: 10, unit: 'cm²' }, calc);
+  var A2 = P.slider(c, 'Área do êmbolo grande (A₂)', { min: 100, max: 1000, step: 50, value: 200, unit: 'cm²' }, calc);
+  var carga = P.seg(c, 'O que levantar', [[2000, 'Moto (2 000 N)'], [10000, 'Carro (10 000 N)'], [20000, 'Caminhonete (20 000 N)']], 2000, calc);
+  var bb = P.el('button', 'bt', '⬇ Bombear (d₁ = 10 cm)'); c.appendChild(bb);
+  var br = P.el('button', 'bt sec', '↺ Reiniciar'); c.appendChild(br);
+  var L = P.leituras(c, [['p', 'Pressão no líquido'], ['f2', 'Força no êmbolo grande (F₂)'], ['d2', 'Subida por bombeada (d₂)'], ['ok', 'Levanta a carga?']]);
+  var subida = 0, anima = 0;
+  bb.onclick = function () { if (F1.get() * A2.get() / A1.get() >= carga.get()) { anima = 0.4; subida = Math.min(subida + 10 * A1.get() / A2.get(), 60); } else anima = -0.4; };
+  br.onclick = function () { subida = 0; };
+  function calc() {
+    var p = F1.get() / (A1.get() / 1e4), f2 = F1.get() * A2.get() / A1.get();
+    L.set('p', P.fmt(p, 0) + ' Pa'); L.set('f2', P.fmt(f2, 0) + ' N'); L.set('d2', P.fmt(10 * A1.get() / A2.get(), 2) + ' cm');
+    L.set('ok', f2 >= carga.get() ? 'Sim' : 'Não, falta força');
+  }
+  calc();
+  return function (t) {
+    ctx.clearRect(0, 0, 640, 330);
+    if (anima > 0) anima = Math.max(0, anima - t); else if (anima < 0) anima = Math.min(0, anima + t);
+    var w1 = 20 + A1.get() * 1.2, w2 = 80 + A2.get() * 0.18;
+    var x1 = 130, x2 = 430, topo1 = 170 + (anima > 0 ? 25 : 0), topo2 = 170 - subida;
+    ctx.fillStyle = '#e9b44c';
+    ctx.fillRect(x1 - w1 / 2, topo1, w1, 280 - topo1); ctx.fillRect(x2 - w2 / 2, topo2, w2, 280 - topo2);
+    ctx.fillRect(x1, 260, x2 - x1, 30);
+    ctx.strokeStyle = '#333'; ctx.lineWidth = 2; ctx.strokeRect(x1 - w1 / 2, 100, w1, 190); ctx.strokeRect(x2 - w2 / 2, 60, w2, 230);
+    ctx.fillStyle = '#555'; ctx.fillRect(x1 - w1 / 2, topo1 - 8, w1, 8); ctx.fillRect(x2 - w2 / 2, topo2 - 8, w2, 8);
+    P.seta(ctx, x1, topo1 - 70, x1, topo1 - 12, '#c0392b', 3);
+    P.texto(ctx, 'F₁ = ' + P.fmt(F1.get()) + ' N', x1, topo1 - 82, { cor: '#c0392b' });
+    var f2 = F1.get() * A2.get() / A1.get();
+    var nome = carga.get() === 2000 ? 'Moto' : carga.get() === 10000 ? 'Carro' : 'Caminhonete';
+    ctx.fillStyle = anima < 0 ? '#c0392b' : '#1f5fbf'; ctx.fillRect(x2 - 55, topo2 - 40, 110, 30);
+    ctx.fillStyle = '#222'; ctx.beginPath(); ctx.arc(x2 - 35, topo2 - 8, 8, 0, 7); ctx.arc(x2 + 35, topo2 - 8, 8, 0, 7); ctx.fill();
+    P.texto(ctx, nome, x2, topo2 - 25, { cor: '#fff', tam: 13 });
+    P.texto(ctx, 'F₂ = ' + P.fmt(f2, 0) + ' N', x2 + w2 / 2 + 70, topo2, { cor: '#1d8a52' });
+    P.texto(ctx, 'Subiu ' + P.fmt(subida, 1) + ' cm', x2, 315, { tam: 14, cor: '#163f80' });
+  };
+}
+
+/* ============ 5. PRINCÍPIO DE ARQUIMEDES ============ */
+function simEmpuxo(a) {
+  var T = P.tela(a.tela, 640, 360), ctx = T.ctx, c = a.ctrl;
+  var mats = { mad: [600, 'Madeira', '#b07a3c'], gelo: [920, 'Gelo', '#cfe9f7'], plas: [1200, 'Plástico', '#e05c8a'], alu: [2700, 'Alumínio', '#b7bcc4'], fer: [7800, 'Ferro', '#5b5f66'] };
+  var liqs = { agua: [1000, 'Água doce'], sal: [1030, 'Água do mar'], oleo: [900, 'Óleo'], alc: [790, 'Álcool'] };
+  P.formula(c, '<b>E = d<sub>líquido</sub> · V<sub>deslocado</sub> · g</b> &nbsp; e &nbsp; <b>P<sub>aparente</sub> = P − E</b>');
+  var mat = P.seg(c, 'Material do objeto', Object.keys(mats).map(function (k) { return [k, mats[k][1] + ' (' + mats[k][0] + ')']; }), 'alu', calc);
+  var liq = P.seg(c, 'Líquido', Object.keys(liqs).map(function (k) { return [k, liqs[k][1] + ' (' + liqs[k][0] + ')']; }), 'agua', calc);
+  var vol = P.slider(c, 'Volume do objeto', { min: 0.5, max: 4, step: 0.5, value: 2, unit: 'L' }, calc);
+  var mer = P.slider(c, 'Descer o objeto (parte submersa)', { min: 0, max: 100, step: 5, value: 100, unit: '%' }, calc);
+  P.dica(c, 'Densidades em kg/m³. 1 L = 0,001 m³. g = 10 m/s².');
+  var L = P.leituras(c, [['p', 'Peso real (P)'], ['e', 'Empuxo (E)'], ['ap', 'Peso aparente (dinamômetro)'], ['vd', 'Volume deslocado'], ['s', 'Situação']]);
+  var est = {};
+  function calc() {
+    var dO = mats[mat.get()][0], dL = liqs[liq.get()][0], V = vol.get() / 1000, f = mer.get() / 100;
+    var Pr = dO * V * G, flut = dO < dL;
+    if (flut && f > dO / dL) f = dO / dL;
+    var E = dL * V * f * G, ap = Math.max(Pr - E, 0);
+    est = { f: f, flut: flut && ap < 1e-6 };
+    L.set('p', P.fmt(Pr, 1) + ' N'); L.set('e', P.fmt(E, 1) + ' N'); L.set('ap', P.fmt(ap, 1) + ' N');
+    L.set('vd', P.fmt(V * f * 1000, 2) + ' L');
+    L.set('s', est.flut ? 'Flutua (' + P.fmt(f * 100, 0) + '% submerso)' : f === 0 ? 'Fora do líquido' : f < 1 ? 'Parcialmente submerso' : 'Totalmente submerso');
+  }
+  calc();
+  return function () {
+    ctx.clearRect(0, 0, 640, 360);
+    var lado = 40 + vol.get() * 14, top = 190, sup = 200;
+    ctx.fillStyle = 'rgba(90,169,230,.45)'; ctx.fillRect(150, sup, 300, 140);
+    ctx.strokeStyle = '#333'; ctx.lineWidth = 3; ctx.beginPath(); ctx.moveTo(150, 140); ctx.lineTo(150, 340); ctx.lineTo(450, 340); ctx.lineTo(450, 140); ctx.stroke();
+    var yb = sup - lado + est.f * lado;
+    /* dinamômetro */
+    var Pr = mats[mat.get()][0] * vol.get() / 1000 * G, E = liqs[liq.get()][0] * vol.get() / 1000 * est.f * G, ap = Math.max(Pr - E, 0);
+    var mola = 30 + ap / 320 * 80;
+    ctx.strokeStyle = '#555'; ctx.lineWidth = 2; ctx.beginPath(); ctx.moveTo(300, 10); ctx.lineTo(300, 20);
+    for (var i = 0; i < 10; i++) ctx.lineTo(300 + (i % 2 ? 10 : -10), 20 + (i + 1) * mola / 10);
+    ctx.lineTo(300, yb); ctx.stroke();
+    ctx.fillStyle = '#fff'; ctx.strokeStyle = '#333'; ctx.fillRect(470, 20, 150, 50); ctx.strokeRect(470, 20, 150, 50);
+    P.texto(ctx, 'Dinamômetro', 545, 34, { tam: 12 }); P.texto(ctx, P.fmt(ap, 1) + ' N', 545, 54, { tam: 18, cor: '#163f80' });
+    ctx.fillStyle = mats[mat.get()][2]; ctx.fillRect(300 - lado / 2, yb, lado, lado); ctx.strokeStyle = '#333'; ctx.strokeRect(300 - lado / 2, yb, lado, lado);
+    P.seta(ctx, 300 - lado / 2 - 30, yb + lado / 2, 300 - lado / 2 - 30, yb + lado / 2 + Math.min(Pr, 320) / 3.2 + 10, '#c0392b', 3);
+    P.texto(ctx, 'P', 300 - lado / 2 - 45, yb + lado / 2 + 20, { cor: '#c0392b' });
+    if (E > 0.01) { P.seta(ctx, 300 + lado / 2 + 30, yb + lado / 2, 300 + lado / 2 + 30, yb + lado / 2 - Math.min(E, 320) / 3.2 - 10, '#1d8a52', 3); P.texto(ctx, 'E', 300 + lado / 2 + 45, yb + lado / 2 - 20, { cor: '#1d8a52' }); }
+  };
+}
+
+P.pagina([
+  { id: 'colisao', nome: 'Impulso e colisões', titulo: 'Impulso e quantidade de movimento', intro: 'Faça carrinhos colidirem e veja o que acontece com a quantidade de movimento. Depois chute uma bola e veja como força e tempo de contato mudam a velocidade.', init: function (a) {
+    var f = simColisao(a);
+    P.perguntas(a.dir, [
+      { p: 'Com m₁ = 2 kg a 6 m/s batendo no laranja de 1 kg parado, e os carrinhos grudando, qual é a velocidade depois?', a: ['2 m/s', '4 m/s', '6 m/s', '12 m/s'], c: 1, e: 'Q antes = 2 · 6 = 12 kg·m/s; depois: 12 / 3 = 4 m/s.' },
+      { p: 'O que acontece com a quantidade de movimento total na colisão?', a: ['Aumenta', 'Diminui', 'Fica igual', 'Vira zero'], c: 2, e: 'As forças da batida são internas ao sistema, então Q total se conserva.' },
+      { p: 'No chute, se o tempo de contato dobra e a força continua igual, o impulso...', a: ['Cai pela metade', 'Dobra', 'Não muda', 'Zera'], c: 1, e: 'I = F · Δt, então dobra junto com Δt.' }
+    ]);
+    return f; } },
+  { id: 'pressao', nome: 'Pressão e Torricelli', titulo: 'Pressão em sólidos e pressão atmosférica', intro: 'Apoie o mesmo bloco por faces diferentes e veja quanto ele afunda na areia. Depois suba uma montanha com o tubo de Torricelli.', init: function (a) {
+    var f = simPressao(a);
+    P.perguntas(a.dir, [
+      { p: 'Mesmo bloco, mesmo peso: em qual face a pressão é maior?', a: ['Na face grande', 'Na face pequena', 'É igual em todas'], c: 1, e: 'Menor área, maior pressão (p = F/A). Por isso a faca afiada corta melhor.' },
+      { p: 'Ao subir a montanha, a coluna de mercúrio...', a: ['Sobe', 'Desce', 'Não muda'], c: 1, e: 'Mais alto, menos ar acima de nós, menor pressão atmosférica.' },
+      { p: 'Por que Torricelli usou mercúrio e não água?', a: ['O mercúrio é muito denso, a coluna fica pequena', 'A água não tem pressão', 'O mercúrio é mais leve'], c: 0, e: 'Com água a coluna teria uns 10 m.' }
+    ]);
+    return f; } },
+  { id: 'stevin', nome: 'Teorema de Stevin', titulo: 'Pressão nos líquidos: Teorema de Stevin', intro: 'Mergulhe o sensor e veja a pressão aumentar com a profundidade. Troque o líquido e compare.', init: function (a) {
+    var f = simStevin(a);
+    P.perguntas(a.dir, [
+      { p: 'Na água doce, a cada 10 m de profundidade a pressão aumenta cerca de...', a: ['0,1 atm', '1 atm', '10 atm'], c: 1, e: 'd·g·h = 1000 · 10 · 10 = 1,0 × 10⁵ Pa ≈ 1 atm.' },
+      { p: 'Na mesma profundidade, onde a pressão é maior?', a: ['No óleo', 'Na água doce', 'Na glicerina'], c: 2, e: 'Maior densidade, maior pressão: a glicerina é a mais densa da lista.' }
+    ]);
+    return f; } },
+  { id: 'pascal', nome: 'Princípio de Pascal', titulo: 'Prensa hidráulica: Princípio de Pascal', intro: 'Aplique uma força pequena no êmbolo pequeno e tente levantar o veículo. Observe quanto o êmbolo grande sobe a cada bombeada.', init: function (a) {
+    var f = simPascal(a);
+    P.perguntas(a.dir, [
+      { p: 'Com F₁ = 100 N, A₁ = 10 cm² e A₂ = 200 cm², qual é F₂?', a: ['200 N', '1 000 N', '2 000 N', '20 000 N'], c: 2, e: 'A área é 20 vezes maior, então a força é 20 vezes maior.' },
+      { p: 'A prensa multiplica a força. Em troca...', a: ['O êmbolo grande se desloca menos', 'A pressão fica maior no êmbolo grande', 'Ela cria energia'], c: 0, e: 'A₁ · d₁ = A₂ · d₂: o volume de líquido que sai de um lado entra no outro.' }
+    ]);
+    return f; } },
+  { id: 'empuxo', nome: 'Empuxo', titulo: 'Empuxo: Princípio de Arquimedes', intro: 'Pendure o objeto no dinamômetro e mergulhe aos poucos. Compare o peso real com o peso aparente.', init: function (a) {
+    var f = simEmpuxo(a);
+    P.perguntas(a.dir, [
+      { p: 'Quanto mais o objeto afunda no líquido, o empuxo...', a: ['Aumenta', 'Diminui', 'Não muda'], c: 0, e: 'Mais volume deslocado, mais empuxo (até ficar todo submerso).' },
+      { p: 'Quais materiais flutuam na água doce?', a: ['Madeira e gelo', 'Alumínio e ferro', 'Só o plástico'], c: 0, e: 'Flutua quem tem densidade menor que a do líquido (1000 kg/m³).' },
+      { p: 'Um objeto de 2 L totalmente submerso na água recebe empuxo de...', a: ['2 N', '20 N', '200 N'], c: 1, e: 'E = 1000 · 0,002 · 10 = 20 N.' }
+    ]);
+    return f; } },
+  { id: 'desafio', nome: '🎮 Arena Final', titulo: 'Arena Final: o último desafio', init: P.desafio('1º ano', KAHOOT_DESAFIO) },
+  { id: 'certificado', nome: '🏅 Certificado', titulo: 'Certificado de conclusão', intro: 'Depois de concluir todas as lições, digite seu nome e baixe seu certificado com as notas.', init: P.certificado('1º ano') }
+]);
+</script>
+</body>
+</html>

@@ -42,7 +42,7 @@ var MATERIAIS = [
     icone: "🚗",
     novo: true,
     descricao: "Impulso e colisões, pressão e Torricelli, Stevin, Pascal e empuxo. Em dupla, os alunos mexem nos simuladores, respondem perguntas rápidas e ganham certificado no final.",
-    link: "https://experimentajoao.github.io/Provinha-da-massa/fisica1.html"
+    link: "https://experimentajoao.github.io/experimentajoao/provinha-da-massa/fisica1.html"
   },
   {
     titulo: "Física 2º ano · 3º Trimestre",
@@ -51,7 +51,7 @@ var MATERIAIS = [
     icone: "🔭",
     novo: true,
     descricao: "Olho e lentes, MHS e ondas, fenômenos ondulatórios, luz e cores, som e efeito Doppler. Tem perguntas rápidas e certificado no final.",
-    link: "https://experimentajoao.github.io/Provinha-da-massa/fisica2.html"
+    link: "https://experimentajoao.github.io/experimentajoao/provinha-da-massa/fisica2.html"
   },
   {
     titulo: "Física 3º ano · 3º Trimestre",
@@ -60,7 +60,7 @@ var MATERIAIS = [
     icone: "💡",
     novo: true,
     descricao: "Transformador e gerador, energia elétrica, espectro eletromagnético e física moderna. Tem perguntas rápidas e certificado no final.",
-    link: "https://experimentajoao.github.io/Provinha-da-massa/fisica3.html"
+    link: "https://experimentajoao.github.io/experimentajoao/provinha-da-massa/fisica3.html"
   },
   {
     titulo: "Corretor de Cartões-Resposta",

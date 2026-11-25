@@ -1,0 +1,480 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Física 2º ano · Simuladores</title>
+<link rel="stylesheet" href="estilo.css">
+</head>
+<body>
+<div class="topo">
+  <div class="lin"><a class="voltar" href="index.html">◀ Início</a><h1>Física 2º ano · Óptica, Ondas e Som</h1></div>
+  <div class="abas" id="abas"></div>
+</div>
+<main id="main"></main>
+<footer>Prof. João Victor Mariano de Almeida · @experimentajoao</footer>
+<script src="plataforma.js"></script>
+<script>
+/* Link do desafio Kahoot no modo Atribuir (cole entre as aspas) */
+var KAHOOT_DESAFIO = '';
+
+var VSOM = 340, audio = null;
+function tocar(freq, ondaReal, ondaImag, dur, vol) {
+  try {
+    if (!audio) audio = new (window.AudioContext || window.webkitAudioContext)();
+    var o = audio.createOscillator(), g = audio.createGain();
+    if (ondaReal) o.setPeriodicWave(audio.createPeriodicWave(new Float32Array(ondaReal), new Float32Array(ondaImag)));
+    o.frequency.value = freq; g.gain.value = 0;
+    g.gain.linearRampToValueAtTime(vol || 0.2, audio.currentTime + 0.03);
+    g.gain.linearRampToValueAtTime(0, audio.currentTime + (dur || 1));
+    o.connect(g); g.connect(audio.destination); o.start(); o.stop(audio.currentTime + (dur || 1) + 0.05);
+  } catch (e) {}
+}
+function modos(c, lista, inicial, on) {
+  var caixas = {};
+  P.seg(c, 'O que estudar', lista, inicial, function (v) { for (var k in caixas) caixas[k].style.display = k === v ? '' : 'none'; on(v); });
+  lista.forEach(function (m) { caixas[m[0]] = P.el('div'); caixas[m[0]].style.display = m[0] === inicial ? '' : 'none'; c.appendChild(caixas[m[0]]); });
+  return caixas;
+}
+
+/* ============ 1. OLHO E LENTES ============ */
+function simLentes(a) {
+  var T = P.tela(a.tela, 640, 320), ctx = T.ctx, c = a.ctrl, modo = 'lente';
+  var cx = modos(c, [['lente', 'Lentes (lupa, câmera)'], ['olho', 'Olho humano e óculos']], 'lente', function (v) { modo = v; calc(); });
+  P.formula(cx.lente, '<b>1/f = 1/p + 1/p\'</b> &nbsp; e &nbsp; <b>A = −p\' / p</b>');
+  var tipo = P.seg(cx.lente, 'Tipo de lente', [['conv', 'Convergente'], ['div', 'Divergente']], 'conv', calc);
+  var fo = P.slider(cx.lente, 'Distância focal (f)', { min: 4, max: 12, step: 1, value: 8, unit: 'cm' }, calc);
+  var po = P.slider(cx.lente, 'Distância do objeto à lente (p)', { min: 2, max: 28, step: 1, value: 20, unit: 'cm' }, calc);
+  P.dica(cx.lente, 'Para a lente divergente, use f negativo na fórmula. p\' negativo indica imagem virtual (do mesmo lado do objeto).');
+  var def = P.seg(cx.olho, 'Olho', [['normal', 'Normal'], ['mio', 'Miopia'], ['hip', 'Hipermetropia']], 'normal', calc);
+  var cor = P.seg(cx.olho, 'Óculos', [['sem', 'Sem óculos'], ['div', 'Lente divergente'], ['conv', 'Lente convergente']], 'sem', calc);
+  var L = P.leituras(c, [['a', ''], ['b', ''], ['c', ''], ['d', ''], ['e', '']]), rot = c.querySelectorAll('.leit small');
+  var est = {};
+  function calc() {
+    if (modo === 'lente') {
+      var f = tipo.get() === 'conv' ? fo.get() : -fo.get(), p = po.get();
+      var pl = Math.abs(p - f) < 1e-9 ? Infinity : 1 / (1 / f - 1 / p), A = -pl / p;
+      est = { f: f, p: p, pl: pl, A: A };
+      ['p (objeto)', 'f', 'p\' (imagem)', 'Aumento A', 'Imagem'].forEach(function (t, i) { rot[i].textContent = t; });
+      L.set('a', P.fmt(p) + ' cm'); L.set('b', P.fmt(f) + ' cm');
+      L.set('c', isFinite(pl) ? P.fmt(pl, 1) + ' cm' : 'no infinito'); L.set('d', isFinite(pl) ? P.fmt(A, 2) : '—');
+      L.set('e', !isFinite(pl) ? 'Imprópria (não se forma)' : (pl > 0 ? 'Real' : 'Virtual') + ', ' + (A > 0 ? 'direita' : 'invertida') + ', ' + (Math.abs(A) > 1.001 ? 'maior' : Math.abs(A) < 0.999 ? 'menor' : 'igual'));
+    } else {
+      var base = { normal: 420, mio: 385, hip: 455 }[def.get()], sh = { sem: 0, div: 35, conv: -35 }[cor.get()];
+      est = { xf: base + sh };
+      var onde = est.xf < 412 ? 'Antes da retina' : est.xf > 428 ? 'Depois da retina' : 'Na retina';
+      ['Defeito', 'Óculos', 'Onde a imagem se forma', 'Visão de longe', ''].forEach(function (t, i) { rot[i].textContent = t; });
+      L.set('a', { normal: 'Nenhum', mio: 'Miopia (olho alongado)', hip: 'Hipermetropia (olho curto)' }[def.get()]);
+      L.set('b', { sem: 'Sem', div: 'Divergente', conv: 'Convergente' }[cor.get()]);
+      L.set('c', onde); L.set('d', onde === 'Na retina' ? 'Nítida' : 'Embaçada'); L.set('e', '');
+    }
+  }
+  calc();
+  function raio(x1, y1, x2, y2, cor, trac) { ctx.strokeStyle = cor; ctx.lineWidth = 2; ctx.setLineDash(trac ? [6, 5] : []); ctx.beginPath(); ctx.moveTo(x1, y1); ctx.lineTo(x2, y2); ctx.stroke(); ctx.setLineDash([]); }
+  return function () {
+    ctx.clearRect(0, 0, 640, 320);
+    if (modo === 'lente') {
+      var s = 11, x0 = 330, y0 = 160, h = 40;
+      ctx.strokeStyle = '#888'; ctx.lineWidth = 1; ctx.beginPath(); ctx.moveTo(0, y0); ctx.lineTo(640, y0); ctx.stroke();
+      ctx.strokeStyle = '#1f5fbf'; ctx.lineWidth = 3; ctx.beginPath(); ctx.moveTo(x0, 30); ctx.lineTo(x0, 290); ctx.stroke();
+      var conv = est.f > 0;
+      P.seta(ctx, x0, 60, x0, 28, '#1f5fbf', 3); P.seta(ctx, x0, 260, x0, 292, '#1f5fbf', 3);
+      if (!conv) { P.seta(ctx, x0, 40, x0, 60, '#1f5fbf', 3); P.seta(ctx, x0, 280, x0, 260, '#1f5fbf', 3); }
+      [-1, 1].forEach(function (sg) { ctx.fillStyle = '#c0392b'; ctx.beginPath(); ctx.arc(x0 + sg * Math.abs(est.f) * s, y0, 4, 0, 7); ctx.fill(); P.texto(ctx, sg < 0 ? 'F' : 'F\'', x0 + sg * Math.abs(est.f) * s, y0 + 16, { tam: 12, cor: '#c0392b' }); });
+      var xo = x0 - est.p * s;
+      P.seta(ctx, xo, y0, xo, y0 - h, '#1d8a52', 4); P.texto(ctx, 'objeto', xo, y0 + 16, { tam: 12, cor: '#1d8a52' });
+      if (isFinite(est.pl)) {
+        var xi = x0 + est.pl * s, yi = y0 - est.A * h, real = est.pl > 0;
+        /* raio paralelo */
+        raio(xo, y0 - h, x0, y0 - h, '#e07a1f');
+        var dx = xi - x0, dy = yi - (y0 - h), k = 900 / Math.hypot(dx, dy);
+        if (real) raio(x0, y0 - h, x0 + dx * k, y0 - h + dy * k, '#e07a1f');
+        else { raio(x0, y0 - h, x0 - dx * k, y0 - h - dy * k, '#e07a1f'); raio(x0, y0 - h, xi, yi, '#e07a1f', true); }
+        /* raio pelo centro */
+        var ex = x0 - xo, ey = y0 - (y0 - h), k2 = 900 / Math.hypot(ex, ey);
+        raio(xo, y0 - h, xo + ex * k2, y0 - h + ey * k2, '#8e44ad');
+        if (!real) raio(xo, y0 - h, xi, yi, '#8e44ad', true);
+        if (xi > -50 && xi < 690) { ctx.globalAlpha = real ? 1 : 0.6; P.seta(ctx, xi, y0, xi, yi, '#163f80', 4); ctx.globalAlpha = 1; P.texto(ctx, real ? 'imagem real' : 'imagem virtual', xi, y0 + (est.A > 0 ? 16 : -16), { tam: 12, cor: '#163f80' }); }
+        else P.texto(ctx, 'imagem fora da tela (p\' = ' + P.fmt(est.pl, 1) + ' cm)', 470, 300, { tam: 12, cor: '#163f80' });
+      } else P.texto(ctx, 'Objeto no foco: os raios saem paralelos, a imagem não se forma', 320, 300, { tam: 13, cor: '#c0392b' });
+    } else {
+      var y0 = 160;
+      ctx.fillStyle = '#fdf1e6'; ctx.strokeStyle = '#a0522d'; ctx.lineWidth = 3;
+      var fundo = 420;
+      ctx.beginPath(); ctx.ellipse((300 + fundo) / 2, y0, (fundo - 290) / 2 + 15, 95, 0, 0, 7); ctx.fill(); ctx.stroke();
+      var retx = 420; ctx.strokeStyle = '#c0392b'; ctx.lineWidth = 4; ctx.beginPath(); ctx.arc(retx - 60, y0, 60, -0.6, 0.6); ctx.stroke();
+      P.texto(ctx, 'retina', retx + 10, y0 - 45, { tam: 12, cor: '#c0392b' });
+      ctx.fillStyle = 'rgba(31,95,191,.35)'; ctx.beginPath(); ctx.ellipse(300, y0, 10, 45, 0, 0, 7); ctx.fill();
+      P.texto(ctx, 'cristalino', 300, y0 + 62, { tam: 12 });
+      if (cor.get() !== 'sem') {
+        ctx.strokeStyle = '#1f5fbf'; ctx.lineWidth = 3; ctx.beginPath(); ctx.moveTo(200, 90); ctx.lineTo(200, 230); ctx.stroke();
+        var cv = cor.get() === 'conv'; P.seta(ctx, 200, 105, 200, cv ? 86 : 100, '#1f5fbf', 3); P.seta(ctx, 200, 215, 200, cv ? 234 : 220, '#1f5fbf', 3);
+        P.texto(ctx, cv ? 'convergente' : 'divergente', 200, 250, { tam: 12, cor: '#1f5fbf' });
+      }
+      [-30, -15, 15, 30].forEach(function (hh) {
+        var yin = y0 + hh, x1 = 300, yl = yin;
+        if (cor.get() !== 'sem') { raio(10, yin, 200, yin, '#e0a01f'); yl = yin + (cor.get() === 'div' ? hh * 0.15 : -hh * 0.15); raio(200, yin, x1, yl, '#e0a01f'); }
+        else raio(10, yin, x1, yin, '#e0a01f');
+        var xf = est.xf, k = (480 - x1) / (xf - x1);
+        raio(x1, yl, 480, yl + (y0 - yl) * k, '#e0a01f');
+      });
+      ctx.fillStyle = '#163f80'; ctx.beginPath(); ctx.arc(est.xf, y0, 5, 0, 7); ctx.fill();
+      P.texto(ctx, 'foco', est.xf, y0 + 18, { tam: 12, cor: '#163f80' });
+      P.texto(ctx, 'luz de um objeto distante', 90, y0 - 55, { tam: 12 });
+    }
+  };
+}
+
+/* ============ 2. MHS E ONDAS ============ */
+function simMHS(a) {
+  var T = P.tela(a.tela, 640, 320), ctx = T.ctx, c = a.ctrl, modo = 'mola', t = 0, hist = [];
+  var cx = modos(c, [['mola', 'Massa-mola'], ['pend', 'Pêndulo'], ['onda', 'Onda na corda']], 'mola', function (v) { modo = v; t = 0; hist = []; calc(); });
+  P.formula(cx.mola, '<b>T = 2π √(m / k)</b> &nbsp; f = 1 / T');
+  var k = P.slider(cx.mola, 'Constante da mola (k)', { min: 10, max: 100, step: 5, value: 40, unit: 'N/m' }, calc);
+  var m = P.slider(cx.mola, 'Massa (m)', { min: 0.1, max: 2, step: 0.1, value: 1, unit: 'kg' }, calc);
+  var A = P.slider(cx.mola, 'Amplitude (A)', { min: 2, max: 20, step: 1, value: 15, unit: 'cm' }, calc);
+  P.formula(cx.pend, '<b>T = 2π √(L / g)</b> &nbsp; g = 10 m/s²');
+  var Lp = P.slider(cx.pend, 'Comprimento do fio (L)', { min: 0.1, max: 2.5, step: 0.05, value: 1, unit: 'm' }, calc);
+  var bcr = P.el('button', 'bt', '⏱ Contar oscilações em 10 s'); cx.pend.appendChild(bcr);
+  P.formula(cx.onda, '<b>v = λ · f</b> &nbsp; T = 1 / f');
+  var fo = P.slider(cx.onda, 'Frequência da mão (f)', { min: 0.5, max: 4, step: 0.5, value: 2, unit: 'Hz' }, calc);
+  var vo = P.slider(cx.onda, 'Velocidade da onda na corda (v)', { min: 1, max: 6, step: 0.5, value: 2, unit: 'm/s' }, calc);
+  var tp = P.seg(cx.onda, 'Tipo de onda', [['trans', 'Transversal (corda)'], ['long', 'Longitudinal (mola/som)']], 'trans');
+  P.dica(cx.onda, 'A régua embaixo vai de 0 a 6 m. Siga o ponto vermelho: ele só sobe e desce, não viaja com a onda.');
+  var L = P.leituras(c, [['a', ''], ['b', ''], ['c', ''], ['d', '']]), rot = c.querySelectorAll('.leit small');
+  var cron = { on: false, t: 0, n: 0, fase: 0 };
+  bcr.onclick = function () { t = 0; cron = { on: true, t: 0, n: 0, ult: 1 }; };
+  function calc() {
+    if (modo === 'mola') {
+      var w = Math.sqrt(k.get() / m.get()), Tt = 2 * Math.PI / w;
+      ['Período T', 'Frequência f', 'Velocidade máxima (no centro)', 'Oscilações em 10 s'].forEach(function (s, i) { rot[i].textContent = s; });
+      L.set('a', P.fmt(Tt, 2) + ' s'); L.set('b', P.fmt(1 / Tt, 2) + ' Hz'); L.set('c', P.fmt(A.get() / 100 * w, 2) + ' m/s'); L.set('d', P.fmt(10 / Tt, 1));
+    } else if (modo === 'pend') {
+      var Tp = 2 * Math.PI * Math.sqrt(Lp.get() / 10);
+      ['Período T', 'Frequência f', 'Cronômetro', 'Oscilações contadas'].forEach(function (s, i) { rot[i].textContent = s; });
+      L.set('a', P.fmt(Tp, 2) + ' s'); L.set('b', P.fmt(1 / Tp, 2) + ' Hz');
+    } else {
+      ['Comprimento de onda λ', 'Período T', 'Velocidade v', 'Frequência f'].forEach(function (s, i) { rot[i].textContent = s; });
+      L.set('a', P.fmt(vo.get() / fo.get(), 2) + ' m'); L.set('b', P.fmt(1 / fo.get(), 2) + ' s'); L.set('c', P.fmt(vo.get()) + ' m/s'); L.set('d', P.fmt(fo.get()) + ' Hz');
+    }
+  }
+  calc();
+  return function (dt) {
+    t += dt; ctx.clearRect(0, 0, 640, 320);
+    if (modo === 'mola') {
+      var w = Math.sqrt(k.get() / m.get()), x = A.get() / 100 * Math.cos(w * t), px = 200 + x * 600;
+      ctx.fillStyle = '#555'; ctx.fillRect(20, 60, 10, 80);
+      ctx.strokeStyle = '#555'; ctx.lineWidth = 2; ctx.beginPath(); ctx.moveTo(30, 100);
+      for (var i = 1; i <= 16; i++) ctx.lineTo(30 + (px - 30 - 25) * i / 16, 100 + (i % 2 ? -12 : 12) * (i < 16 ? 1 : 0));
+      ctx.lineTo(px - 25, 100); ctx.stroke();
+      ctx.fillStyle = '#1f5fbf'; ctx.fillRect(px - 25, 75, 50, 50); P.texto(ctx, P.fmt(m.get()) + ' kg', px, 100, { cor: '#fff', tam: 12 });
+      ctx.strokeStyle = '#c0392b'; ctx.setLineDash([4, 4]); ctx.beginPath(); ctx.moveTo(200, 50); ctx.lineTo(200, 150); ctx.stroke(); ctx.setLineDash([]);
+      P.texto(ctx, 'equilíbrio', 200, 40, { tam: 11, cor: '#c0392b' });
+      var vel = -A.get() / 100 * w * Math.sin(w * t); P.seta(ctx, px, 150, px + vel * 60, 150, '#1d8a52', 3);
+      hist.push(x); if (hist.length > 600) hist.shift();
+      ctx.strokeStyle = '#ccc'; ctx.lineWidth = 1; ctx.beginPath(); ctx.moveTo(20, 250); ctx.lineTo(620, 250); ctx.stroke();
+      ctx.strokeStyle = '#1f5fbf'; ctx.lineWidth = 2; ctx.beginPath();
+      hist.forEach(function (v, i) { var X = 20 + i, Y = 250 - v * 300; i ? ctx.lineTo(X, Y) : ctx.moveTo(X, Y); }); ctx.stroke();
+      P.texto(ctx, 'posição × tempo', 560, 190, { tam: 12 });
+    } else if (modo === 'pend') {
+      var Tp = 2 * Math.PI * Math.sqrt(Lp.get() / 10), th = 0.35 * Math.cos(2 * Math.PI * t / Tp), len = 40 + Lp.get() * 100;
+      var bx = 320 + len * Math.sin(th), by = 20 + len * Math.cos(th);
+      ctx.fillStyle = '#555'; ctx.fillRect(220, 14, 200, 6);
+      ctx.strokeStyle = '#333'; ctx.lineWidth = 2; ctx.beginPath(); ctx.moveTo(320, 20); ctx.lineTo(bx, by); ctx.stroke();
+      ctx.fillStyle = '#e07a1f'; ctx.beginPath(); ctx.arc(bx, by, 14, 0, 7); ctx.fill();
+      if (cron.on) {
+        cron.t += dt; var n = Math.floor(cron.t / Tp);
+        cron.n = n; if (cron.t >= 10) { cron.on = false; cron.t = 10; cron.n = Math.floor(10 / Tp); }
+      }
+      L.set('c', P.fmt(cron.t, 1) + ' s'); L.set('d', String(cron.n));
+      P.texto(ctx, 'L = ' + P.fmt(Lp.get()) + ' m', 420, 40, { tam: 13 });
+    } else {
+      var f = fo.get(), v = vo.get(), lam = v / f, esc = 100, w2 = 2 * Math.PI * f;
+      ctx.fillStyle = '#e8d3b0'; ctx.fillRect(10, 60, 14, 160);
+      for (var X = 0; X <= 600; X += tp.get() === 'trans' ? 2 : 10) {
+        var xm = X / esc, fase = w2 * t - 2 * Math.PI * xm / lam, on = t - xm / v > 0;
+        var yv = on ? Math.sin(fase) : 0;
+        if (tp.get() === 'trans') { ctx.fillStyle = '#1f5fbf'; ctx.fillRect(24 + X, 140 - yv * 50, 2, 3); }
+        else { ctx.fillStyle = '#1f5fbf'; ctx.fillRect(24 + X + yv * 6, 90, 2, 100); }
+      }
+      var X0 = 300, xm0 = X0 / esc, on0 = t - xm0 / v > 0, y0 = on0 ? Math.sin(w2 * t - 2 * Math.PI * xm0 / lam) : 0;
+      ctx.fillStyle = '#c0392b'; ctx.beginPath();
+      if (tp.get() === 'trans') ctx.arc(24 + X0, 140 - y0 * 50, 7, 0, 7); else ctx.arc(24 + X0 + y0 * 6, 80, 7, 0, 7);
+      ctx.fill();
+      ctx.strokeStyle = '#333'; ctx.lineWidth = 1; ctx.beginPath(); ctx.moveTo(24, 270); ctx.lineTo(624, 270); ctx.stroke();
+      for (var mm = 0; mm <= 6; mm++) { ctx.beginPath(); ctx.moveTo(24 + mm * esc, 264); ctx.lineTo(24 + mm * esc, 276); ctx.stroke(); P.texto(ctx, mm + ' m', 24 + mm * esc, 290, { tam: 12 }); }
+      for (var mm2 = 0; mm2 < 6; mm2 += 0.5) { ctx.beginPath(); ctx.moveTo(24 + mm2 * esc, 267); ctx.lineTo(24 + mm2 * esc, 273); ctx.stroke(); }
+    }
+  };
+}
+
+/* ============ 3. FENÔMENOS ONDULATÓRIOS ============ */
+function simFenomenos(a) {
+  var T = P.tela(a.tela, 640, 360), ctx = T.ctx, c = a.ctrl, modo = 'refr', t = 0;
+  var GW = 160, GH = 90, img = ctx.createImageData(GW, GH), off = document.createElement('canvas'); off.width = GW; off.height = GH; var octx = off.getContext('2d');
+  var cx = modos(c, [['refl', 'Reflexão'], ['refr', 'Refração'], ['difr', 'Difração'], ['inter', 'Interferência'], ['harm', 'Harmônicos na corda']], 'refr', function (v) { modo = v; calc(); });
+  P.dica(cx.refl, 'Uma fonte faz ondas perto de uma parede. As ondas refletidas parecem vir de uma fonte "atrás" da parede, como num espelho.');
+  var dpar = P.slider(cx.refl, 'Distância da fonte até a parede', { min: 1, max: 5, step: 0.5, value: 2.5, unit: 'λ' }, calc);
+  P.formula(cx.refr, 'Na refração a <b>frequência não muda</b>; mudam v e λ: <b>v = λ · f</b>');
+  var v2 = P.slider(cx.refr, 'Velocidade na região rasa (v₂), com v₁ = 10 cm/s', { min: 3, max: 10, step: 1, value: 5, unit: 'cm/s' }, calc);
+  var ang = P.slider(cx.refr, 'Ângulo de incidência', { min: 0, max: 60, step: 5, value: 30, unit: '°' }, calc);
+  var fr = P.slider(cx.refr, 'Frequência da fonte (f)', { min: 1, max: 4, step: 0.5, value: 2, unit: 'Hz' }, calc);
+  var lamD = P.slider(cx.difr, 'Comprimento de onda (λ)', { min: 1, max: 4, step: 0.5, value: 2, unit: 'cm' }, calc);
+  var fen = P.slider(cx.difr, 'Largura da fenda (a)', { min: 1, max: 12, step: 1, value: 3, unit: 'cm' }, calc);
+  P.dica(cx.difr, 'A difração é mais forte quando a fenda tem tamanho parecido com o comprimento de onda.');
+  var lamI = P.slider(cx.inter, 'Comprimento de onda (λ)', { min: 1, max: 4, step: 0.5, value: 2, unit: 'cm' }, calc);
+  var sep = P.slider(cx.inter, 'Distância entre as fontes (d)', { min: 2, max: 12, step: 1, value: 6, unit: 'cm' }, calc);
+  P.dica(cx.inter, 'Regiões claras/escuras fortes: interferência construtiva. Regiões cinza paradas: destrutiva (as ondas se anulam).');
+  P.formula(cx.harm, '<b>λ<sub>n</sub> = 2L / n</b> &nbsp; e &nbsp; <b>f<sub>n</sub> = n · v / 2L</b>');
+  var Lc = P.slider(cx.harm, 'Comprimento da corda (L)', { min: 0.3, max: 1, step: 0.05, value: 0.65, unit: 'm' }, calc);
+  var vc = P.slider(cx.harm, 'Velocidade da onda na corda (v)', { min: 100, max: 400, step: 10, value: 260, unit: 'm/s' }, calc);
+  var nh = P.slider(cx.harm, 'Harmônico (n)', { min: 1, max: 6, step: 1, value: 1 }, calc);
+  var bs = P.el('button', 'bt', '🔊 Ouvir'); cx.harm.appendChild(bs);
+  bs.onclick = function () { tocar(nh.get() * vc.get() / (2 * Lc.get()), null, null, 1.2, 0.15); };
+  var L = P.leituras(c, [['a', ''], ['b', ''], ['c', ''], ['d', '']]), rot = c.querySelectorAll('.leit small');
+  function calc() {
+    var r = ['', '', '', ''];
+    if (modo === 'refr') {
+      var f = fr.get(), th2 = Math.asin(v2.get() / 10 * Math.sin(ang.get() * Math.PI / 180)) * 180 / Math.PI;
+      r = [['λ na região funda', P.fmt(10 / f, 2) + ' cm'], ['λ na região rasa', P.fmt(v2.get() / f, 2) + ' cm'], ['Frequência (nas duas)', P.fmt(f) + ' Hz'], ['Ângulo de refração', P.fmt(th2, 0) + '°']];
+    } else if (modo === 'difr') r = [['λ', P.fmt(lamD.get()) + ' cm'], ['Fenda a', P.fmt(fen.get()) + ' cm'], ['a / λ', P.fmt(fen.get() / lamD.get(), 2)], ['Difração', fen.get() / lamD.get() <= 2 ? 'Forte (espalha muito)' : fen.get() / lamD.get() <= 4 ? 'Média' : 'Fraca']];
+    else if (modo === 'inter') r = [['λ', P.fmt(lamI.get()) + ' cm'], ['d', P.fmt(sep.get()) + ' cm'], ['d / λ', P.fmt(sep.get() / lamI.get(), 2)], ['Tipo', 'Superposição']];
+    else if (modo === 'refl') r = [['Ângulo de incidência', '= ângulo de reflexão'], ['Distância fonte–parede', P.fmt(dpar.get()) + ' λ'], ['', ''], ['', '']];
+    else { var lam = 2 * Lc.get() / nh.get(); r = [['λ do harmônico', P.fmt(lam, 3) + ' m'], ['Frequência f', P.fmt(nh.get() * vc.get() / (2 * Lc.get()), 1) + ' Hz'], ['Nós (sem as pontas)', String(nh.get() - 1)], ['Ventres', String(nh.get())]]; }
+    r.forEach(function (x, i) { rot[i].textContent = x[0]; L.set('abcd'[i], x[1] || ''); });
+  }
+  calc();
+  function campo(fn) {
+    var d = img.data;
+    for (var j = 0; j < GH; j++) for (var i = 0; i < GW; i++) {
+      var v = fn(i, j), k = (j * GW + i) * 4;
+      if (v === null) { d[k] = 60; d[k + 1] = 60; d[k + 2] = 70; d[k + 3] = 255; continue; }
+      var g = 128 + v * 110; d[k] = g * 0.45; d[k + 1] = g * 0.75; d[k + 2] = Math.min(255, g * 1.1 + 30); d[k + 3] = 255;
+    }
+    octx.putImageData(img, 0, 0); ctx.imageSmoothingEnabled = true; ctx.drawImage(off, 0, 0, 640, 360);
+  }
+  return function (dt) {
+    t += dt; ctx.clearRect(0, 0, 640, 360);
+    var S = 4; /* 1 célula = 4 px; 1 cm = 10 px = 2,5 células */
+    if (modo === 'refr') {
+      var f = fr.get(), th = ang.get() * Math.PI / 180, k1 = 2 * Math.PI / (10 / f * 2.5), k2 = 2 * Math.PI / (v2.get() / f * 2.5), s2 = v2.get() / 10 * Math.sin(th), th2 = Math.asin(s2), x0 = 80, w = 2 * Math.PI * f;
+      campo(function (i, j) { var y = j - 45; if (i < x0) return Math.sin(k1 * (i * Math.cos(th) + y * Math.sin(th)) - w * t); return Math.sin(k1 * (x0 * Math.cos(th) + y * Math.sin(th)) + k2 * (i - x0) * Math.cos(th2) - w * t); });
+      ctx.fillStyle = 'rgba(255,255,255,.15)'; ctx.fillRect(320, 0, 320, 360);
+      ctx.strokeStyle = '#fff'; ctx.lineWidth = 2; ctx.beginPath(); ctx.moveTo(320, 0); ctx.lineTo(320, 360); ctx.stroke();
+      P.texto(ctx, 'região funda (v₁ = 10 cm/s)', 160, 18, { cor: '#fff' }); P.texto(ctx, 'região rasa (v₂ = ' + P.fmt(v2.get()) + ' cm/s)', 480, 18, { cor: '#fff' });
+      P.seta(ctx, 320 - 120 * Math.cos(th), 180 - 120 * Math.sin(th), 320, 180, '#ffd54a', 3);
+      P.seta(ctx, 320, 180, 320 + 120 * Math.cos(th2), 180 + 120 * Math.sin(th2), '#ffd54a', 3);
+    } else if (modo === 'refl') {
+      var lamR = 2 * 2.5, kR = 2 * Math.PI / lamR, wR = 2 * Math.PI * 1.5, xw = 120, xs = xw - dpar.get() * lamR, ys = 45, xi2 = 2 * xw - xs;
+      campo(function (i, j) { if (i >= xw) return null; var r1 = Math.hypot(i - xs, j - ys) + 1, r2 = Math.hypot(i - xi2, j - ys) + 1; return 0.9 * (Math.sin(kR * r1 - wR * t) / Math.sqrt(r1 / 3) - Math.sin(kR * r2 - wR * t) / Math.sqrt(r2 / 3)) * 0.8; });
+      P.texto(ctx, 'parede', 560, 180, { cor: '#fff' }); ctx.fillStyle = '#ffd54a'; ctx.beginPath(); ctx.arc(xs * S, ys * S, 6, 0, 7); ctx.fill();
+    } else if (modo === 'difr') {
+      var lamd = lamD.get() * 2.5, kd = 2 * Math.PI / lamd, wd = 2 * Math.PI * 1.5, xb = 50, a2 = fen.get() * 2.5 / 2, N = 14;
+      campo(function (i, j) {
+        var y = j - 45;
+        if (i < xb) return Math.sin(kd * i - wd * t);
+        if (i < xb + 2) return Math.abs(y) < a2 ? Math.sin(kd * i - wd * t) : null;
+        var s = 0; for (var n = 0; n < N; n++) { var yy = -a2 + (n + 0.5) * 2 * a2 / N, r = Math.hypot(i - xb, y - yy) + 0.5; s += Math.sin(kd * (xb + r) - wd * t) / Math.sqrt(r); }
+        return Math.max(-1.3, Math.min(1.3, s / N * 4));
+      });
+    } else if (modo === 'inter') {
+      var lami = lamI.get() * 2.5, ki = 2 * Math.PI / lami, wi = 2 * Math.PI * 1.5, d2 = sep.get() * 2.5 / 2;
+      campo(function (i, j) { var r1 = Math.hypot(i - 10, j - 45 + d2) + 1, r2 = Math.hypot(i - 10, j - 45 - d2) + 1; return 0.75 * (Math.sin(ki * r1 - wi * t) + Math.sin(ki * r2 - wi * t)); });
+      ctx.fillStyle = '#ffd54a'; ctx.beginPath(); ctx.arc(40, 180 - d2 * S, 6, 0, 7); ctx.arc(40, 180 + d2 * S, 6, 0, 7); ctx.fill();
+    } else {
+      var n = nh.get(), Lpx = 520, x0h = 60, amp = 60 * Math.cos(2 * Math.PI * 1.2 * t);
+      ctx.fillStyle = '#555'; ctx.fillRect(x0h - 10, 120, 10, 80); ctx.fillRect(x0h + Lpx, 120, 10, 80);
+      ctx.strokeStyle = '#1f5fbf'; ctx.lineWidth = 3; ctx.beginPath();
+      for (var X = 0; X <= Lpx; X += 2) { var Y = 160 - amp * Math.sin(n * Math.PI * X / Lpx); X ? ctx.lineTo(x0h + X, Y) : ctx.moveTo(x0h + X, Y); }
+      ctx.stroke();
+      ctx.strokeStyle = 'rgba(31,95,191,.25)'; ctx.lineWidth = 1; ctx.beginPath();
+      for (var X2 = 0; X2 <= Lpx; X2 += 2) { var Y2 = 160 + 60 * Math.sin(n * Math.PI * X2 / Lpx); X2 ? ctx.lineTo(x0h + X2, Y2) : ctx.moveTo(x0h + X2, Y2); }
+      ctx.stroke();
+      for (var q = 0; q <= n; q++) { ctx.fillStyle = '#c0392b'; ctx.beginPath(); ctx.arc(x0h + q * Lpx / n, 160, 5, 0, 7); ctx.fill(); }
+      P.texto(ctx, 'L = ' + P.fmt(Lc.get()) + ' m   ·   ' + n + 'º harmônico', 320, 280, { tam: 15 });
+      P.texto(ctx, 'pontos vermelhos = nós', 320, 305, { tam: 12, cor: '#c0392b' });
+    }
+  };
+}
+
+/* ============ 4. LUZ E CORES ============ */
+function simCores(a) {
+  var T = P.tela(a.tela, 640, 330), ctx = T.ctx, c = a.ctrl, modo = 'prisma';
+  var cx = modos(c, [['prisma', 'Prisma e dispersão'], ['rgb', 'Mistura de luzes'], ['obj', 'Cor dos objetos']], 'prisma', function (v) { modo = v; calc(); });
+  var luzP = P.seg(cx.prisma, 'Luz que entra no prisma', [['branca', 'Branca'], ['verm', 'Só vermelha'], ['viol', 'Só violeta']], 'branca', calc);
+  P.dica(cx.prisma, 'Cada cor tem uma frequência. No vidro, cores diferentes têm velocidades diferentes e desviam diferente.');
+  var R = P.slider(cx.rgb, 'Luz vermelha', { min: 0, max: 100, step: 10, value: 100, unit: '%' }), Gs = P.slider(cx.rgb, 'Luz verde', { min: 0, max: 100, step: 10, value: 100, unit: '%' }), B = P.slider(cx.rgb, 'Luz azul', { min: 0, max: 100, step: 10, value: 100, unit: '%' });
+  var cores = { branca: [1, 1, 1, 'Branca'], verm: [1, 0, 0, 'Vermelha'], verde: [0, 1, 0, 'Verde'], azul: [0, 0, 1, 'Azul'], amar: [1, 1, 0, 'Amarela'], preta: [0, 0, 0, 'Preta'] };
+  var obj = P.seg(cx.obj, 'Cor da camiseta (luz branca)', ['branca', 'verm', 'verde', 'azul', 'amar', 'preta'].map(function (k) { return [k, cores[k][3]]; }), 'verm', calc);
+  var luz = P.seg(cx.obj, 'Luz que ilumina', ['branca', 'verm', 'verde', 'azul', 'amar'].map(function (k) { return [k, cores[k][3]]; }), 'azul', calc);
+  var L = P.leituras(c, [['a', ''], ['b', ''], ['c', '']]), rot = c.querySelectorAll('.leit small');
+  function nomeCor(r, g, b) {
+    var k = [r > 0.05, g > 0.05, b > 0.05].join();
+    return { 'false,false,false': 'Preto (nenhuma luz)', 'true,false,false': 'Vermelho', 'false,true,false': 'Verde', 'false,false,true': 'Azul', 'true,true,false': 'Amarelo', 'true,false,true': 'Magenta', 'false,true,true': 'Ciano', 'true,true,true': 'Branco' }[k];
+  }
+  function calc() {
+    var r;
+    if (modo === 'prisma') r = [['Cor que desvia mais', 'Violeta (maior frequência)'], ['Cor que desvia menos', 'Vermelho (menor frequência)'], ['Fenômeno', luzP.get() === 'branca' ? 'Dispersão da luz' : 'Refração (uma cor só não se separa)']];
+    else if (modo === 'rgb') r = [['Vermelho + verde + azul', ''], ['Cor resultante no centro', nomeCor(R.get() / 100, Gs.get() / 100, B.get() / 100)], ['Tipo de mistura', 'Aditiva (luzes)']];
+    else { var o = cores[obj.get()], l = cores[luz.get()], v = [o[0] * l[0], o[1] * l[1], o[2] * l[2]];
+      r = [['A camiseta reflete', o[3] === 'Branca' ? 'Todas as cores' : o[3] === 'Preta' ? 'Nenhuma cor' : o[3] === 'Amarela' ? 'Vermelho e verde' : 'Só o ' + { Vermelha: 'vermelho', Verde: 'verde', Azul: 'azul' }[o[3]]], ['Luz que chega', l[3]], ['Cor vista', nomeCor(v[0], v[1], v[2])]]; }
+    r.forEach(function (x, i) { rot[i].textContent = x[0]; L.set('abc'[i], x[1]); });
+  }
+  [R, Gs, B].forEach(function (s) { s.el.querySelector('input').addEventListener('input', calc); });
+  calc();
+  var esp = [['#ff2a2a', 1.513], ['#ff8c1a', 1.516], ['#ffe11a', 1.519], ['#3ccf3c', 1.523], ['#2a8cff', 1.529], ['#3a3aff', 1.534], ['#9b30ff', 1.540]];
+  return function () {
+    ctx.clearRect(0, 0, 640, 330);
+    if (modo === 'prisma') {
+      ctx.fillStyle = '#1b1f2a'; ctx.fillRect(0, 0, 640, 330);
+      var A = [320, 50], Bp = [220, 260], C = [420, 260];
+      ctx.fillStyle = 'rgba(200,230,255,.25)'; ctx.strokeStyle = '#cfe6ff'; ctx.lineWidth = 2; ctx.beginPath(); ctx.moveTo(A[0], A[1]); ctx.lineTo(Bp[0], Bp[1]); ctx.lineTo(C[0], C[1]); ctx.closePath(); ctx.fill(); ctx.stroke();
+      var ent = [270, 155]; ctx.strokeStyle = '#fff'; ctx.lineWidth = 4; ctx.beginPath(); ctx.moveTo(20, 200); ctx.lineTo(ent[0], ent[1]); ctx.stroke();
+      var lista = luzP.get() === 'branca' ? esp : luzP.get() === 'verm' ? [esp[0]] : [esp[6]];
+      if (luzP.get() !== 'branca') { ctx.strokeStyle = lista[0][0]; ctx.beginPath(); ctx.moveTo(20, 200); ctx.lineTo(ent[0], ent[1]); ctx.stroke(); }
+      lista.forEach(function (cc) {
+        var n = cc[1], d = (n - 1.5) * 900; /* desvio exagerado para visualizar */
+        var sx = 370, sy = 160 + d * 0.15;
+        ctx.strokeStyle = cc[0]; ctx.lineWidth = 2; ctx.globalAlpha = 0.8; ctx.beginPath(); ctx.moveTo(ent[0], ent[1]); ctx.lineTo(sx, sy); ctx.lineTo(630, sy + 70 + d * 2.2); ctx.stroke(); ctx.globalAlpha = 1;
+      });
+      P.texto(ctx, 'luz', 60, 175, { cor: '#fff' });
+    } else if (modo === 'rgb') {
+      ctx.fillStyle = '#000'; ctx.fillRect(0, 0, 640, 330); ctx.globalCompositeOperation = 'lighter';
+      [[R, '255,0,0', 270, 135], [Gs, '0,255,0', 370, 135], [B, '0,0,255', 320, 215]].forEach(function (q) {
+        ctx.fillStyle = 'rgba(' + q[1] + ',' + q[0].get() / 100 + ')'; ctx.beginPath(); ctx.arc(q[2], q[3], 95, 0, 7); ctx.fill();
+      });
+      ctx.globalCompositeOperation = 'source-over';
+    } else {
+      var o = cores[obj.get()], l = cores[luz.get()], v = [o[0] * l[0], o[1] * l[1], o[2] * l[2]];
+      ctx.fillStyle = '#111'; ctx.fillRect(0, 0, 640, 330);
+      ctx.fillStyle = 'rgba(' + l[0] * 255 + ',' + l[1] * 255 + ',' + l[2] * 255 + ',.25)'; ctx.beginPath(); ctx.moveTo(320, 0); ctx.lineTo(150, 330); ctx.lineTo(490, 330); ctx.fill();
+      var cs = 'rgb(' + Math.round(v[0] * 220 + 15) + ',' + Math.round(v[1] * 220 + 15) + ',' + Math.round(v[2] * 220 + 15) + ')';
+      ctx.fillStyle = cs; ctx.beginPath(); ctx.moveTo(250, 110); ctx.lineTo(290, 95); ctx.lineTo(350, 95); ctx.lineTo(390, 110); ctx.lineTo(420, 160); ctx.lineTo(385, 175); ctx.lineTo(375, 150); ctx.lineTo(375, 280); ctx.lineTo(265, 280); ctx.lineTo(265, 150); ctx.lineTo(255, 175); ctx.lineTo(220, 160); ctx.closePath(); ctx.fill();
+      ctx.strokeStyle = '#666'; ctx.lineWidth = 1; ctx.stroke();
+      P.texto(ctx, 'luz ' + l[3].toLowerCase(), 320, 20, { cor: '#ddd' });
+    }
+  };
+}
+
+/* ============ 5. SOM E EFEITO DOPPLER ============ */
+function simSom(a) {
+  var T = P.tela(a.tela, 640, 320), ctx = T.ctx, c = a.ctrl, modo = 'qual', t = 0, frentes = [], eco = null;
+  var cx = modos(c, [['qual', 'Altura, intensidade e timbre'], ['dop', 'Efeito Doppler'], ['eco', 'Eco']], 'qual', function (v) { modo = v; t = 0; frentes = []; calc(); });
+  var timbres = { pura: [[0, 1], 'Diapasão (som puro)'], flauta: [[0, 1, 0.3, 0.1, 0.05], 'Flauta'], violao: [[0, 1, 0.7, 0.5, 0.35, 0.25, 0.15, 0.1], 'Violão'], clar: [[0, 1, 0, 0.6, 0, 0.4, 0, 0.25], 'Clarinete'] };
+  var fq = P.slider(cx.qual, 'Frequência (altura)', { min: 0, max: 100, step: 1, value: 50, fmt: function (v) { return P.fmt(freqDe(v), 0); }, unit: 'Hz' }, calc);
+  var am = P.slider(cx.qual, 'Amplitude (intensidade)', { min: 10, max: 100, step: 10, value: 60, unit: '%' }, calc);
+  var tb = P.seg(cx.qual, 'Timbre (instrumento)', Object.keys(timbres).map(function (k) { return [k, timbres[k][1]]; }), 'pura', calc);
+  var bt = P.el('button', 'bt', '🔊 Ouvir'); cx.qual.appendChild(bt);
+  P.dica(cx.qual, 'Fora da faixa de 20 Hz a 20 000 Hz o ouvido humano não percebe o som (o botão não toca).');
+  function freqDe(v) { return Math.round(5 * Math.pow(8000, v / 100)); }
+  bt.onclick = function () { var f = freqDe(fq.get()); if (f < 20 || f > 20000) return; var h = timbres[tb.get()][0]; tocar(f, h.map(function () { return 0; }), h, 1.2, 0.25 * am.get() / 100); };
+  P.formula(cx.dop, '<b>f\' = f · v / (v ∓ v<sub>fonte</sub>)</b> &nbsp; (− se aproximando, + afastando) &nbsp; v = 340 m/s');
+  var f0 = P.slider(cx.dop, 'Frequência da sirene (f)', { min: 300, max: 1000, step: 50, value: 600, unit: 'Hz' }, calc);
+  var vs = P.slider(cx.dop, 'Velocidade da ambulância', { min: 0, max: 100, step: 5, value: 30, unit: 'm/s' }, calc);
+  var bd1 = P.el('button', 'bt', '🔊 Quem está na frente ouve'), bd2 = P.el('button', 'bt sec', '🔊 Quem está atrás ouve');
+  cx.dop.appendChild(bd1); cx.dop.appendChild(bd2);
+  bd1.onclick = function () { tocar(f0.get() * VSOM / (VSOM - vs.get()), null, null, 1, 0.15); };
+  bd2.onclick = function () { tocar(f0.get() * VSOM / (VSOM + vs.get()), null, null, 1, 0.15); };
+  P.formula(cx.eco, '<b>d = v · t / 2</b> &nbsp; (o som vai e volta) &nbsp; v = 340 m/s');
+  var dist = P.slider(cx.eco, 'Distância até o paredão (d)', { min: 34, max: 680, step: 34, value: 170, unit: 'm' }, calc);
+  var be = P.el('button', 'bt', '👏 Bater palma'); cx.eco.appendChild(be);
+  be.onclick = function () { eco = { t: 0 }; };
+  var L = P.leituras(c, [['a', ''], ['b', ''], ['c', ''], ['d', '']]), rot = c.querySelectorAll('.leit small');
+  function calc() {
+    var r;
+    if (modo === 'qual') {
+      var f = freqDe(fq.get());
+      r = [['Frequência', P.fmt(f) + ' Hz'], ['Faixa', f < 20 ? 'Infrassom' : f > 20000 ? 'Ultrassom' : 'Som audível'], ['Altura', f < 250 ? 'Grave' : f < 2000 ? 'Médio' : 'Agudo'], ['Comprimento de onda no ar', P.fmt(VSOM / f, 3) + ' m']];
+    } else if (modo === 'dop') {
+      r = [['Frequência da sirene', P.fmt(f0.get()) + ' Hz'], ['Quem está na frente ouve', P.fmt(f0.get() * VSOM / (VSOM - vs.get()), 0) + ' Hz (mais agudo)'], ['Quem está atrás ouve', P.fmt(f0.get() * VSOM / (VSOM + vs.get()), 0) + ' Hz (mais grave)'], ['Velocidade do som', '340 m/s']];
+    } else r = [['Distância', P.fmt(dist.get()) + ' m'], ['Caminho do som (ida e volta)', P.fmt(2 * dist.get()) + ' m'], ['Tempo até ouvir o eco', eco && eco.t >= 2 * dist.get() / VSOM ? P.fmt(2 * dist.get() / VSOM, 2) + ' s' : '?'], ['Velocidade do som', '340 m/s']];
+    r.forEach(function (x, i) { rot[i].textContent = x[0]; L.set('abcd'[i], x[1]); });
+  }
+  calc();
+  return function (dt) {
+    t += dt; ctx.clearRect(0, 0, 640, 320);
+    if (modo === 'qual') {
+      var f = freqDe(fq.get()), h = timbres[tb.get()][0], A = am.get() / 100 * 110, ciclos = Math.max(1, Math.min(12, f / 100));
+      ctx.strokeStyle = '#ccc'; ctx.lineWidth = 1; ctx.beginPath(); ctx.moveTo(20, 160); ctx.lineTo(620, 160); ctx.stroke();
+      var mx = h.reduce(function (s, x) { return s + x; }, 0);
+      ctx.strokeStyle = '#1f5fbf'; ctx.lineWidth = 2.5; ctx.beginPath();
+      for (var X = 0; X <= 600; X++) { var ph = 2 * Math.PI * ciclos * X / 600, y = 0; for (var n = 1; n < h.length; n++) y += h[n] * Math.sin(n * ph); y = y / mx * 1.6; X ? ctx.lineTo(20 + X, 160 - y * A) : ctx.moveTo(20 + X, 160 - y * A); }
+      ctx.stroke();
+      P.texto(ctx, 'mais ondas na tela = frequência maior (mais agudo)', 320, 300, { tam: 12, cor: '#5b6578' });
+    } else if (modo === 'dop') {
+      var vf = vs.get(), W = 150, per = 1 / 6;
+      var xf = 60 + ((vf / VSOM * W * t) % 520);
+      if (vf === 0) xf = 320;
+      if (!frentes.length || t - frentes[frentes.length - 1].t0 > per) frentes.push({ t0: t, x: xf });
+      frentes = frentes.filter(function (fr) { return (t - fr.t0) * W < 700; });
+      ctx.lineWidth = 1.5;
+      frentes.forEach(function (fr) { var r = (t - fr.t0) * W; ctx.strokeStyle = 'rgba(31,95,191,' + Math.max(0.1, 1 - r / 400) + ')'; ctx.beginPath(); ctx.arc(fr.x, 160, r, 0, 7); ctx.stroke(); });
+      ctx.fillStyle = '#fff'; ctx.strokeStyle = '#c0392b'; ctx.lineWidth = 2; ctx.fillRect(xf - 25, 145, 50, 30); ctx.strokeRect(xf - 25, 145, 50, 30);
+      ctx.fillStyle = '#c0392b'; ctx.fillRect(xf - 4, 138, 8, 7);
+      ctx.fillStyle = '#1d8a52'; ctx.beginPath(); ctx.arc(620, 160, 9, 0, 7); ctx.fill(); ctx.fillStyle = '#8e44ad'; ctx.beginPath(); ctx.arc(20, 160, 9, 0, 7); ctx.fill();
+      P.texto(ctx, 'frente', 600, 190, { tam: 12, cor: '#1d8a52' }); P.texto(ctx, 'atrás', 30, 190, { tam: 12, cor: '#8e44ad' });
+    } else {
+      var d = dist.get(), x0 = 40, xw = 40 + d / 680 * 560;
+      ctx.fillStyle = '#8d6e63'; ctx.fillRect(xw, 60, 24, 200);
+      ctx.fillStyle = '#1f5fbf'; ctx.beginPath(); ctx.arc(x0, 200, 12, 0, 7); ctx.fill(); ctx.fillRect(x0 - 6, 212, 12, 40);
+      if (eco) {
+        eco.t += dt; var tt = eco.t, s = tt * VSOM, tot = 2 * d / VSOM;
+        var pos = s <= d ? x0 + s / d * (xw - x0) : xw - (s - d) / d * (xw - x0);
+        if (tt < tot) { ctx.strokeStyle = '#e07a1f'; ctx.lineWidth = 3; ctx.beginPath(); ctx.arc(pos, 200, 14, s <= d ? -0.8 : Math.PI - 0.8, s <= d ? 0.8 : Math.PI + 0.8); ctx.stroke(); }
+        P.texto(ctx, 't = ' + P.fmt(Math.min(tt, tot), 2) + ' s', 320, 40, { tam: 18, cor: '#163f80' });
+        if (tt >= tot) { P.texto(ctx, 'Eco ouvido!', 320, 70, { tam: 16, cor: '#1d8a52' }); calc(); }
+      }
+      ctx.strokeStyle = '#333'; ctx.lineWidth = 1; ctx.beginPath(); ctx.moveTo(x0, 290); ctx.lineTo(xw, 290); ctx.stroke();
+      P.texto(ctx, 'd = ' + P.fmt(d) + ' m', (x0 + xw) / 2, 305, { tam: 13 });
+    }
+  };
+}
+
+P.pagina([
+  { id: 'lentes', nome: 'Olho e lentes', titulo: 'Instrumentos ópticos: lentes e o olho humano', intro: 'Mude a distância do objeto e veja onde a imagem se forma. Depois coloque óculos no olho míope e no hipermetrope.', init: function (a) {
+    var f = simLentes(a);
+    P.perguntas(a.dir, [
+      { p: 'Lente convergente com f = 8 cm e objeto a 4 cm: a imagem é...', a: ['Real e invertida', 'Virtual, direita e maior (lupa)', 'Não se forma'], c: 1, e: 'Objeto entre o foco e a lente: é assim que a lupa funciona.' },
+      { p: 'No olho míope a imagem se forma antes da retina. Qual lente corrige?', a: ['Convergente', 'Divergente', 'Nenhuma'], c: 1, e: 'A divergente "abre" os raios e empurra o foco para a retina.' },
+      { p: 'Lente convergente, f = 8 cm, objeto a 24 cm. Onde se forma a imagem?', a: ['8 cm', '12 cm', '24 cm'], c: 1, e: '1/8 = 1/24 + 1/p\' → p\' = 12 cm.' }
+    ]);
+    return f; } },
+  { id: 'mhs', nome: 'MHS e ondas', titulo: 'Movimento Harmônico Simples e ondas', intro: 'Veja a massa oscilando na mola, cronometre um pêndulo e produza uma onda na corda, como a Vitória fez na aula.', init: function (a) {
+    var f = simMHS(a);
+    P.perguntas(a.dir, [
+      { p: 'No massa-mola, onde a velocidade é máxima?', a: ['Nos extremos', 'No ponto de equilíbrio (centro)', 'É sempre igual'], c: 1, e: 'Nos extremos o bloco para e volta; no centro passa mais rápido.' },
+      { p: 'Se a massa aumenta, o período...', a: ['Aumenta', 'Diminui', 'Não muda'], c: 0, e: 'T = 2π√(m/k): mais massa, oscilação mais lenta.' },
+      { p: 'Na corda com f = 2 Hz e v = 2 m/s, o comprimento de onda é...', a: ['0,5 m', '1 m', '4 m'], c: 1, e: 'λ = v / f = 2 / 2 = 1 m. Confira na régua.' },
+      { p: 'O ponto vermelho da corda...', a: ['Viaja com a onda', 'Só sobe e desce: a onda leva energia, não matéria', 'Fica parado'], c: 1, e: 'A onda transporta energia, não a corda.' }
+    ]);
+    return f; } },
+  { id: 'fenomenos', nome: 'Fenômenos ondulatórios', titulo: 'Reflexão, refração, difração, interferência e harmônicos', intro: 'Uma cuba de ondas virtual. Observe o que muda e o que não muda em cada fenômeno.', init: function (a) {
+    var f = simFenomenos(a);
+    P.perguntas(a.dir, [
+      { p: 'Quando a onda passa para a região rasa, o que NÃO muda?', a: ['A velocidade', 'O comprimento de onda', 'A frequência'], c: 2, e: 'A frequência é da fonte; mudam v e λ. É o mesmo que acontece com a luz no copo d\'água do Isaac.' },
+      { p: 'A difração fica mais forte quando a fenda é...', a: ['Muito maior que λ', 'Parecida com λ', 'Fechada'], c: 1, e: 'Por isso o som (λ grande) contorna muros e a luz quase não.' },
+      { p: 'Corda de 0,65 m, v = 260 m/s, 1º harmônico. Qual a frequência?', a: ['100 Hz', '200 Hz', '400 Hz'], c: 1, e: 'f = v / 2L = 260 / 1,3 = 200 Hz.' }
+    ]);
+    return f; } },
+  { id: 'cores', nome: 'Luz e cores', titulo: 'Dispersão da luz, prismas e percepção das cores', intro: 'Separe a luz branca no prisma, misture luzes coloridas e descubra por que a camiseta muda de cor com a luz.', init: function (a) {
+    var f = simCores(a);
+    P.perguntas(a.dir, [
+      { p: 'Misturando luz vermelha e verde, vemos...', a: ['Marrom', 'Amarelo', 'Preto'], c: 1, e: 'Mistura de luzes é aditiva: vermelho + verde = amarelo.' },
+      { p: 'Camiseta vermelha sob luz azul parece...', a: ['Vermelha', 'Roxa', 'Preta'], c: 2, e: 'Ela só reflete vermelho; se não chega vermelho, nada é refletido.' },
+      { p: 'O arco-íris acontece porque as gotas de chuva...', a: ['Pintam a luz', 'Separam a luz branca por refração (dispersão)', 'Absorvem o Sol'], c: 1, e: 'Cada gota funciona como um pequeno prisma.' }
+    ]);
+    return f; } },
+  { id: 'som', nome: 'Som e Doppler', titulo: 'Ondas sonoras, efeito Doppler e eco', intro: 'Mude a frequência e o timbre e ouça. Depois faça a ambulância passar e meça o tempo do eco.', init: function (a) {
+    var f = simSom(a);
+    P.perguntas(a.dir, [
+      { p: 'O que diferencia um violão de uma flauta tocando a mesma nota?', a: ['A altura', 'O timbre', 'A frequência'], c: 1, e: 'Mesma frequência fundamental, formas de onda diferentes: timbre.' },
+      { p: 'Ambulância a 34 m/s com sirene de 600 Hz se aproximando. Quem está na frente ouve...', a: ['540 Hz', '600 Hz', 'cerca de 667 Hz'], c: 2, e: 'f\' = 600 · 340 / (340 − 34) ≈ 667 Hz.' },
+      { p: 'Paredão a 170 m. Em quanto tempo ouvimos o eco?', a: ['0,5 s', '1 s', '2 s'], c: 1, e: 'O som anda 340 m (ida e volta) a 340 m/s: 1 s.' }
+    ]);
+    return f; } },
+  { id: 'desafio', nome: '🎮 Arena Final', titulo: 'Arena Final: o último desafio', init: P.desafio('2º ano', KAHOOT_DESAFIO) },
+  { id: 'certificado', nome: '🏅 Certificado', titulo: 'Certificado de conclusão', intro: 'Depois de concluir todas as lições, digite seu nome e baixe seu certificado com as notas.', init: P.certificado('2º ano') }
+]);
+</script>
+</body>
+</html>

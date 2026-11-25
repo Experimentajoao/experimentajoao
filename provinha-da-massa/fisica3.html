@@ -1,0 +1,375 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Física 3º ano · Simuladores</title>
+<link rel="stylesheet" href="estilo.css">
+</head>
+<body>
+<div class="topo">
+  <div class="lin"><a class="voltar" href="index.html">◀ Início</a><h1>Física 3º ano · Eletromagnetismo e Física Moderna</h1></div>
+  <div class="abas" id="abas"></div>
+</div>
+<main id="main"></main>
+<footer>Prof. João Victor Mariano de Almeida · @experimentajoao</footer>
+<script src="plataforma.js"></script>
+<script>
+/* Link do desafio Kahoot no modo Atribuir (cole entre as aspas) */
+var KAHOOT_DESAFIO = '';
+
+var C = 3e8, H = 6.6e-34, EV = 1.6e-19;
+function modos(c, lista, inicial, on) {
+  var caixas = {};
+  P.seg(c, 'O que estudar', lista, inicial, function (v) { for (var k in caixas) caixas[k].style.display = k === v ? '' : 'none'; on(v); });
+  lista.forEach(function (m) { caixas[m[0]] = P.el('div'); caixas[m[0]].style.display = m[0] === inicial ? '' : 'none'; c.appendChild(caixas[m[0]]); });
+  return caixas;
+}
+function corLambda(nm) {
+  if (nm < 380) return '#b28cff'; if (nm > 750) return '#a33';
+  var r = 0, g = 0, b = 0;
+  if (nm < 440) { r = (440 - nm) / 60; b = 1; } else if (nm < 490) { g = (nm - 440) / 50; b = 1; } else if (nm < 510) { g = 1; b = (510 - nm) / 20; }
+  else if (nm < 580) { r = (nm - 510) / 70; g = 1; } else if (nm < 645) { r = 1; g = (645 - nm) / 65; } else r = 1;
+  return 'rgb(' + Math.round(r * 255) + ',' + Math.round(g * 255) + ',' + Math.round(b * 255) + ')';
+}
+function lamp(ctx, x, y, brilho) {
+  var b = Math.max(0, Math.min(1, brilho));
+  if (b > 0.02) { var gr = ctx.createRadialGradient(x, y, 4, x, y, 60); gr.addColorStop(0, 'rgba(255,220,80,' + b + ')'); gr.addColorStop(1, 'rgba(255,220,80,0)'); ctx.fillStyle = gr; ctx.beginPath(); ctx.arc(x, y, 60, 0, 7); ctx.fill(); }
+  ctx.fillStyle = b > 0.02 ? 'rgb(255,' + Math.round(200 + 55 * b) + ',' + Math.round(100 * b) + ')' : '#eee';
+  ctx.strokeStyle = '#555'; ctx.lineWidth = 2; ctx.beginPath(); ctx.arc(x, y, 18, 0, 7); ctx.fill(); ctx.stroke();
+  ctx.fillStyle = '#777'; ctx.fillRect(x - 8, y + 16, 16, 12);
+}
+
+/* ============ 1. TRANSFORMADOR, GERADOR, ELETROÍMÃ ============ */
+function simEletro(a) {
+  var T = P.tela(a.tela, 640, 330), ctx = T.ctx, c = a.ctrl, modo = 'trafo', t = 0, hist = [];
+  var cx = modos(c, [['trafo', 'Transformador'], ['ger', 'Gerador'], ['ima', 'Eletroímã']], 'trafo', function (v) { modo = v; t = 0; hist = []; calc(); });
+  P.formula(cx.trafo, '<b>V<sub>s</sub> / V<sub>p</sub> = N<sub>s</sub> / N<sub>p</sub></b>');
+  var Np = P.slider(cx.trafo, 'Espiras no primário (Np)', { min: 50, max: 1000, step: 50, value: 200 }, calc);
+  var Ns = P.slider(cx.trafo, 'Espiras no secundário (Ns)', { min: 50, max: 4000, step: 50, value: 4000 }, calc);
+  var Vp = P.seg(cx.trafo, 'Tensão de entrada (Vp)', [[110, '110 V'], [220, '220 V']], 110, calc);
+  var cor = P.seg(cx.trafo, 'Tipo de corrente na entrada', [['ac', 'Alternada (tomada)'], ['dc', 'Contínua (bateria)']], 'ac', calc);
+  P.formula(cx.ger, 'Lei de Faraday: tensão induzida quando o <b>fluxo magnético varia</b>. &nbsp; <b>ε<sub>máx</sub> = N · B · A · 2πf</b>');
+  var fg = P.slider(cx.ger, 'Rotação da espira (f)', { min: 0, max: 5, step: 0.5, value: 1, unit: 'voltas/s' }, calc);
+  var Ng = P.slider(cx.ger, 'Número de espiras (N)', { min: 10, max: 200, step: 10, value: 100 }, calc);
+  var Bg = P.slider(cx.ger, 'Campo do ímã (B)', { min: 0.1, max: 0.5, step: 0.1, value: 0.2, unit: 'T' }, calc);
+  P.dica(cx.ger, 'Área da espira: A = 0,01 m².');
+  P.formula(cx.ima, '<b>B = μ · N · I / ℓ</b> &nbsp; (ℓ = 0,1 m; o núcleo de ferro multiplica o campo)');
+  var Ni = P.slider(cx.ima, 'Número de espiras (N)', { min: 50, max: 500, step: 50, value: 200 }, calc);
+  var Ii = P.slider(cx.ima, 'Corrente (I)', { min: 0, max: 5, step: 0.5, value: 2, unit: 'A' }, calc);
+  var nuc = P.seg(cx.ima, 'Núcleo', [['ar', 'Sem núcleo (ar)'], ['fe', 'Com núcleo de ferro']], 'ar', calc);
+  var L = P.leituras(c, [['a', ''], ['b', ''], ['c', ''], ['d', '']]), rot = c.querySelectorAll('.leit small');
+  function Bima() { return 4 * Math.PI * 1e-7 * (nuc.get() === 'fe' ? 200 : 1) * Ni.get() * Ii.get() / 0.1; }
+  function calc() {
+    var r;
+    if (modo === 'trafo') {
+      var vs = cor.get() === 'ac' ? Vp.get() * Ns.get() / Np.get() : 0;
+      r = [['Tensão de saída (Vs)', P.fmt(vs, 1) + ' V'], ['Razão Ns / Np', P.fmt(Ns.get() / Np.get(), 2)], ['Tipo', cor.get() === 'dc' ? 'Não funciona (fluxo constante)' : Ns.get() > Np.get() ? 'Elevador de tensão' : Ns.get() < Np.get() ? 'Abaixador de tensão' : 'Mesma tensão'], ['Fluxo no núcleo', cor.get() === 'ac' ? 'Variável' : 'Constante']];
+    } else if (modo === 'ger') {
+      var em = Ng.get() * Bg.get() * 0.01 * 2 * Math.PI * fg.get();
+      r = [['Tensão máxima ε', P.fmt(em, 2) + ' V'], ['Frequência da tensão', P.fmt(fg.get()) + ' Hz'], ['Transformação', 'Mecânica → elétrica'], ['Espira parada', 'Não gera tensão']];
+    } else {
+      var B = Bima();
+      r = [['Campo magnético B', P.sci(B, 3) + ' T'], ['Clipes atraídos', String(Math.min(30, Math.floor(B * 2000)))], ['Núcleo', nuc.get() === 'fe' ? 'Ferro' : 'Ar'], ['Corrente', P.fmt(Ii.get()) + ' A']];
+    }
+    r.forEach(function (x, i) { rot[i].textContent = x[0]; L.set('abcd'[i], x[1]); });
+  }
+  calc();
+  function bobina(x, y, h, n, cor) { ctx.strokeStyle = cor; ctx.lineWidth = 3; var k = Math.max(3, Math.min(18, Math.round(n / 50))); for (var i = 0; i < k; i++) { var yy = y + i * h / k; ctx.beginPath(); ctx.ellipse(x, yy, 30, 5, 0, 0, Math.PI); ctx.stroke(); } }
+  return function (dt) {
+    t += dt; ctx.clearRect(0, 0, 640, 330);
+    if (modo === 'trafo') {
+      ctx.fillStyle = '#9aa3ad'; ctx.fillRect(180, 60, 280, 30); ctx.fillRect(180, 240, 280, 30); ctx.fillRect(180, 60, 40, 210); ctx.fillRect(420, 60, 40, 210);
+      bobina(200, 100, 130, Np.get(), '#c0392b'); bobina(440, 100, 130, Ns.get(), '#1f5fbf');
+      var ac = cor.get() === 'ac', fl = ac ? Math.sin(2 * Math.PI * 1 * t) : 1;
+      ctx.globalAlpha = 0.8; P.seta(ctx, 320 - 40 * fl, 75, 320 + 40 * fl, 75, '#e07a1f', 3); P.seta(ctx, 320 + 40 * fl, 255, 320 - 40 * fl, 255, '#e07a1f', 3); ctx.globalAlpha = 1;
+      P.texto(ctx, 'fluxo magnético', 320, 50, { tam: 12, cor: '#e07a1f' });
+      P.texto(ctx, 'Np = ' + Np.get(), 200, 290, { cor: '#c0392b' }); P.texto(ctx, 'Ns = ' + Ns.get(), 440, 290, { cor: '#1f5fbf' });
+      ctx.strokeStyle = '#333'; ctx.lineWidth = 2; ctx.beginPath(); ctx.moveTo(170, 110); ctx.lineTo(60, 110); ctx.moveTo(170, 220); ctx.lineTo(60, 220); ctx.stroke();
+      P.texto(ctx, (ac ? '~ ' : '= ') + Vp.get() + ' V', 80, 165, { tam: 16, cor: '#c0392b' });
+      ctx.beginPath(); ctx.moveTo(470, 110); ctx.lineTo(580, 110); ctx.lineTo(580, 140); ctx.moveTo(470, 220); ctx.lineTo(580, 220); ctx.lineTo(580, 190); ctx.stroke();
+      var vs = ac ? Vp.get() * Ns.get() / Np.get() : 0;
+      lamp(ctx, 580, 165, vs / 2200 * Math.abs(fl) * 0.6 + (vs > 0 ? 0.4 : 0));
+      P.texto(ctx, P.fmt(vs, 0) + ' V', 580, 310, { tam: 16, cor: '#1f5fbf' });
+    } else if (modo === 'ger') {
+      var w = 2 * Math.PI * fg.get(), th = w * t, em = Ng.get() * Bg.get() * 0.01 * w, e = em * Math.sin(th);
+      ctx.fillStyle = '#c0392b'; ctx.fillRect(40, 60, 60, 120); ctx.fillStyle = '#1f5fbf'; ctx.fillRect(300, 60, 60, 120);
+      P.texto(ctx, 'N', 70, 120, { cor: '#fff', tam: 20 }); P.texto(ctx, 'S', 330, 120, { cor: '#fff', tam: 20 });
+      for (var yy = 75; yy <= 165; yy += 22) { ctx.strokeStyle = 'rgba(0,0,0,.15)'; ctx.lineWidth = 1; ctx.beginPath(); ctx.moveTo(100, yy); ctx.lineTo(300, yy); ctx.stroke(); }
+      var wd = 70 * Math.cos(th);
+      ctx.strokeStyle = '#d4880f'; ctx.lineWidth = 5; ctx.strokeRect(200 - Math.abs(wd), 80, 2 * Math.abs(wd) + 1, 80);
+      P.texto(ctx, 'espira girando', 200, 200, { tam: 12 });
+      hist.push(e); if (hist.length > 240) hist.shift();
+      ctx.strokeStyle = '#ccc'; ctx.beginPath(); ctx.moveTo(390, 120); ctx.lineTo(630, 120); ctx.stroke();
+      var mx = Math.max(0.5, em) * 1.15;
+      ctx.strokeStyle = '#1d8a52'; ctx.lineWidth = 2; ctx.beginPath(); hist.forEach(function (v, i) { var X = 390 + i, Y = 120 - v / mx * 90; i ? ctx.lineTo(X, Y) : ctx.moveTo(X, Y); }); ctx.stroke();
+      P.texto(ctx, 'tensão × tempo (pico: ' + P.fmt(em, 2) + ' V)', 510, 20, { tam: 12 });
+      lamp(ctx, 200, 270, Math.abs(e) / Math.max(em, 1) * Math.min(1, em / 10));
+      P.texto(ctx, 'ε = ' + P.fmt(e, 1) + ' V', 400, 270, { tam: 16, cor: '#1d8a52' });
+    } else {
+      var B = Bima(), n = Math.min(30, Math.floor(B * 2000));
+      ctx.fillStyle = nuc.get() === 'fe' ? '#7d858f' : 'rgba(0,0,0,.05)'; ctx.fillRect(160, 120, 240, 40);
+      ctx.strokeStyle = '#d4880f'; ctx.lineWidth = 3; var k = Math.round(Ni.get() / 25);
+      for (var i = 0; i < k; i++) { var x = 170 + i * 220 / k; ctx.beginPath(); ctx.ellipse(x, 140, 5, 30, 0, 0, 7); ctx.stroke(); }
+      ctx.strokeStyle = '#333'; ctx.lineWidth = 2; ctx.beginPath(); ctx.moveTo(170, 170); ctx.lineTo(170, 290); ctx.lineTo(260, 290); ctx.moveTo(390, 170); ctx.lineTo(390, 290); ctx.lineTo(300, 290); ctx.stroke();
+      ctx.fillStyle = '#444'; ctx.fillRect(260, 275, 40, 30); P.texto(ctx, 'pilha', 280, 318, { tam: 11 });
+      for (var q = 0; q < 30; q++) {
+        var at = q < n, px = at ? 405 + (q % 6) * 10 : 470 + (q % 10) * 15, py = at ? 125 + Math.floor(q / 6) * 8 : 230 + Math.floor(q / 10) * 14;
+        ctx.strokeStyle = '#7a8899'; ctx.lineWidth = 2; ctx.strokeRect(px, py, 10, 5);
+      }
+      P.texto(ctx, n + ' clipes presos', 520, 60, { tam: 16, cor: '#163f80' });
+    }
+  };
+}
+
+/* ============ 2. GERAÇÃO E CONSUMO DE ENERGIA ============ */
+function simEnergia(a) {
+  var T = P.tela(a.tela, 640, 330), ctx = T.ctx, c = a.ctrl, modo = 'cons', t = 0;
+  var cx = modos(c, [['cons', 'Conta de luz'], ['trans', 'Transmissão'], ['usina', 'Usinas']], 'cons', function (v) { modo = v; calc(); });
+  P.formula(cx.cons, '<b>E = P · Δt</b> &nbsp; (P em kW, Δt em horas → E em kWh)');
+  var ap = [['Chuveiro', 5500, 'min', 30, 0, 60, 5], ['Ferro de passar', 1000, 'min', 20, 0, 120, 10], ['TV', 100, 'h', 4, 0, 12, 1], ['Geladeira (média)', 60, 'h', 24, 24, 24, 1], ['Lâmpada LED (5 un.)', 45, 'h', 6, 0, 12, 1], ['Carregador de celular', 10, 'h', 3, 0, 8, 1]];
+  var sls = ap.map(function (x) { return P.slider(cx.cons, x[0] + ' (' + P.fmt(x[1]) + ' W) · uso por dia', { min: x[4], max: x[5], step: x[6], value: x[3], unit: x[2] }, calc); });
+  var tar = P.slider(cx.cons, 'Tarifa de exemplo', { min: 0.6, max: 1.2, step: 0.05, value: 0.9, unit: 'R$/kWh', fmt: function (v) { return P.fmt(v, 2); } }, calc);
+  P.formula(cx.trans, '<b>i = P / U</b> &nbsp; e &nbsp; perda nos fios <b>P<sub>perdida</sub> = R · i²</b>');
+  var Pt = P.slider(cx.trans, 'Potência enviada pela usina', { min: 1, max: 20, step: 1, value: 10, unit: 'MW' }, calc);
+  var Ut = P.seg(cx.trans, 'Tensão da linha', [[13800, '13,8 kV'], [138000, '138 kV'], [500000, '500 kV']], 13800, calc);
+  var Rt = P.slider(cx.trans, 'Resistência dos fios (R)', { min: 1, max: 20, step: 1, value: 5, unit: 'Ω' }, calc);
+  var fontes = {
+    hidro: ['Hidrelétrica', 'Gravitacional da água → cinética → elétrica', 'Sim', 'Não', 'Alaga grandes áreas e muda rios', 'Chuvas'],
+    solar: ['Solar fotovoltaica', 'Luminosa → elétrica (direto, sem gerador)', 'Sim', 'Não', 'Ocupa grandes áreas; descarte de painéis', 'Só gera com luz do Sol'],
+    eolica: ['Eólica', 'Cinética do vento → elétrica', 'Sim', 'Não', 'Ruído e impacto em aves', 'Depende do vento'],
+    termo: ['Termelétrica (gás/carvão)', 'Química → térmica → cinética → elétrica', 'Não', 'Sim (CO₂)', 'Poluição do ar e efeito estufa', 'Gera a qualquer hora'],
+    nuc: ['Nuclear (Angra)', 'Nuclear (fissão) → térmica → cinética → elétrica', 'Não', 'Não', 'Lixo radioativo e risco de acidente', 'Gera a qualquer hora']
+  };
+  var fon = P.seg(cx.usina, 'Usina', Object.keys(fontes).map(function (k) { return [k, fontes[k][0]]; }), 'solar', calc);
+  var L = P.leituras(c, [['a', ''], ['b', ''], ['c', ''], ['d', '']]), rot = c.querySelectorAll('.leit small');
+  var kwh = [];
+  function calc() {
+    var r;
+    if (modo === 'cons') {
+      kwh = ap.map(function (x, i) { var h = x[2] === 'min' ? sls[i].get() / 60 : sls[i].get(); return x[1] / 1000 * h * 30; });
+      var tot = kwh.reduce(function (s, v) { return s + v; }, 0), mx = 0, nm = '';
+      kwh.forEach(function (v, i) { if (v > mx) { mx = v; nm = ap[i][0]; } });
+      r = [['Consumo no mês (30 dias)', P.fmt(tot, 1) + ' kWh'], ['Custo estimado', 'R$ ' + P.fmt(tot * tar.get(), 2)], ['Quem mais gasta', nm], ['Chuveiro no mês', P.fmt(kwh[0], 1) + ' kWh']];
+    } else if (modo === 'trans') {
+      var i = Pt.get() * 1e6 / Ut.get(), per = Rt.get() * i * i;
+      r = [['Corrente na linha', P.fmt(i, 1) + ' A'], ['Potência perdida (calor)', P.fmt(per / 1e3, 1) + ' kW'], ['Perda em %', P.fmt(per / (Pt.get() * 1e6) * 100, 2) + '%'], ['Chega na cidade', P.fmt((Pt.get() * 1e6 - per) / 1e6, 2) + ' MW']];
+    } else {
+      var f = fontes[fon.get()];
+      r = [['Transformação de energia', f[1]], ['Renovável?', f[2]], ['Emite gases do efeito estufa ao operar?', f[3]], ['Impacto / limitação', f[4] + '. ' + f[5] + '.']];
+    }
+    r.forEach(function (x, i) { rot[i].textContent = x[0]; L.set('abcd'[i], x[1]); });
+  }
+  calc();
+  return function (dt) {
+    t += dt; ctx.clearRect(0, 0, 640, 330);
+    if (modo === 'cons') {
+      var mx = Math.max.apply(null, kwh.concat([1]));
+      kwh.forEach(function (v, i) {
+        var y = 25 + i * 50, w = v / mx * 380;
+        P.texto(ctx, ap[i][0], 10, y + 12, { al: 'left', tam: 13 });
+        ctx.fillStyle = i === 0 ? '#c0392b' : '#1f5fbf'; ctx.fillRect(170, y, w, 24);
+        P.texto(ctx, P.fmt(v, 1) + ' kWh', 178 + w, y + 12, { al: 'left', tam: 13, cor: '#163f80' });
+      });
+    } else if (modo === 'trans') {
+      var i = Pt.get() * 1e6 / Ut.get(), per = Rt.get() * i * i, frac = Math.min(1, per / (Pt.get() * 1e6) * 4);
+      ctx.fillStyle = '#7d858f'; ctx.fillRect(20, 170, 80, 90); P.texto(ctx, 'usina', 60, 275, { tam: 12 });
+      ctx.fillStyle = '#e9b44c'; ctx.fillRect(540, 190, 30, 70); ctx.fillRect(575, 170, 30, 90); P.texto(ctx, 'cidade', 575, 275, { tam: 12 });
+      [180, 300, 420].forEach(function (x) { ctx.strokeStyle = '#555'; ctx.lineWidth = 3; ctx.beginPath(); ctx.moveTo(x, 270); ctx.lineTo(x, 110); ctx.moveTo(x - 25, 115); ctx.lineTo(x + 25, 115); ctx.stroke(); });
+      var cor = 'rgb(' + Math.round(80 + 175 * frac) + ',' + Math.round(80 - 40 * frac) + ',' + Math.round(80 - 60 * frac) + ')';
+      ctx.strokeStyle = cor; ctx.lineWidth = 2 + 4 * frac; ctx.beginPath(); ctx.moveTo(100, 180); ctx.quadraticCurveTo(140, 135, 180, 115); ctx.quadraticCurveTo(240, 145, 300, 115); ctx.quadraticCurveTo(360, 145, 420, 115); ctx.quadraticCurveTo(480, 145, 540, 190); ctx.stroke();
+      for (var k = 0; k < 6; k++) { var s = ((t * 0.3 + k / 6) % 1); var x = 100 + s * 440; ctx.fillStyle = '#ffd54a'; ctx.beginPath(); ctx.arc(x, 150 - 20 * Math.sin(s * Math.PI * 3) * 0, 4, 0, 7); }
+      if (frac > 0.05) for (var h = 0; h < 8; h++) { var xx = 150 + h * 50, yy = 120 - ((t * 40 + h * 13) % 40); ctx.fillStyle = 'rgba(192,57,43,' + frac + ')'; P.texto(ctx, '〰', xx, yy, { tam: 14, cor: 'rgba(192,57,43,' + frac + ')' }); }
+      P.texto(ctx, 'U = ' + P.fmt(Ut.get() / 1000, 1) + ' kV   ·   i = ' + P.fmt(i, 0) + ' A', 320, 40, { tam: 16, cor: '#163f80' });
+      P.texto(ctx, 'fio vermelho e ondinhas = energia perdida como calor (efeito Joule)', 320, 310, { tam: 12, cor: '#c0392b' });
+    } else {
+      var k2 = fon.get(), f = fontes[k2], et = f[1].split(' → ');
+      et.forEach(function (s, i) {
+        var x = 30 + i * (580 / et.length), w = 580 / et.length - 30;
+        ctx.fillStyle = i === et.length - 1 ? '#e7f6ec' : '#e7efff'; ctx.strokeStyle = '#1f5fbf'; ctx.lineWidth = 2;
+        ctx.fillRect(x, 120, w, 70); ctx.strokeRect(x, 120, w, 70);
+        var palavras = s.split(' '), l1 = palavras.slice(0, 2).join(' '), l2 = palavras.slice(2).join(' ');
+        P.texto(ctx, l1, x + w / 2, l2 ? 145 : 155, { tam: 13 }); if (l2) P.texto(ctx, l2, x + w / 2, 165, { tam: 12 });
+        if (i < et.length - 1) P.seta(ctx, x + w + 2, 155, x + w + 26, 155, '#e07a1f', 3);
+      });
+      P.texto(ctx, f[0], 320, 60, { tam: 20, cor: '#163f80' });
+      P.texto(ctx, 'Renovável: ' + f[2] + '   ·   Gases do efeito estufa ao operar: ' + f[3], 320, 250, { tam: 13 });
+    }
+  };
+}
+
+/* ============ 3. ESPECTRO ELETROMAGNÉTICO ============ */
+function simEspectro(a) {
+  var T = P.tela(a.tela, 640, 300), ctx = T.ctx, c = a.ctrl, t = 0;
+  P.formula(c, '<b>c = λ · f</b> (c = 3 × 10⁸ m/s) &nbsp; e &nbsp; <b>E = h · f</b> (h = 6,6 × 10⁻³⁴ J·s)');
+  var lf = P.slider(c, 'Frequência (escala de potências de 10)', { min: 4, max: 20, step: 0.05, value: 8, fmt: function (v) { return P.sci(Math.pow(10, v), 2); }, unit: 'Hz' }, calc);
+  var pres = [['Rádio AM', 1e6], ['Rádio FM', 1e8], ['Wi-Fi', 2.4e9], ['Micro-ondas', 2.45e9], ['Controle remoto', 3e14], ['Luz vermelha', 4.3e14], ['Luz verde', 5.5e14], ['Luz violeta', 7.5e14], ['Ultravioleta (UV)', 1.5e15], ['Raio X', 3e18], ['Raio gama', 1e20]];
+  var box = P.el('div', 'seg'); c.appendChild(box);
+  pres.forEach(function (p) { var b = P.el('button', '', p[0]); b.type = 'button'; b.onclick = function () { lf.set(Math.log10(p[1])); calc(); }; box.appendChild(b); });
+  var L = P.leituras(c, [['r', 'Região do espectro'], ['l', 'Comprimento de onda λ'], ['e', 'Energia do fóton'], ['i', 'Ionizante?'], ['u', 'Exemplos de uso']]);
+  var faixas = [[4, 9, 'Ondas de rádio', '#9bd0ff', 'Rádio, TV, celular'], [9, 11.5, 'Micro-ondas', '#a6e3a1', 'Forno, Wi-Fi, radar'], [11.5, 14.6, 'Infravermelho', '#ffb38a', 'Controle remoto, calor, câmera térmica'], [14.6, 14.9, 'Luz visível', 'rainbow', 'Visão, fotossíntese'], [14.9, 16.5, 'Ultravioleta', '#c9a7ff', 'Bronzeamento, esterilização'], [16.5, 19, 'Raios X', '#8aa1c1', 'Radiografia'], [19, 20.1, 'Raios gama', '#5c6b80', 'Radioterapia, esterilização']];
+  function faixa(v) { for (var i = 0; i < faixas.length; i++) if (v < faixas[i][1]) return faixas[i]; return faixas[faixas.length - 1]; }
+  function lamTxt(l) { if (l >= 1000) return P.fmt(l / 1000, 1) + ' km'; if (l >= 1) return P.fmt(l, 2) + ' m'; if (l >= 0.01) return P.fmt(l * 100, 2) + ' cm'; if (l >= 1e-6) return P.fmt(l * 1e6, 2) + ' µm'; if (l >= 1e-9) return P.fmt(l * 1e9, 1) + ' nm'; return P.sci(l, 2) + ' m'; }
+  function calc() {
+    var f = Math.pow(10, lf.get()), l = C / f, E = H * f, fx = faixa(lf.get());
+    L.set('r', fx[2]); L.set('l', lamTxt(l)); L.set('e', P.sci(E, 2) + ' J (' + P.sci(E / EV, 2) + ' eV)');
+    L.set('i', E / EV >= 10 ? 'Sim: pode arrancar elétrons e danificar células' : 'Não'); L.set('u', fx[4]);
+  }
+  calc();
+  return function (dt) {
+    t += dt; ctx.clearRect(0, 0, 640, 300);
+    var x0 = 30, w = 580;
+    faixas.forEach(function (fx) {
+      var a1 = x0 + (fx[0] - 4) / 16 * w, a2 = x0 + (Math.min(fx[1], 20) - 4) / 16 * w;
+      if (fx[3] === 'rainbow') { var g = ctx.createLinearGradient(a1, 0, a2, 0); ['red', 'orange', 'yellow', 'green', 'blue', 'violet'].forEach(function (cc, i) { g.addColorStop(i / 5, cc); }); ctx.fillStyle = g; } else ctx.fillStyle = fx[3];
+      ctx.fillRect(a1, 200, a2 - a1, 40);
+    });
+    ['rádio', 'micro-ondas', 'infraverm.', '', 'UV', 'raios X', 'gama'].forEach(function (s, i) { var fx = faixas[i]; P.texto(ctx, s, x0 + ((fx[0] + Math.min(fx[1], 20)) / 2 - 4) / 16 * w, 255, { tam: 11 }); });
+    P.texto(ctx, 'visível', x0 + (14.75 - 4) / 16 * w, 190, { tam: 11 });
+    P.texto(ctx, '← menor frequência, maior λ', 120, 285, { tam: 12, cor: '#5b6578' }); P.texto(ctx, 'maior frequência, menor λ, mais energia →', 470, 285, { tam: 12, cor: '#5b6578' });
+    var xm = x0 + (lf.get() - 4) / 16 * w; P.seta(ctx, xm, 160, xm, 198, '#c0392b', 3);
+    /* onda ilustrativa: ciclos crescem com a frequência */
+    var cic = 1 + (lf.get() - 4) / 16 * 30, fx = faixa(lf.get()), nm = C / Math.pow(10, lf.get()) * 1e9;
+    ctx.strokeStyle = fx[3] === 'rainbow' ? corLambda(nm) : '#1f5fbf'; ctx.lineWidth = 2.5; ctx.beginPath();
+    for (var X = 0; X <= 580; X++) { var Y = 85 - 45 * Math.sin(2 * Math.PI * cic * X / 580 - t * 4); X ? ctx.lineTo(30 + X, Y) : ctx.moveTo(30 + X, Y); }
+    ctx.stroke();
+  };
+}
+
+/* ============ 4. FÍSICA MODERNA ============ */
+function simModerna(a) {
+  var T = P.tela(a.tela, 640, 340), ctx = T.ctx, c = a.ctrl, modo = 'foto', t = 0, part = [], atomos = [], hist = [], tr = 0, rodar = false, salto = 0;
+  var cx = modos(c, [['foto', 'Efeito fotoelétrico'], ['bohr', 'Átomo de Bohr'], ['radio', 'Meia-vida'], ['emc', 'E = m·c²']], 'foto', function (v) { modo = v; calc(); });
+  P.formula(cx.foto, '<b>E<sub>fóton</sub> = h · f</b> &nbsp; e &nbsp; <b>E<sub>c máx</sub> = h · f − W</b> &nbsp; (E em eV ≈ 1240 / λ em nm)');
+  var metais = { na: [2.3, 'Sódio (W = 2,3 eV)'], zn: [4.3, 'Zinco (W = 4,3 eV)'], cu: [4.7, 'Cobre (W = 4,7 eV)'] };
+  var met = P.seg(cx.foto, 'Metal da placa', Object.keys(metais).map(function (k) { return [k, metais[k][1]]; }), 'na', calc);
+  var lam = P.slider(cx.foto, 'Comprimento de onda da luz (λ)', { min: 150, max: 750, step: 10, value: 600, unit: 'nm' }, calc);
+  var inten = P.slider(cx.foto, 'Intensidade da luz', { min: 10, max: 100, step: 10, value: 50, unit: '%' }, calc);
+  P.formula(cx.bohr, '<b>E<sub>n</sub> = −13,6 / n²</b> eV (hidrogênio) &nbsp; e &nbsp; <b>E<sub>fóton</sub> = E<sub>inicial</sub> − E<sub>final</sub></b>');
+  var ni = P.slider(cx.bohr, 'Nível inicial do elétron', { min: 2, max: 6, step: 1, value: 3 }, calc);
+  var nf = P.slider(cx.bohr, 'Nível final do elétron', { min: 1, max: 5, step: 1, value: 2 }, calc);
+  var bsa = P.el('button', 'bt', '⚡ Fazer o salto'); cx.bohr.appendChild(bsa); bsa.onclick = function () { salto = 0.001; };
+  P.formula(cx.radio, '<b>m = m<sub>0</sub> / 2<sup>n</sup></b> &nbsp; (n = número de meias-vidas = t / T<sub>1/2</sub>)');
+  var Th = P.slider(cx.radio, 'Meia-vida (T½)', { min: 1, max: 10, step: 1, value: 5, unit: 'dias' }, function () { reiniciaRadio(); calc(); });
+  var m0 = P.slider(cx.radio, 'Massa inicial', { min: 10, max: 200, step: 10, value: 80, unit: 'g' }, calc);
+  var br1 = P.el('button', 'bt', '▶ Passar o tempo'), br2 = P.el('button', 'bt sec', '↺ Reiniciar'); cx.radio.appendChild(br1); cx.radio.appendChild(br2);
+  br1.onclick = function () { rodar = !rodar; br1.textContent = rodar ? '⏸ Pausar' : '▶ Passar o tempo'; };
+  br2.onclick = function () { reiniciaRadio(); calc(); };
+  P.formula(cx.emc, '<b>E = m · c²</b> &nbsp; c = 3 × 10⁸ m/s');
+  var me = P.slider(cx.emc, 'Massa transformada em energia', { min: 0.1, max: 10, step: 0.1, value: 1, unit: 'g' }, calc);
+  P.dica(cx.emc, 'Na fissão (usinas de Angra) e na fusão (Sol) uma pequena parte da massa vira energia.');
+  var L = P.leituras(c, [['a', ''], ['b', ''], ['c', ''], ['d', '']]), rot = c.querySelectorAll('.leit small');
+  function reiniciaRadio() { tr = 0; hist = []; rodar = false; br1.textContent = '▶ Passar o tempo'; atomos = []; for (var i = 0; i < 400; i++) atomos.push(true); }
+  reiniciaRadio();
+  function En(n) { return -13.6 / (n * n); }
+  function calc() {
+    var r;
+    if (modo === 'foto') {
+      var E = 1240 / lam.get(), W = metais[met.get()][0];
+      r = [['Frequência da luz', P.sci(C / (lam.get() * 1e-9), 2) + ' Hz'], ['Energia de cada fóton', P.fmt(E, 2) + ' eV'], ['Arranca elétrons?', E > W ? 'Sim' : 'Não (por mais intensa que seja)'], ['Energia cinética máxima', E > W ? P.fmt(E - W, 2) + ' eV' : '0']];
+    } else if (modo === 'bohr') {
+      var i = ni.get(), f = Math.min(nf.get(), i - 1); if (f !== nf.get()) nf.set(f);
+      var Ef = En(f) - En(i), dE = -Ef, l = 1240 / dE;
+      r = [['Energia no nível inicial', P.fmt(En(i), 2) + ' eV'], ['Energia no nível final', P.fmt(En(f), 2) + ' eV'], ['Energia do fóton emitido', P.fmt(dE, 2) + ' eV'], ['λ do fóton', P.fmt(l, 0) + ' nm (' + (l < 380 ? 'ultravioleta' : l > 750 ? 'infravermelho' : 'luz visível') + ')']];
+    } else if (modo === 'radio') {
+      var n = tr / Th.get();
+      r = [['Tempo passado', P.fmt(tr, 1) + ' dias'], ['Meias-vidas passadas', P.fmt(n, 2)], ['Massa restante (m₀/2ⁿ)', P.fmt(m0.get() / Math.pow(2, n), 1) + ' g'], ['Núcleos ainda radioativos', atomos.filter(Boolean).length + ' de 400']];
+    } else {
+      var Ej = me.get() / 1000 * C * C;
+      r = [['Massa', P.fmt(me.get()) + ' g = ' + P.fmt(me.get() / 1000, 4) + ' kg'], ['Energia liberada', P.sci(Ej, 2) + ' J'], ['Em kWh', P.sci(Ej / 3.6e6, 2) + ' kWh'], ['Abasteceria uma casa (150 kWh/mês) por', P.fmt(Ej / 3.6e6 / 150 / 12, 0) + ' anos']];
+    }
+    r.forEach(function (x, i) { rot[i].textContent = x[0]; L.set('abcd'[i], x[1]); });
+  }
+  calc();
+  return function (dt) {
+    t += dt; ctx.clearRect(0, 0, 640, 340);
+    if (modo === 'foto') {
+      var E = 1240 / lam.get(), W = metais[met.get()][0], cor = corLambda(lam.get());
+      ctx.fillStyle = '#9aa3ad'; ctx.fillRect(300, 80, 30, 200); P.texto(ctx, metais[met.get()][1].split(' (')[0], 315, 300, { tam: 13 });
+      ctx.fillStyle = '#444'; ctx.fillRect(20, 40, 60, 40); P.texto(ctx, 'lâmpada', 50, 95, { tam: 12 });
+      if (Math.random() < inten.get() / 100 * dt * 30) part.push({ k: 'f', x: 80, y: 60 + Math.random() * 20, vx: 300, vy: 80 + Math.random() * 40 });
+      part.forEach(function (p) {
+        p.x += p.vx * dt; p.y += p.vy * dt;
+        if (p.k === 'f' && p.x >= 300) { p.morto = true; if (E > W) part.push({ k: 'e', x: 330, y: p.y, vx: 60 + Math.sqrt(E - W) * 120, vy: (Math.random() - 0.5) * 40 }); }
+      });
+      part = part.filter(function (p) { return !p.morto && p.x < 650; });
+      part.forEach(function (p) {
+        if (p.k === 'f') { ctx.strokeStyle = cor; ctx.lineWidth = 2; ctx.beginPath(); for (var q = 0; q < 14; q++) { var X = p.x - q, Y = p.y + 4 * Math.sin(q * 1.3); q ? ctx.lineTo(X, Y) : ctx.moveTo(X, Y); } ctx.stroke(); }
+        else { ctx.fillStyle = '#1f5fbf'; ctx.beginPath(); ctx.arc(p.x, p.y, 5, 0, 7); ctx.fill(); P.texto(ctx, '−', p.x, p.y, { cor: '#fff', tam: 10 }); }
+      });
+      P.texto(ctx, 'fótons de ' + P.fmt(E, 2) + ' eV', 170, 40, { tam: 13 });
+      P.texto(ctx, E > W ? 'elétrons arrancados!' : 'nenhum elétron sai', 500, 60, { tam: 15, cor: E > W ? '#1d8a52' : '#c0392b' });
+    } else if (modo === 'bohr') {
+      var i = ni.get(), f = Math.min(nf.get(), i - 1);
+      ctx.fillStyle = '#c0392b'; ctx.beginPath(); ctx.arc(170, 170, 10, 0, 7); ctx.fill();
+      for (var n = 1; n <= 6; n++) { var r = 20 + n * 22; ctx.strokeStyle = n === i ? '#1f5fbf' : n === f ? '#1d8a52' : '#ccd'; ctx.lineWidth = n === i || n === f ? 2 : 1; ctx.beginPath(); ctx.arc(170, 170, r, 0, 7); ctx.stroke(); }
+      var nAt = salto > 0 && salto < 1 ? i - (i - f) * salto : salto >= 1 ? f : i, rr = 20 + nAt * 22, an = t * 2;
+      ctx.fillStyle = '#1f5fbf'; ctx.beginPath(); ctx.arc(170 + rr * Math.cos(an), 170 + rr * Math.sin(an), 6, 0, 7); ctx.fill();
+      if (salto > 0) { salto = Math.min(salto + dt, 3); if (salto >= 1) { var l = 1240 / (En(f) - En(i)) * -1, px = 170 + (salto - 1) * 220; ctx.strokeStyle = corLambda(l); ctx.lineWidth = 3; ctx.beginPath(); for (var q = 0; q < 40; q++) { var X = px + q, Y = 170 + 7 * Math.sin(q * 0.6); q ? ctx.lineTo(X, Y) : ctx.moveTo(X, Y); } ctx.stroke(); P.texto(ctx, 'fóton', px + 20, 150, { tam: 12 }); } }
+      /* diagrama de níveis */
+      function yN(n) { return 30 - En(n) / 13.6 * 280; }
+      P.texto(ctx, 'Níveis de energia', 470, 14, { tam: 12 });
+      for (var m = 1; m <= 6; m++) { var y = yN(m); ctx.strokeStyle = m === i ? '#1f5fbf' : m === f ? '#1d8a52' : '#999'; ctx.lineWidth = 2; ctx.beginPath(); ctx.moveTo(400, y); ctx.lineTo(510, y); ctx.stroke(); if (m <= 4 || m === i || m === f) P.texto(ctx, 'n=' + m + ' (' + P.fmt(En(m), 2) + ' eV)', 516, y + (m >= 4 ? (m - 4) * 6 - 4 : 0), { tam: 11, al: 'left' }); }
+      P.seta(ctx, 455, yN(i), 455, yN(f), '#e07a1f', 3);
+    } else if (modo === 'radio') {
+      if (rodar) { var dd = dt * 2; tr += dd; var p = 1 - Math.pow(0.5, dd / Th.get()); for (var k = 0; k < 400; k++) if (atomos[k] && Math.random() < p) atomos[k] = false; hist.push([tr, atomos.filter(Boolean).length]); calc(); if (tr > 6 * Th.get()) { rodar = false; br1.textContent = '▶ Passar o tempo'; } }
+      for (var k2 = 0; k2 < 400; k2++) { ctx.fillStyle = atomos[k2] ? '#e07a1f' : '#cfd6e2'; ctx.beginPath(); ctx.arc(20 + (k2 % 20) * 13, 20 + Math.floor(k2 / 20) * 13, 5, 0, 7); ctx.fill(); }
+      var gx = 320, gy = 300, gw = 300, gh = 260, tmax = 6 * Th.get();
+      ctx.strokeStyle = '#555'; ctx.lineWidth = 1.5; ctx.beginPath(); ctx.moveTo(gx, gy - gh); ctx.lineTo(gx, gy); ctx.lineTo(gx + gw, gy); ctx.stroke();
+      ctx.strokeStyle = '#999'; ctx.setLineDash([4, 4]); ctx.beginPath();
+      for (var s = 0; s <= 60; s++) { var tt = s / 60 * tmax, Y = gy - gh * Math.pow(0.5, tt / Th.get()); s ? ctx.lineTo(gx + s / 60 * gw, Y) : ctx.moveTo(gx, Y); } ctx.stroke(); ctx.setLineDash([]);
+      for (var mm = 1; mm <= 6; mm++) P.texto(ctx, mm * Th.get() + '', gx + mm / 6 * gw, gy + 12, { tam: 10 });
+      P.texto(ctx, 'dias', gx + gw - 10, gy + 26, { tam: 11 }); P.texto(ctx, '100%', gx - 18, gy - gh, { tam: 10 }); P.texto(ctx, '50%', gx - 16, gy - gh / 2, { tam: 10 });
+      ctx.strokeStyle = '#e07a1f'; ctx.lineWidth = 2.5; ctx.beginPath(); hist.forEach(function (h, i) { var X = gx + h[0] / tmax * gw, Y = gy - h[1] / 400 * gh; i ? ctx.lineTo(X, Y) : ctx.moveTo(X, Y); }); ctx.stroke();
+      P.texto(ctx, 'laranja = núcleo radioativo', 135, 290, { tam: 12, cor: '#e07a1f' });
+    } else {
+      var Ej = me.get() / 1000 * C * C, casas = Ej / 3.6e6 / 150 / 12;
+      ctx.fillStyle = '#e07a1f'; ctx.beginPath(); ctx.arc(110, 170, 10 + me.get() * 3, 0, 7); ctx.fill();
+      P.texto(ctx, P.fmt(me.get()) + ' g', 110, 170 + 25 + me.get() * 3, { tam: 13 });
+      P.seta(ctx, 180, 170, 280, 170, '#c0392b', 4); P.texto(ctx, 'E = m·c²', 230, 150, { tam: 14, cor: '#c0392b' });
+      var gr = ctx.createRadialGradient(420, 170, 5, 420, 170, 110); gr.addColorStop(0, 'rgba(255,220,80,1)'); gr.addColorStop(1, 'rgba(255,220,80,0)'); ctx.fillStyle = gr; ctx.beginPath(); ctx.arc(420, 170, 110, 0, 7); ctx.fill();
+      P.texto(ctx, P.sci(Ej, 2) + ' J', 420, 170, { tam: 20, cor: '#163f80' });
+      P.texto(ctx, '≈ energia de uma casa por ' + P.fmt(casas, 0) + ' anos', 420, 300, { tam: 14 });
+    }
+  };
+}
+
+P.pagina([
+  { id: 'eletro', nome: 'Transformador e gerador', titulo: 'Transformador, gerador e eletroímã', intro: 'Mude as espiras do transformador, gire o gerador e ligue o eletroímã. Tudo isso funciona porque corrente elétrica e campo magnético estão ligados.', init: function (a) {
+    var f = simEletro(a);
+    P.perguntas(a.dir, [
+      { p: 'Np = 200, Ns = 4000 e Vp = 110 V. Qual é Vs?', a: ['5,5 V', '220 V', '2200 V'], c: 2, e: 'Ns é 20 vezes Np, então Vs = 20 · 110 = 2200 V.' },
+      { p: 'Ligado numa bateria (corrente contínua), o transformador...', a: ['Funciona igual', 'Não induz tensão no secundário', 'Explode'], c: 1, e: 'Sem variação de fluxo magnético não há indução.' },
+      { p: 'Se o gerador girar mais rápido, a tensão máxima...', a: ['Aumenta', 'Diminui', 'Não muda'], c: 0, e: 'O fluxo varia mais rápido, então ε aumenta.' }
+    ]);
+    return f; } },
+  { id: 'energia', nome: 'Energia elétrica', titulo: 'Geração, transmissão e consumo de energia elétrica', intro: 'Monte a conta de luz da sua casa, veja por que as linhas de transmissão usam alta tensão e compare as usinas.', init: function (a) {
+    var f = simEnergia(a);
+    P.perguntas(a.dir, [
+      { p: 'Chuveiro de 5500 W ligado 30 min por dia. Quanto ele gasta em 30 dias?', a: ['8,25 kWh', '82,5 kWh', '165 kWh'], c: 1, e: '5,5 kW · 0,5 h · 30 = 82,5 kWh.' },
+      { p: 'Subindo a tensão da linha de 13,8 kV para 138 kV, a perda nos fios...', a: ['Aumenta', 'Cai muito', 'Não muda'], c: 1, e: 'A corrente cai 10 vezes e a perda (R·i²) cai 100 vezes.' },
+      { p: 'Qual usina transforma luz diretamente em energia elétrica, sem gerador girando?', a: ['Hidrelétrica', 'Solar fotovoltaica', 'Nuclear'], c: 1, e: 'Como os parques solares do Noroeste de Minas.' }
+    ]);
+    return f; } },
+  { id: 'espectro', nome: 'Espectro eletromagnético', titulo: 'Ondas eletromagnéticas e o espectro', intro: 'Percorra o espectro: das ondas de rádio aos raios gama. Veja o comprimento de onda e a energia de cada fóton.', init: function (a) {
+    var f = simEspectro(a);
+    P.perguntas(a.dir, [
+      { p: 'Qual tem maior frequência?', a: ['Rádio FM', 'Luz visível', 'Raio X'], c: 2, e: 'Ordem: rádio, micro-ondas, infravermelho, visível, UV, raios X, gama.' },
+      { p: 'Qual é o comprimento de onda do Wi-Fi (2,4 GHz)?', a: ['1,25 cm', '12,5 cm', '1,25 m'], c: 1, e: 'λ = 3 × 10⁸ / 2,4 × 10⁹ = 0,125 m.' },
+      { p: 'Quais radiações são ionizantes?', a: ['Rádio e micro-ondas', 'Raios X e gama', 'Infravermelho e luz visível'], c: 1, e: 'Têm energia suficiente para arrancar elétrons dos átomos.' }
+    ]);
+    return f; } },
+  { id: 'moderna', nome: 'Física moderna', titulo: 'Física moderna: fóton, átomo e núcleo', intro: 'Ilumine uma placa de metal, faça o elétron saltar entre os níveis do átomo, acompanhe a meia-vida e converta massa em energia.', init: function (a) {
+    var f = simModerna(a);
+    P.perguntas(a.dir, [
+      { p: 'Luz vermelha (700 nm) bem forte no zinco (W = 4,3 eV). Saem elétrons?', a: ['Sim, porque é intensa', 'Não: cada fóton tem pouca energia', 'Só alguns'], c: 1, e: 'E = 1240/700 ≈ 1,8 eV < 4,3 eV. A intensidade não muda a energia de cada fóton.' },
+      { p: 'O elétron do hidrogênio cai do nível 3 para o 2. O fóton emitido é...', a: ['Ultravioleta', 'Luz vermelha visível (≈ 656 nm)', 'Raio X'], c: 1, e: 'E = 3,4 − 1,51 = 1,89 eV → λ ≈ 656 nm.' },
+      { p: '80 g de material com meia-vida de 5 dias. Quanto resta após 15 dias?', a: ['40 g', '20 g', '10 g'], c: 2, e: '15 dias = 3 meias-vidas: 80 → 40 → 20 → 10 g.' }
+    ]);
+    return f; } },
+  { id: 'desafio', nome: '🎮 Arena Final', titulo: 'Arena Final: o último desafio', init: P.desafio('3º ano', KAHOOT_DESAFIO) },
+  { id: 'certificado', nome: '🏅 Certificado', titulo: 'Certificado de conclusão', intro: 'Depois de concluir todas as lições, digite seu nome e baixe seu certificado com as notas.', init: P.certificado('3º ano') }
+]);
+</script>
+</body>
+</html>
