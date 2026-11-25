@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Experimenta João | Materiais gratuitos para professores</title>
-  <meta name="description" content="Simuladores, jogos e laboratórios virtuais gratuitos para usar em sala de aula. Não precisa instalar nada: é só abrir no celular, no computador ou projetar na TV.">
+  <meta name="description" content="Experimenta João, do Prof. João Victor: Área do Aluno com a Provinha da Massa e simuladores, jogos e laboratórios virtuais gratuitos para usar em sala de aula. Não precisa instalar nada: é só abrir no celular, no computador ou projetar na TV.">
   <meta name="theme-color" content="#1f4d3f">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -116,6 +116,14 @@
     .btn-branco { background: var(--branco); color: var(--texto); }
     .btn-whats { background: var(--whats); color: var(--branco); }
     .btn-whats:hover { background: var(--whats-escuro); }
+
+    /* ===== FAIXA DO ALUNO ===== */
+    .faixa-aluno { background: var(--amarelo); border-bottom: 3px solid var(--texto); }
+    .faixa-aluno a { display: flex; align-items: center; justify-content: center; gap: .6rem; flex-wrap: wrap;
+      padding: .85rem 1.25rem; color: var(--texto); text-decoration: none; font-weight: 800; font-size: 1.1rem; text-align: center; }
+    .faixa-aluno strong { font-weight: 900; }
+    .faixa-aluno .ir { background: var(--texto); color: var(--amarelo); border-radius: 10px; padding: .3rem .9rem; font-weight: 900; }
+    .faixa-aluno a:hover .ir { background: var(--quadro); }
 
     /* ===== ABERTURA (QUADRO) ===== */
     .abertura {
@@ -372,6 +380,11 @@
   </header>
 
   <main id="conteudo">
+
+    <!-- FAIXA DO ALUNO -->
+    <div class="faixa-aluno">
+      <a href="alunos.html">🎒 <span>Você é aluno? <strong>Provinha da Massa</strong> e simuladores estão aqui</span> <span class="ir">Área do Aluno →</span></a>
+    </div>
 
     <!-- ABERTURA -->
     <section class="abertura">

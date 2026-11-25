@@ -1,0 +1,3 @@
+User-agent: *
+Allow: /
+Sitemap: https://experimentajoao.github.io/experimentajoao/sitemap.xml
