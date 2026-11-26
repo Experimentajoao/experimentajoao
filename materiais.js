@@ -5,6 +5,16 @@
 // novo: true mostra a etiqueta "Novo" e coloca o material no começo da lista.
 
 var MATERIAIS = [
+  // ---------- JOGO ----------
+  {
+    titulo: "Base de Lançamento · jogo de Física do 1º ano",
+    materia: "fisica",
+    tipo: "Jogo",
+    icone: "🚀",
+    novo: true,
+    descricao: "17 missões em 5 setores: centro de massa e torque, leis de Newton, impulso e quantidade de movimento, gravitação e Kepler, e hidrostática num planeta de gravidade baixa. O aluno monta a nave, pilota e responde a um relatório com os números do próprio voo.",
+    link: "https://experimentajoao.github.io/experimentajoao/base-de-lancamento/"
+  },
   // ---------- REVISÃO DO ANO ----------
   {
     titulo: "Revisão do Ano · Física 1º ano",

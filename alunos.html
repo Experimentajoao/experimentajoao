@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Área do Aluno | Experimenta João · Provinha da Massa</title>
-  <meta name="description" content="Área do Aluno do Prof. João Victor: Provinha da Massa, simuladores de Física do 1º, 2º e 3º ano.">
+  <meta name="description" content="Base de Lançamento, jogo de Física do 1º ano, e Área do Aluno do Prof. João Victor: Provinha da Massa, simuladores de Física do 1º, 2º e 3º ano.">
   <meta name="theme-color" content="#1f4d3f">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -72,6 +72,18 @@
     .passo strong { display: block; font-size: 1.15rem; margin-bottom: .2rem; }
     .passo span { color: var(--texto-suave); }
 
+
+    .jogo { display: grid; grid-template-columns: minmax(0,1.1fr) minmax(0,1fr); gap: 0; background: #0b1020; border: 3px solid var(--texto); border-radius: 22px; overflow: hidden; box-shadow: 0 6px 0 #ff5a1f; text-decoration: none; color: #fff; transition: transform .15s ease; }
+    .jogo:hover { transform: translateY(-4px); }
+    .jogo svg { width: 100%; height: 100%; min-height: 240px; display: block; }
+    .jogo .txt { padding: 1.6rem 1.5rem; display: flex; flex-direction: column; gap: .6rem; justify-content: center; }
+    .jogo .etq { align-self: flex-start; background: #ff5a1f; color: #fff; font-weight: 900; font-size: .9rem; border-radius: 99px; padding: .2rem .8rem; }
+    .jogo h3 { font-size: clamp(1.6rem, 4vw, 2.1rem); font-weight: 900; line-height: 1.1; }
+    .jogo p { color: #cfd6de; font-size: 1.05rem; }
+    .jogo .setores { display: flex; flex-wrap: wrap; gap: .4rem; list-style: none; }
+    .jogo .setores li { background: rgba(255,255,255,.1); border-radius: 10px; padding: .2rem .6rem; font-size: .92rem; font-weight: 700; }
+    .jogo .abrir { align-self: flex-start; margin-top: .4rem; background: var(--amarelo); color: var(--texto); border: 2px solid var(--texto); border-radius: 12px; padding: .55rem 1.3rem; font-weight: 900; }
+    @media (max-width: 760px) { .jogo { grid-template-columns: 1fr; } .jogo svg { min-height: 200px; max-height: 260px; } }
     @media (max-width: 760px) { .series, .passos { grid-template-columns: 1fr; } }
 
     footer { background: var(--quadro-escuro); color: #d7e6df; border-top: 6px solid var(--amarelo); padding: 2rem 0; text-align: center; font-size: 1rem; margin-top: 2rem; }
@@ -128,6 +140,45 @@
           <li><a class="serie s2" href="provinha-da-massa/fisica2.html"><span class="num">2º</span><strong>2º ano</strong><small>Olho e lentes, MHS e ondas, fenômenos ondulatórios, luz e cores, som e Doppler</small><span class="abrir">Abrir →</span></a></li>
           <li><a class="serie s3" href="provinha-da-massa/fisica3.html"><span class="num">3º</span><strong>3º ano</strong><small>Transformador e gerador, energia elétrica, espectro eletromagnético e física moderna</small><span class="abrir">Abrir →</span></a></li>
         </ul>
+      </div>
+    </section>
+
+
+    <section class="bloco" id="base-de-lancamento">
+      <div class="container">
+        <div class="titulo-secao">
+          <h2>Jogo: <span class="marca">Base de Lançamento</span></h2>
+          <p>Para o 1º ano. Monte foguetes, pilote naves e aprenda Física em cada missão, com o Prof. ExperimentaJoão.</p>
+        </div>
+        <a class="jogo" href="base-de-lancamento/">
+          <svg viewBox="0 0 400 260" preserveAspectRatio="xMidYMid slice" role="img" aria-label="Foguete decolando de uma base, com uma lua e um planeta ao fundo">
+            <defs><linearGradient id="ceu" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#0b1020"/><stop offset="1" stop-color="#3a2a52"/></linearGradient>
+            <linearGradient id="corpo" x1="0" x2="1"><stop offset="0" stop-color="#9aa5b1"/><stop offset=".5" stop-color="#ffffff"/><stop offset="1" stop-color="#8f99a4"/></linearGradient>
+            <linearGradient id="fogo" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#fff6d0"/><stop offset=".4" stop-color="#ffc04d"/><stop offset="1" stop-color="#ff5a1f" stop-opacity="0"/></linearGradient></defs>
+            <rect width="400" height="260" fill="url(#ceu)"/>
+            <g fill="#fff" opacity=".8"><circle cx="40" cy="30" r="1.5"/><circle cx="120" cy="60" r="1"/><circle cx="300" cy="25" r="1.5"/><circle cx="350" cy="90" r="1"/><circle cx="220" cy="40" r="1"/><circle cx="70" cy="110" r="1"/><circle cx="380" cy="160" r="1.2"/></g>
+            <circle cx="320" cy="70" r="34" fill="#b0834a"/><path d="M290 80q30-14 60 0" stroke="#3f8fc4" stroke-width="6" fill="none"/><ellipse cx="320" cy="70" rx="52" ry="11" fill="none" stroke="#c98f7a" stroke-width="3" transform="rotate(-15 320 70)"/>
+            <circle cx="70" cy="60" r="16" fill="#cfd6de"/><circle cx="64" cy="56" r="4" fill="#9aa5b1"/>
+            <path d="M0 222 Q100 205 200 220 T400 214 V260 H0Z" fill="#5a7d3a"/>
+            <g stroke="#5a6470" stroke-width="4" fill="none"><path d="M120 222V96"/><path d="M120 110l20 -8M120 130l20 -8M120 150l20 -8M120 170l20 -8M120 190l20 -8"/></g>
+            <rect x="140" y="214" width="80" height="10" fill="#5a6470"/>
+            <path d="M172 214q8 46 8 46h0q0 0 8-46z" fill="url(#fogo)"/>
+            <path d="M166 176l-14 26h14zM194 176l14 26h-14z" fill="#ff5a1f"/>
+            <rect x="166" y="118" width="28" height="92" rx="6" fill="url(#corpo)"/>
+            <path d="M166 120Q180 82 194 120Z" fill="#f2c21b"/>
+            <rect x="166" y="160" width="28" height="7" fill="#ff5a1f"/>
+            <circle cx="180" cy="140" r="7" fill="#2b3440"/><circle cx="180" cy="140" r="5" fill="#5fb0ff"/>
+            <text x="180" y="190" text-anchor="middle" font-family="Nunito, sans-serif" font-weight="900" font-size="11" fill="#2b3440">EJ</text>
+            <g transform="translate(260 222)"><rect x="-8" y="-46" width="16" height="22" rx="4" fill="#f2c21b"/><circle cx="0" cy="-54" r="10" fill="#b5764b"/><path d="M-8 -24h16v24h-16z" fill="#2b3440"/><path d="M-16 -54a16 16 0 0 1 32 0" stroke="#2b3440" stroke-width="3" fill="none"/></g>
+          </svg>
+          <div class="txt">
+            <span class="etq">Novo</span>
+            <h3>Base de Lançamento</h3>
+            <p>17 missões com montagem, pilotagem e relatório. Ganhe até 3 estrelas em cada uma!</p>
+            <ul class="setores"><li>Hangar</li><li>Torre de lançamento</li><li>Voo e manobras</li><li>Órbita</li><li>Planeta Urucuia</li></ul>
+            <span class="abrir">Jogar agora →</span>
+          </div>
+        </a>
       </div>
     </section>
 
