@@ -87,6 +87,9 @@ input[type=text]{font:700 18px "Chakra Petch";width:120px;min-height:44px;paddin
 .thr label b{font:700 22px "Chakra Petch";color:var(--lar2)}
 .thr input[type=range]{width:100%;height:36px;accent-color:#ff5a1f}
 .thr .ic{width:56px;min-height:56px}
+.nota{font-size:13px;color:var(--mut);margin:8px 0 0}
+.leg{margin:0 0 10px;padding-left:18px;font-size:14px;color:var(--mut)}.leg li{margin:2px 0}
+.qf{display:inline-block;margin:6px 0 2px;font:700 14px "Chakra Petch",sans-serif;background:#fff7d6;color:#3a2d00;border-radius:8px;padding:3px 10px}
 .slots{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:6px}
 .slot{min-height:52px;padding:4px;font:700 16px "Chakra Petch"}
 #pp{width:140px}
@@ -157,7 +160,7 @@ const MISSOES=[
  formula:'x_cm = (m₁·x₁ + m₂·x₂ + ...) ÷ (m₁ + m₂ + ...)',
  dica:'A nave tem 1 000 kg no meio (x = 0). Coloque os contêineres de modo que a soma m · x dê zero. Exemplo: 300 kg em −1 m cancela 100 kg em +3 m.',
  perg:d=>[
-  {p:`Na sua montagem, a soma de m · x dos contêineres deu ${fmt(d.soma)} kg·m. Com massa total de ${fmt(d.mt)} kg, onde ficou o centro de massa?`,...alt(fmt(d.soma/d.mt,2)+' m',[fmt(d.soma/1000,2)+' m',fmt(d.soma/600,2)+' m'],1)},
+  {p:`Na sua montagem o centro de massa ficou em ${fmt(d.soma/d.mt,2)} m. Se o contêiner B (200 kg) fosse puxado 2 m para a direita, onde ficaria o centro de massa da nave de ${fmt(d.mt)} kg?`,...alt(fmt((d.soma+400)/d.mt,2)+' m',[fmt((d.soma+400)/600,2)+' m',fmt(d.soma/d.mt+2,2)+' m'],1)},
   {p:`Se o contêiner C (300 kg) fosse puxado 1 m para mais longe do centro, o centro de massa se deslocaria:`,...alt(fmt(300/d.mt,2)+' m para o lado dele',['nada, porque a nave é muito pesada','3 m para o lado dele'],0)},
   {p:'Por que a nave girou nos testes com a carga torta?',...alt('A força do motor não passava pelo centro de massa e criou um torque',['O motor estava fraco','A carga empurrou a nave para trás'],2)}]},
 {id:'guindaste',setor:'hangar',titulo:'Guindaste do hangar',conceito:'Torque e equilíbrio',modo:'guindaste',mont:'bloco',ctrl:['pos'],
@@ -223,8 +226,8 @@ const MISSOES=[
  dica:'Gire a nave 90° para cima, dê uma queima curta e depois apague o motor. A nave vai andar na diagonal e passar por cima da pedra.',
  perg:d=>[
   {p:'Para desviar, você apontou o motor para o lado e queimou. O que aconteceu com a trajetória da nave?',...alt('Ganhou velocidade de lado e passou a andar na diagonal',['Parou de andar para a frente','Ficou mais lenta para a frente e continuou reta'],0)},
-  {p:`Você terminou com ${fmt(d.vx,1)} m/s para a frente e ${fmt(Math.abs(d.vy),1)} m/s de lado. A velocidade para a frente mudou durante a queima de lado?`,...alt('Quase nada, porque o impulso foi perpendicular ao movimento',['Sim, dobrou','Sim, foi a zero'],1)},
-  {p:`Sua nave de ${fmt(d.m)} kg ganhou ${fmt(Math.abs(d.vy),1)} m/s de lado. Qual foi o impulso lateral (I = m · Δv)?`,...alt(fmt(d.m*Math.abs(d.vy))+' N·s',[fmt(d.m*Math.abs(d.vy)*2)+' N·s',fmt(d.m/Math.max(.1,Math.abs(d.vy)))+' N·s'],2)}]},
+  {p:`Você terminou com ${fmt(d.vx,1)} m/s para a frente e ${fmt(Math.round(Math.abs(d.vy)*10)/10,1)} m/s de lado. A velocidade para a frente mudou durante a queima de lado?`,...alt('Quase nada, porque o impulso foi perpendicular ao movimento',['Sim, dobrou','Sim, foi a zero'],1)},
+  {p:`Sua nave de ${fmt(d.m)} kg ganhou ${fmt(Math.round(Math.abs(d.vy)*10)/10,1)} m/s de lado. Qual foi o impulso lateral (I = m · Δv)?`,...(v=>alt(fmt(d.m*v)+' N·s',[fmt(d.m*v*2)+' N·s',fmt(d.m/Math.max(.1,v))+' N·s'],2))(Math.max(.1,Math.round(Math.abs(d.vy)*10)/10))}]},
 {id:'estagios',setor:'voo',titulo:'Separação de estágios',conceito:'Conservação da quantidade de movimento',modo:'espaco',mont:'mola',orc:3,m1:600,m2:200,ctrl:['girar','sep'],
  briefing:['Pane no motor! Sua cápsula, de 200 kg, ainda está presa a um estágio vazio de 600 kg, parada no espaço.','A única saída é soltar o estágio com molas. A estação de resgate fica a 60 m e o resgate sai em 30 segundos.','Se a cápsula chegar a mais de 5 m/s, bate na estação. Escolha a mola certa e mire bem.'],
  aula:['Quando só agem forças internas, como as molas entre as partes, a quantidade de movimento total se conserva.','Antes estava tudo parado, Q total = 0. Depois, as duas partes saem em sentidos opostos com quantidades de movimento iguais.','A mola dá o mesmo impulso às duas partes. A parte mais leve sai mais rápida.'],
@@ -243,7 +246,7 @@ const MISSOES=[
  perg:d=>[
   {p:`Você escolheu ${d.mundo}, com g = ${fmt(d.g,2)} m/s². Qual era o peso do módulo de 500 kg lá?`,...alt(fmt(500*d.g)+' N',[fmt(500/d.g)+' N','500 N'],1)},
   {p:`Qual potência do motor de 4 000 N segura o módulo parado em ${d.mundo}?`,...alt(fmt(500*d.g/4000*100,0)+'%',[fmt(Math.min(99,500*d.g/4000*200),0)+'%','100%'],0)},
-  {p:'Por que o mesmo módulo não consegue pairar na Terra com esse motor?',...alt('Porque o peso na Terra (4 900 N) é maior que a força máxima do motor',['Porque na Terra não existe gravidade','Porque o motor funciona pior com ar'],2)}]},
+  {p:'Por que o mesmo módulo não consegue pairar na Terra com esse motor?',...alt('Porque o peso na Terra (cerca de 4 900 N) é maior que a força máxima do motor (4 000 N)',['Porque na Terra não existe gravidade','Porque o motor funciona pior com ar'],2)}]},
 {id:'orbita1',setor:'orbita',titulo:'Primeira órbita',conceito:'Gravitação e órbita circular',modo:'orbita',mont:'orb',ctrl:['girar','ign','sas'],
  briefing:['Hora de dar a volta num mundo! Você está sobre a pequena lua Pequi, de 100 m de raio, a 50 m de altitude.','Sua nave vai de lado a 2 m/s, devagar demais: se não fizer nada, ela cai. Ganhe velocidade para entrar em órbita e dê uma volta completa.','O tempo aqui passa 10 vezes mais rápido, para a volta não demorar.'],
  aula:['Em órbita, a nave está sempre caindo em direção ao planeta, mas anda tão rápido de lado que nunca chega ao chão.','A gravidade é a força que puxa a nave para o centro e faz ela fazer a curva.','A velocidade de órbita circular depende da massa do planeta e da distância ao centro.'],
@@ -255,8 +258,8 @@ const MISSOES=[
   {p:`Sua órbita variou entre ${fmt(d.rmin)} m e ${fmt(d.rmax)} m do centro. Se a nave estivesse mais longe do planeta, a velocidade de órbita seria:`,...alt('menor',['maior','a mesma'],1)}]},
 {id:'kepler',setor:'orbita',titulo:'Órbita alta',conceito:'Leis de Kepler',modo:'orbita',mont:'orb',ctrl:['girar','ign','sas'],
  briefing:['Você já está em órbita circular a 150 m do centro da Pequi. Um satélite espera numa órbita maior, de 300 m.','Dê uma queima para a frente e transforme sua órbita numa elipse que encosta na órbita do satélite.','Repare nas fatias coloridas que a nave desenha: elas mostram a 2ª lei de Kepler.'],
- aula:['1ª lei de Kepler: as órbitas são elipses, e o planeta fica num dos focos.','2ª lei: a linha do planeta até a nave varre áreas iguais em tempos iguais. Perto do planeta a nave anda mais rápido; longe, mais devagar.','3ª lei: quanto maior a órbita, maior o tempo de uma volta. O quadrado do período é proporcional ao cubo do raio.'],
- formula:'T² ∝ r³      perto: mais rápido; longe: mais devagar',
+ aula:['1ª lei de Kepler: as órbitas são elipses, e o planeta fica num dos focos.','2ª lei: a linha do planeta até a nave varre áreas iguais em tempos iguais. Perto do planeta a nave anda mais rápido; longe, mais devagar.','3ª lei: quanto maior a órbita, maior o tempo de uma volta. O quadrado do período é proporcional ao cubo do tamanho da órbita (o semieixo maior).'],
+ formula:'T² ∝ a³      perto: mais rápido; longe: mais devagar',
  dica:'Use o botão Prógrado e queime pouco, cerca de 0,5 m/s. Veja a linha tracejada: quando o ponto mais distante tocar o anel do satélite, desligue o motor.',
  perg:d=>[
   {p:`No seu voo, a nave passou a ${fmt(d.vp,2)} m/s no ponto mais próximo e a ${fmt(d.va,2)} m/s no ponto mais distante. Qual lei de Kepler explica essa diferença?`,...alt('2ª lei: áreas iguais em tempos iguais, mais rápida perto do planeta',['1ª lei: órbitas circulares','3ª lei: órbitas maiores são mais rápidas'],1)},
@@ -345,6 +348,96 @@ function desTraje(i){const c=['#e3e8ee','#f2c21b','#ff5a1f'][i];setSvg(150,`<rec
 function desBarometro(){setSvg(150,`<rect x="40" y="120" width="120" height="22" rx="4" fill="#9aa5b1"/><rect x="40" y="128" width="120" height="14" fill="#b8c0c8"/><rect x="92" y="10" width="16" height="125" rx="3" fill="#eef1f4" stroke="#5a6470"/><rect x="94" y="72" width="12" height="60" fill="#9aa5b1"/><line x1="120" y1="72" x2="120" y2="128" stroke="#ff5a1f" stroke-width="2"/><text x="126" y="104" font-size="11" ${fonte} fill="#c63d0b">0,37 m</text><text x="60" y="40" font-size="10" ${fonte} fill="#5a6470">vácuo</text>`)}
 function desPistao(i){const w=[30,48,68][i];setSvg(150,`<rect x="20" y="70" width="14" height="60" fill="#3f8fc4"/><rect x="${200-30-w}" y="70" width="${w}" height="60" fill="#3f8fc4"/><rect x="20" y="126" width="${170-w}" height="14" fill="#3f8fc4"/><rect x="18" y="60" width="18" height="10" fill="#5a6470"/><rect x="${200-32-w}" y="60" width="${w+4}" height="10" fill="#5a6470"/><rect x="${200-30-w}" y="30" width="${w}" height="30" rx="5" fill="#f2c21b"/><text x="${200-30-w/2}" y="50" text-anchor="middle" font-size="10" ${fonte} fill="#3a2d00">rover</text><path d="M27 20v34" stroke="#ff5a1f" stroke-width="3"/><path d="M21 48l6 10 6-10z" fill="#ff5a1f"/><text x="38" y="30" font-size="10" ${fonte} fill="#c63d0b">F₁</text>`)}
 
+/* ---------- Perguntas revisadas (curtas, com a fórmula) e legendas das fórmulas ---------- */
+const PERG2={
+ carga:d=>[
+  {p:`Sua carga somou m · x = ${fmt(d.soma)} kg·m, com massa total de ${fmt(d.mt)} kg. Onde ficou o centro de massa?`,f:'x_cm = Σ(m · x) ÷ m_total',...alt(fmt(d.soma/d.mt,2)+' m',[fmt(d.soma/1000,2)+' m',fmt(d.soma/600,2)+' m'],1)},
+  {p:'Se o contêiner C (300 kg) fosse 1 m mais para fora, quanto o centro de massa andaria?',f:'Δx_cm = m · Δx ÷ m_total',...alt(fmt(300/d.mt,2)+' m, para o lado dele',['nada','3 m, para o lado dele'],0)},
+  {p:'Com a carga torta, por que a nave girou ao ligar o motor?',f:'τ = F · d',...alt('A força do motor não passava pelo centro de massa e fez torque',['O motor estava fraco','A carga empurrou a nave para trás'],2)}],
+ guindaste:d=>[
+  {p:'Que torque faz o estágio (8 000 N) pendurado a 4 m do pino?',f:'τ = F · d',...alt('32.000 N·m',['3.200 N·m','12.000 N·m'],0)},
+  {p:`A que distância do pino fica o seu contrapeso de ${fmt(d.mb)} kg (${fmt(d.mb*G)} N) para equilibrar?`,f:'d₂ = τ₁ ÷ P₂',...alt(fmt(32000/(d.mb*G),1)+' m',[fmt(32000/(d.mb*G)*2,1)+' m',fmt(d.mb/800,1)+' m'],2)},
+  {p:'Com o braço equilibrado e o estágio no ar, quanto a torre sustenta (sem contar o braço)?',f:'N = P₁ + P₂',...alt(fmt((800+d.mb)*G)+' N',[fmt(Math.abs(800-d.mb)*G)+' N','zero, porque está em equilíbrio'],1)}],
+ decolagem:d=>[
+  {p:`Qual era o peso do seu foguete de ${fmt(d.m)} kg?`,f:'P = m · g  (g = 10 m/s²)',...alt(fmt(d.m*G)+' N',[fmt(d.m)+' N',fmt(d.m/G)+' N'],2)},
+  {p:`Com o motor ${d.mo} a 100% (${fmt(d.F)} N), qual foi a aceleração na subida?`,f:'a = (F − P) ÷ m',...alt(fmt((d.F-d.m*G)/d.m,2)+' m/s²',[fmt(d.F/d.m,2)+' m/s²',fmt((d.F+d.m*G)/d.m,2)+' m/s²'],0)},
+  {p:`Parado na plataforma com o motor a 50% (${fmt(d.F/2)} N), qual era a força normal?`,f:'N = P − F  (enquanto não sai do chão)',...alt(d.F/2>=d.m*G?'0 N: o foguete já subia':fmt(d.m*G-d.F/2)+' N',[fmt(d.m*G+d.F/2)+' N',fmt(d.m*G)+' N'],1)}],
+ pouso:d=>[
+  {p:'Qual era o peso do módulo de 1 000 kg na Lua?',f:'P = m · g  (g = 1,6 m/s²)',...alt('1.600 N',['10.000 N','1.000 N'],0)},
+  {p:`Em que potência o motor ${d.mo} (${fmt(d.F)} N) faz o módulo descer com velocidade constante?`,f:'F = P  →  potência = P ÷ F_máx',...alt(fmt(1600/d.F*100,0)+'%',['100%',fmt(Math.min(99,1600/d.F*200),0)+'%'],2)},
+  {p:'Com a força do motor igual ao peso, o que acontece com a velocidade?',f:'R = F − P = 0',...alt('Fica constante: a resultante é zero (1ª lei)',['Vai a zero na hora','Aumenta sem parar'],1)}],
+ reboque:d=>[
+  {p:'Com o motor a 3.000 N, qual a aceleração do rebocador (1 000 kg) com o satélite (500 kg)?',f:'a = F ÷ (m₁ + m₂)',...alt('2 m/s²',['3 m/s²','6 m/s²'],1)},
+  {p:`Seu cabo aguentava ${fmt(d.Tm)} N. Qual a maior força de motor sem arrebentar?`,f:'T = m₂ · a = F ÷ 3  →  F = 3 · T',...alt(fmt(Math.min(4000,d.Tm*3))+' N'+(d.Tm*3>4000?' (o motor inteiro)':''),[fmt(d.Tm)+' N',fmt(d.Tm*1.5)+' N'],0)},
+  {p:'Enquanto puxa o satélite para a frente, o que o cabo faz com o rebocador?',f:'3ª lei: ação e reação',...alt('Puxa para trás com a mesma força',['Empurra para a frente','Nada, só age no satélite'],2)}],
+ queima:d=>[
+  {p:`Sua nave de ${fmt(d.m)} kg recebeu um impulso resultante de ${fmt(d.I)} N·s. Quanto mudou a velocidade?`,f:'Δv = I ÷ m',...alt(fmt(d.I/d.m,1)+' m/s',[fmt(d.I/d.m*2,1)+' m/s',fmt(d.I/d.m/2,1)+' m/s'],1)},
+  {p:`Por quanto tempo o motor ${d.mo} (${fmt(d.F)} N) leva essa nave de 0 a 10 m/s?`,f:'Δt = m · Δv ÷ F',...alt(fmt(d.m*10/d.F,2)+' s',[fmt(d.m*20/d.F,2)+' s',fmt(d.m*5/d.F,2)+' s'],2)},
+  {p:'Com a seta laranja (F) apontando para a direita, o que fez a seta verde (v)?',f:'I = F · Δt muda v no sentido de F',...alt('Cresceu para a direita',['Ficou do mesmo tamanho','Virou para a esquerda'],0)}],
+ freio:d=>[
+  {p:`Sua nave de ${fmt(d.m)} kg vinha a 8 m/s. Qual era a quantidade de movimento?`,f:'Q = m · v',...alt(fmt(d.m*8)+' kg·m/s',[fmt(d.m/8,1)+' kg·m/s',fmt(d.m+8)+' kg·m/s'],0)},
+  {p:'Por que só girar a nave não a freou?',f:'sem força, não há impulso (1ª lei)',...alt('Sem força não há impulso, e a velocidade continua igual',['O motor estava fraco','A estação puxava a nave'],1)},
+  {p:`Quanto tempo o retrofoguete de ${fmt(d.F)} N leva para cancelar ${fmt(d.m*8)} kg·m/s?`,f:'Δt = Q ÷ F',...alt(fmt(d.m*8/d.F,2)+' s',[fmt(d.m*16/d.F,2)+' s',fmt(d.m*4/d.F,2)+' s'],2)}],
+ desvio:d=>{const vy=Math.max(.1,Math.round(Math.abs(d.vy)*10)/10);return[
+  {p:'Ao queimar de lado, o que aconteceu com a trajetória?',f:'o impulso muda v na direção da força',...alt('A nave passou a andar na diagonal',['A nave parou de andar para a frente','Ficou mais lenta e seguiu reta'],0)},
+  {p:`Você terminou com ${fmt(d.vx,1)} m/s para a frente e ${fmt(vy,1)} m/s de lado. A queima de lado mudou a velocidade para a frente?`,f:'força perpendicular não muda a componente da frente',...alt('Quase nada',['Sim, dobrou','Sim, foi a zero'],1)},
+  {p:`Sua nave de ${fmt(d.m)} kg ganhou ${fmt(vy,1)} m/s de lado. Qual foi o impulso lateral?`,f:'I = m · Δv',...alt(fmt(d.m*vy)+' N·s',[fmt(d.m*vy*2)+' N·s',fmt(d.m/vy)+' N·s'],2)}]},
+ estagios:d=>[
+  {p:`Com a mola de ${fmt(d.Im)} N·s, a que velocidade saiu a cápsula de 200 kg?`,f:'v = I ÷ m',...alt(fmt(d.Im/200,1)+' m/s',[fmt(d.Im/600,1)+' m/s',fmt(d.Im/800,1)+' m/s'],1)},
+  {p:'E o estágio de 600 kg, que foi para trás?',f:'v = I ÷ m',...alt(fmt(d.Im/600,1)+' m/s',[fmt(d.Im/200,1)+' m/s','0 m/s, porque é pesado'],0)},
+  {p:'Depois da separação, quanto deu a soma das quantidades de movimento?',f:'Q antes = Q depois',...alt('Zero, igual a antes',['O dobro do impulso da mola','Só a da cápsula'],2)}],
+ pairar:d=>[
+  {p:`Em ${d.mundo} (g = ${fmt(d.g,2)} m/s²), quanto pesava o módulo de 500 kg?`,f:'P = m · g',...alt(fmt(500*d.g)+' N',[fmt(500/d.g)+' N','500 N'],1)},
+  {p:`Que potência do motor de 4 000 N segura o módulo parado em ${d.mundo}?`,f:'F = P  →  potência = P ÷ 4 000',...alt(fmt(500*d.g/40,0)+'%',[fmt(Math.min(99,500*d.g/20),0)+'%','100%'],0)},
+  {p:'Por que o módulo não paira na Terra com esse motor?',f:'g = G · M ÷ R²',...alt('O peso lá (cerca de 4.900 N) passa dos 4.000 N do motor',['Na Terra não há gravidade','O motor funciona pior com ar'],2)}],
+ orbita1:d=>[
+  {p:'Qual a velocidade de órbita circular a r = 150 m da Pequi (G · M = 1 600)?',f:'v = √(G · M ÷ r)',...alt('3,3 m/s',['10,7 m/s','1,6 m/s'],2)},
+  {p:'Com o motor desligado, o que mantém a nave em órbita?',f:'a gravidade puxa para o centro',...alt('A gravidade, enquanto a nave anda de lado',['O motor, escondido','Nada: no espaço não há gravidade'],0)},
+  {p:`Sua órbita ficou entre ${fmt(d.rmin)} m e ${fmt(d.rmax)} m. Mais longe do planeta, a velocidade de órbita é:`,f:'v = √(G · M ÷ r)',...alt('menor',['maior','a mesma'],1)}],
+ kepler:d=>[
+  {p:`Sua nave passou a ${fmt(d.vp,2)} m/s perto da lua e a ${fmt(d.va,2)} m/s longe dela. Que lei explica isso?`,f:'áreas iguais em tempos iguais',...alt('2ª lei de Kepler',['1ª lei de Kepler','3ª lei de Kepler'],1)},
+  {p:'Uma órbita com o dobro do tamanho tem período quantas vezes maior?',f:'T² ∝ a³  →  T ∝ a√a',...alt('cerca de 2,8 vezes',['2 vezes','8 vezes'],2)},
+  {p:'Que formato ficou a sua órbita depois da queima?',f:'1ª lei de Kepler',...alt('Elipse, com a lua num dos focos',['Círculo perfeito','Linha reta'],0)}],
+ atoleiro:d=>[
+  {p:`Com 4 pneus ${d.pneu} de ${fmt(d.A,2)} m², qual foi a pressão do rover (2 400 N) na areia?`,f:'p = F ÷ A',...alt(fmt(2400/(4*d.A))+' Pa',[fmt(2400*4*d.A)+' Pa',fmt(600/(4*d.A))+' Pa'],1)},
+  {p:'Na Terra (g = 10 m/s²), com os mesmos pneus, a pressão seria:',f:'p = m · g ÷ A',...alt('2,5 vezes maior',['a mesma','menor'],0)},
+  {p:'Por que pneus mais largos evitam o atoleiro?',f:'p = F ÷ A',...alt('Espalham o peso numa área maior',['Deixam o rover mais leve','Aumentam a gravidade'],2)}],
+ lagoa:d=>[
+  {p:`Qual era a densidade da sua sonda (${fmt(d.m)} kg, ${fmt(d.V,2)} m³)?`,f:'d = m ÷ V',...alt(fmt(d.m/d.V)+' kg/m³',[fmt(d.m*d.V,2)+' kg/m³',fmt(d.V/d.m,4)+' kg/m³'],1)},
+  {p:`Toda dentro da água, que empuxo a sonda de ${fmt(d.V,2)} m³ recebe aqui (g = 4 m/s²)?`,f:'E = d_líquido · V · g',...alt(fmt(1000*d.V*4)+' N',[fmt(1000*d.V*10)+' N',fmt(1000*d.V)+' N'],0)},
+  {p:'Por que o óleo fica por cima da água?',f:'o menos denso flutua',...alt('É menos denso que a água',['É mais pesado','O vento empurra'],2)}],
+ mergulho:d=>[
+  {p:'Qual é a pressão a 14 m de profundidade no lago?',f:'p = p₀ + d · g · h = 20 000 + 1 200 · 4 · h',...alt('87.200 Pa',['67.200 Pa','188.000 Pa'],0)},
+  {p:`Até que profundidade o seu traje de ${fmt(d.pm)} Pa aguenta?`,f:'h = (p_limite − p₀) ÷ (d · g)',...alt(fmt((d.pm-P0)/4800,1)+' m',[fmt(d.pm/4800,1)+' m',fmt((d.pm-P0)/12000,1)+' m'],2)},
+  {p:'Com esse lago na Terra (g = 10 m/s²), a pressão do líquido a 14 m seria:',f:'p_líquido = d · g · h',...alt('2,5 vezes maior',['a mesma','menor'],1)}],
+ eclusa:d=>[
+  {p:'O barômetro marcou 0,37 m de mercúrio (13 600 kg/m³) com g = 4 m/s². Qual a pressão do ar?',f:'p = d · g · h',...alt('cerca de 20.000 Pa',['cerca de 100.000 Pa','cerca de 5.000 Pa'],1)},
+  {p:'Que força faz uma diferença de 80 000 Pa numa porta de 2 m²?',f:'F = Δp · A',...alt('160.000 N',['40.000 N','80.000 N'],0)},
+  {p:'Por que o astronauta não pode tirar o capacete lá fora?',f:'p_fora = 20.000 Pa',...alt('A pressão e o oxigênio do ar são baixos demais para respirar',['É só uma regra','A gravidade é baixa'],2)}],
+ macaco:d=>[
+  {p:`Com o pistão grande de ${fmt(d.A2,1)} m², que força você fazia na alavanca?`,f:'F₁ = F₂ · A₁ ÷ A₂',...alt(fmt(2400*.01/d.A2)+' N',[fmt(2400*d.A2/.01)+' N',fmt(2400*d.A2)+' N'],1)},
+  {p:'Quanto o rover subia a cada bombada de 1 m?',f:'d₂ = d₁ · A₁ ÷ A₂',...alt(fmt(.01/d.A2*100,0)+' cm',[fmt(d.A2*100,0)+' cm','1 m'],2)},
+  {p:'Comparada à pressão no pistão grande, a pressão no pistão pequeno é:',f:'Princípio de Pascal',...alt('igual',['maior','menor'],0)}]};
+const LEG={
+ carga:['x_cm: posição do centro de massa (m)','m: massa de cada parte (kg)','x: distância de cada parte até o meio (m)'],
+ guindaste:['τ (tau): torque, a "força de girar" (N·m)','F: força, aqui o peso (N)','d: distância da força até o pino (m)'],
+ decolagem:['P: peso, a puxada da gravidade (N)','m: massa (kg); g: gravidade (m/s²)','R: resultante, o que sobra da força (N)','a: aceleração, quanto a velocidade muda por segundo (m/s²)'],
+ pouso:['R: força resultante (N)','P: peso; m: massa; g: gravidade da Lua','v constante: nem acelera nem freia'],
+ reboque:['a: aceleração do conjunto (m/s²)','F: força do motor (N); m₁, m₂: massas (kg)','T: tração, a força do cabo (N)'],
+ queima:['I: impulso, o empurrão total (N·s)','F: força do motor (N); Δt: tempo ligado (s)','Δv: quanto a velocidade muda (m/s); m: massa (kg)'],
+ freio:['Q: quantidade de movimento, o "tamanho" do movimento (kg·m/s)','m: massa (kg); v: velocidade (m/s)','F · Δt: impulso do retrofoguete (N·s)'],
+ desvio:['Δv: mudança de velocidade, na direção da força (m/s)','F: força; Δt: tempo; m: massa'],
+ estagios:['v₂: velocidade da cápsula; I: impulso da mola (N·s)','m₁ · v₁ = m₂ · v₂: as duas partes saem com quantidades de movimento iguais e opostas'],
+ pairar:['g: gravidade na superfície (m/s²)','G: constante universal; M: massa do planeta (kg); R: raio (m)','F = m · g: força do motor igual ao peso'],
+ orbita1:['v_órbita: velocidade para uma órbita circular (m/s)','G · M: "força" gravitacional da lua (m³/s²)','r: distância até o centro da lua (m)'],
+ kepler:['T: período, o tempo de uma volta','a: semieixo maior, o "raio médio" da órbita','∝: proporcional'],
+ atoleiro:['p: pressão (Pa = N/m²)','F: força, aqui o peso (N)','A: área de apoio (m²)'],
+ lagoa:['d: densidade, massa por volume (kg/m³)','E: empuxo, a força do líquido para cima (N)','V: volume mergulhado (m³); g: gravidade'],
+ mergulho:['p: pressão no ponto (Pa)','p₀: pressão do ar na superfície (Pa)','d: densidade do líquido; g: gravidade; h: profundidade (m)'],
+ eclusa:['p_atm: pressão do ar (Pa); d: densidade do mercúrio','h: altura da coluna de mercúrio (m)','F = Δp · A: força causada pela diferença de pressão numa área'],
+ macaco:['F₁, F₂: forças nos pistões (N)','A₁, A₂: áreas dos pistões (m²)','d₁, d₂: quanto cada pistão anda (m)']};
+MISSOES.forEach(m=>{if(PERG2[m.id])m.perg=PERG2[m.id];if(LEG[m.id])m.leg=LEG[m.id]});
+
 /* ---------- Estado e balões ---------- */
 let prog={};try{prog=JSON.parse(localStorage.getItem('baseLanc3')||'{}')}catch(e){}
 const salvar=()=>{try{localStorage.setItem('baseLanc3',JSON.stringify(prog))}catch(e){}contar()};
@@ -375,7 +468,7 @@ let M=null,montar=null;const esc={};
 function missao(m){parar();M=m;
  montar=(f,html)=>{parar();tela.innerHTML=`<button class="voltar" id="vb">◀ Voltar ao setor</button><h2>${m.titulo}</h2><div class="fase">${FASES.map((x,i)=>`<span class="${i===f?'at':''}">${x}</span>`).join('')}</div>`+html;$('#vb').onclick=()=>setor(m.setor)};
  montar(0,'<div class="voo"><canvas id="cv"></canvas></div>');jogo=jogar(m,true);
- falar(m.briefing,()=>{montar(1,'<div class="voo"><canvas id="cv"></canvas></div>');jogo=jogar(m,true);falar(m.aula,montagem,'Ir para a montagem',`<div class="formula">${m.formula}</div>`)},'Entendi a missão');
+ falar(m.briefing,()=>{montar(1,'<div class="voo"><canvas id="cv"></canvas></div>');jogo=jogar(m,true);falar(m.aula,montagem,'Ir para a montagem',`<div class="formula">${m.formula}</div>${m.leg?`<ul class="leg">${m.leg.map(x=>`<li>${x}</li>`).join('')}</ul>`:''}`)},'Entendi a missão');
 }
 
 /* ---------- Montagem ---------- */
@@ -430,6 +523,7 @@ function montagem(){const m=M,E=esc[m.id]||(esc[m.id]={});
    info=m.id==='kepler'?'Você vai queimar para a frente e esticar a órbita até 300 m. Pouca queima basta!':'Você precisa sair de 2 m/s e chegar perto de 3,3 m/s, andando de lado.';desOrbita()}
   if(X){const r=X.ficha(E);html=r.html;custo=r.custo||0;info=r.info}
   if(orc){const okc=custo<=orc;html+=`<div class="orc${okc?'':' no'}">Orçamento: ${custo} de ${orc}${okc?'':' (estourou!)'}</div>`;if(!okc){ok=false;info='Estourou o orçamento da missão. Troque alguma peça por uma mais barata.'}}
+  if(m.mont==='nave'||m.mont==='naveT')html+='<p class="nota">Simplificação do jogo: a massa da nave fica constante, sem descontar o combustível queimado.</p>';
   $('#fic').innerHTML=html;$('#lanca').disabled=!ok;dizer(info,[['Pedir dica',()=>dizer(m.dica,[])]]);};
  tela.querySelectorAll('.op[data-k]').forEach(b=>b.onclick=()=>{E[b.dataset.k]=+b.dataset.i;at()});
  tela.querySelectorAll('[data-cg]').forEach(b=>b.onclick=()=>{E.sel=b.dataset.cg;at()});
@@ -479,7 +573,7 @@ function pilotar(){const C=M.ctrl;
 }
 
 function relatorio(est,d){const PS=M.perg(d);
- montar(4,PS.map((q,i)=>`<div class="q" id="q${i}"><b>${i+1}. ${q.p}</b>${q.a.map((a,j)=>`<label><input type="radio" name="r${i}" value="${j}">${a}</label>`).join('')}<div class="err" id="e${i}"></div></div>`).join('')+'<button class="pri" id="cf">Conferir respostas</button>');
+ montar(4,PS.map((q,i)=>`<div class="q" id="q${i}"><b>${i+1}. ${q.p}</b>${q.f?`<div class="qf">Use: ${q.f}</div>`:''}${q.a.map((a,j)=>`<label><input type="radio" name="r${i}" value="${j}">${a}</label>`).join('')}<div class="err" id="e${i}"></div></div>`).join('')+'<button class="pri" id="cf">Conferir respostas</button>');
  dizer('Relatório de missão! As perguntas usam os números da sua própria missão. Acertando tudo de primeira você ganha mais uma estrela.',[]);let tent=0;
  $('#cf').onclick=()=>{let tudo=true,vazio=false;PS.forEach((q,i)=>{const s=tela.querySelector(`input[name=r${i}]:checked`),b=$('#q'+i);b.className='q';$('#e'+i).textContent='';
   if(!s){vazio=true;tudo=false;$('#e'+i).textContent='Escolha uma resposta.';return}
@@ -517,7 +611,7 @@ function nave(x,y,a,K,cor,fogo,preso,fogoF){c.save();c.translate(x,y);c.rotate(a
  c.fillStyle='rgba(255,255,255,.8)';c.beginPath();c.arc(L*.01,-h*.15,h*.12,0,7);c.fill();
  if(L>50){c.fillStyle='#2b3440';c.font=`700 ${Math.round(h*.7)}px "Chakra Petch",sans-serif`;c.textAlign='center';c.fillText('EJ',-L*.25,h*.25)}
  c.restore()}
-function cargueiro(x,y,K,t){c.save();c.translate(x,y);const L=16*K,h=K*1.6;chama(-L*.5,h*.5,L*.5);
+function cargueiro(x,y,K,t){c.save();c.translate(x,y);const L=16*K,h=K*1.6;
  c.fillStyle=grad(-L*.42,0,-L*.52,0,[[0,'#8a939c'],[1,'#2b3440']]);c.fillRect(-L*.52,-h*.7,L*.1,h*1.4);
  c.strokeStyle='#9aa5b1';c.lineWidth=2;c.beginPath();c.moveTo(-L*.42,-h*.3);c.lineTo(L*.3,-h*.3);c.moveTo(-L*.42,h*.3);c.lineTo(L*.3,h*.3);c.stroke();
  ['#2f9e5b','#1f6feb','#ff5a1f'].forEach((cl,i)=>{const x0=-L*.38+i*L*.22;c.fillStyle=grad(0,-h*1.3,0,h*1.3,[[0,cl],[.5,'#ffffff'],[1,cl]]);rr(x0,-h*1.3,L*.19,h*2.6,3);c.fill();c.strokeStyle='rgba(0,0,0,.25)';c.strokeRect(x0+L*.03,-h*1.1,L*.13,h*2.2)});
@@ -537,7 +631,7 @@ function estagioD(x,y,a,K){c.save();c.translate(x,y);c.rotate(a);const L=9*K,h=L
 function asteroide(x,y,r,rot){c.save();c.translate(x,y);c.rotate(rot);const g=c.createRadialGradient(-r*.35,-r*.35,r*.1,0,0,r*1.1);g.addColorStop(0,'#b9a48d');g.addColorStop(1,'#4a3d33');c.fillStyle=g;
  c.beginPath();rocha.forEach((q,i)=>{const a=i/rocha.length*6.283;c.lineTo(Math.cos(a)*r*q,Math.sin(a)*r*q)});c.closePath();c.fill();
  [[.3,-.2,.22],[-.35,.25,.16],[.05,.45,.12],[-.2,-.45,.1]].forEach(([a,b,q])=>{c.fillStyle='rgba(40,30,24,.55)';c.beginPath();c.arc(a*r,b*r,q*r,0,7);c.fill();c.strokeStyle='rgba(230,210,190,.35)';c.lineWidth=1.5;c.beginPath();c.arc(a*r,b*r,q*r,3.6,5.4);c.stroke()});c.restore()}
-function painel(linhas,W,ext){const h=16+linhas.length*20+(ext||0);c.fillStyle='rgba(5,9,19,.78)';c.fillRect(8,8,Math.min(250,W*.62),h);linhas.forEach((l,i)=>T(l,16,30+i*20,i?'#cfd6de':'#fff','left',i?13:15));return 8+h}
+function painel(linhas,W,ext){const n=W<480,lh=n?16:20,h=16+linhas.length*lh+(ext||0);c.fillStyle='rgba(5,9,19,.78)';c.fillRect(8,8,Math.min(n?210:270,W*.66),h);linhas.forEach((l,i)=>T(l,16,(n?26:30)+i*lh,i?'#cfd6de':'#fff','left',n?(i?11:13):(i?13:15)));return 8+h}
 function barra(y,frac,rot){c.fillStyle='#2b3440';c.fillRect(16,y,140,10);c.fillStyle=frac>.3?'#f2c21b':'#ff5a1f';c.fillRect(16,y,140*Math.max(0,frac),10);T(rot,162,y+10,'#cfd6de','left',12)}
 
 /* ---------- Motor genérico ---------- */
@@ -567,7 +661,7 @@ function jogar(m,demo){
   const teclas=e=>{if(!vivo||S.fim)return;const d=e.type==='keydown',k=e.key;if(/INPUT/.test(document.activeElement.tagName)&&document.activeElement.type!=='range')return;
    const map={ArrowLeft:'e',ArrowRight:'d',' ':'i',ArrowUp:'tp',ArrowDown:'tm'};if(!(k in map))return;e.preventDefault();ctl[map[k]]=d?1:0;if(d&&k===' '&&!e.repeat&&MOD.acao&&(m.ctrl.includes('sep')||m.ctrl.includes('pos')))MOD.acao(S)};
   on(window,'keydown',teclas);on(window,'keyup',teclas);
-  dizer(MOD.inicio(S),[['Pedir dica',()=>dizer(m.dica,[])]]);
+  const pedir=()=>{dizer(m.dica,[['Pedir dica',pedir]]);S.dicaT=9};dizer(MOD.inicio(S),[['Pedir dica',pedir]]);
  }
  let ult=performance.now();
  const loop=now=>{if(!vivo)return;const dt=Math.min(.04,(now-ult)/1000);ult=now;
@@ -590,7 +684,7 @@ MODOS.espaco={
   if(m.mont==='nave'&&E.mo!==undefined){const mo=MOT_ESP[E.mo],ta=TAN_ESP[E.ta];mt=CAPS+mo.m+ta.m;F=mo.F;tq=ta.t}
   if(m.mont==='mola'){mt=m.m1+m.m2;F=0;tq=0}
   if(m.id==='carga'){mt=1600;F=4000;tq=8}
-  const N=S.N={x:0,y:0,vx:0,vy:0,ang:0,w:0,m:mt,F,tq,tq0:tq||1,I:0,acc:false,preso:m.mont==='mola'};
+  const N=S.N={x:0,y:0,vx:0,vy:0,ang:0,w:0,m:mt,F,tq,tq0:tq||1,I:0,Ix:0,Iy:0,acc:false,preso:m.mont==='mola'};
   if(m.id==='queima')S.obj.push({k:'comboio',x:-70,y:-12,vx:10,vy:0});
   if(m.id==='freio'){N.vx=8;S.obj.push({k:'estacao',x:150,y:0})}
   if(m.id==='desvio'){N.vx=6;S.obj.push({k:'ast',x:75,y:0,r:9,rot:0},{k:'portal',x:150,y:0,r:40},{k:'corredor',l:40})}
@@ -603,7 +697,7 @@ MODOS.espaco={
  passo(S,dt){const N=S.N,ctl=S.ctl,m=S.m;
   if(m.id!=='carga')N.ang+=(ctl.d-ctl.e)*1.8*dt;
   if(N.tq<=0)ctl.prog=0;N.acc=N.F>0&&N.tq>0&&(ctl.i||ctl.prog>0);
-  if(N.acc){const q=Math.min(dt,N.tq,ctl.prog>0?ctl.prog:dt),a=N.F/N.m;N.vx+=Math.cos(N.ang)*a*q;N.vy+=Math.sin(N.ang)*a*q;N.tq-=q;N.I+=N.F*q;if(ctl.prog>0)ctl.prog=Math.max(0,ctl.prog-q);
+  if(N.acc){const q=Math.min(dt,N.tq,ctl.prog>0?ctl.prog:dt),a=N.F/N.m;N.vx+=Math.cos(N.ang)*a*q;N.vy+=Math.sin(N.ang)*a*q;N.tq-=q;N.I+=N.F*q;N.Ix+=Math.cos(N.ang)*N.F*q;N.Iy+=Math.sin(N.ang)*N.F*q;if(ctl.prog>0)ctl.prog=Math.max(0,ctl.prog-q);
    if(m.id==='carga')N.w+=N.F*S.xcm/(N.m*6)*q;
    for(let i=0;i<2;i++)S.parts.push({x:N.x-Math.cos(N.ang)*4,y:N.y-Math.sin(N.ang)*4,vx:N.vx-Math.cos(N.ang+(Math.random()-.5)*.5)*12,vy:N.vy-Math.sin(N.ang+(Math.random()-.5)*.5)*12,v:.5,c:'#ffb02e'})}
   N.ang+=N.w*dt;N.x+=N.vx*dt;N.y+=N.vy*dt;
@@ -611,19 +705,19 @@ MODOS.espaco={
   const bI=$('#bI');if(bI)bI.classList.toggle('on',N.acc)},
  posFim(S,dt){const N=S.N;if(S.fim.ok){N.x+=N.vx*dt;N.y+=N.vy*dt}S.obj.forEach(o=>{if(o.vx!==undefined){o.x+=o.vx*dt;o.y+=o.vy*dt}})},
  bonusTxt(S){return S.m.id==='carga'?'Para a segunda estrela, deixe o centro de massa exatamente no meio.':S.m.mont==='mola'?'Para a segunda estrela, acerte o centro da porta da estação.':'Para a segunda estrela, termine com 30% de combustível ou mais.'},
- regras(S,dt){const N=S.N,m=S.m,v=Math.hypot(N.vx,N.vy),fim=(ok,msg,b)=>{S.boom=[N.x,N.y];S.acabar(ok,msg,b,{m:N.m,F:N.F,I:N.I,vx:N.vx,vy:N.vy,mo:S.E.mo!==undefined&&m.mont==='nave'?MOT_ESP[S.E.mo].n:'',Im:m.mont==='mola'?MOLAS[S.E.ml??0].I:0,soma:S.xcm*1600,mt:1600})};
+ regras(S,dt){const N=S.N,m=S.m,v=Math.hypot(N.vx,N.vy),In=m.mont==='mola'?N.I:Math.hypot(N.Ix,N.Iy),fim=(ok,msg,b)=>{S.boom=[N.x,N.y];S.acabar(ok,msg,b,{m:N.m,F:N.F,I:In,vx:N.vx,vy:N.vy,mo:S.E.mo!==undefined&&m.mont==='nave'?MOT_ESP[S.E.mo].n:'',Im:m.mont==='mola'?MOLAS[S.E.ml??0].I:0,soma:S.xcm*1600,mt:1600})};
   const comb=N.tq/N.tq0>=.3;
   if(m.id==='carga'){if(N.x>=110&&N.x<=112&&Math.abs(N.y)<7)return fim(true,`Passou pelo portal! Com o centro de massa a ${fmt(S.xcm,2)} m do meio, o torque foi ${fmt(4000*Math.abs(S.xcm))} N·m.`,Math.abs(S.xcm)<1e-9),'';
    if(Math.abs(N.y)>30||N.x>125||(N.x<-20))return fim(false,`A nave girou e saiu do corredor! O centro de massa estava ${fmt(Math.abs(S.xcm),2)} m fora do meio, e o motor criou um torque de ${fmt(4000*Math.abs(S.xcm))} N·m. Volte à montagem e equilibre a carga.`),'';
    return Math.abs(N.w)>.02?`A nave está girando! Torque = F · d = 4 000 × ${fmt(Math.abs(S.xcm),2)} = ${fmt(4000*Math.abs(S.xcm))} N·m.`:`Velocidade ${fmt(v,1)} m/s. Siga reto até o portal.`}
   if(m.id==='queima'){const cb=S.obj[0],dx=cb.x-N.x,dv=N.vx-cb.vx;
-   if(Math.abs(dx)<14&&Math.abs(dv)<1&&Math.abs(N.vy)<1.5){S.ok+=dt;if(S.ok>=2)return fim(true,`Emparelhou com o comboio! Seu impulso total foi ${fmt(N.I)} N·s e a nave ganhou ${fmt(N.m*N.vx)} kg·m/s de quantidade de movimento. É o mesmo número!`,comb),''}else S.ok=0;
+   if(Math.abs(dx)<14&&Math.abs(dv)<1&&Math.abs(N.vy)<1.5){S.ok+=dt;if(S.ok>=2)return fim(true,`Emparelhou com o comboio! O impulso resultante foi ${fmt(In)} N·s e a nave ganhou ${fmt(N.m*v)} kg·m/s de quantidade de movimento: o impulso é a variação da quantidade de movimento.`,comb),''}else S.ok=0;
    if(dx<-120||dx>160||S.t>70)return fim(false,dx<-120?'Você passou muito à frente do comboio. Velocidade maior que 10 m/s: impulso demais.':'O comboio se afastou. Faltou impulso, ou a nave apontou para o lado errado.'),'';
    return Math.abs(dx)>40?(dv<0?`O comboio vem a 10 m/s. Você está a ${fmt(N.vx,1)} m/s.`:`Você está ${fmt(dv,1)} m/s mais rápido que o comboio. Gire e freie um pouco.`):Math.abs(dv)>=1?(dv<0?`Quase! Faltam ${fmt(-dv,1)} m/s para igualar o comboio.`:`Passou ${fmt(dv,1)} m/s. Gire 180° e dê um toque no motor.`):'Isso! Mantenha a velocidade igual à do comboio.'}
   if(m.id==='freio'||m.id==='estagios'){const st=S.obj.find(o=>o.k==='estacao'),dy=st.y-N.y,dist=Math.hypot(st.x-8.5-N.x,dy);
-   if(m.id==='freio'){if(N.x+4.5>=st.x-8&&Math.abs(dy)<10)return v<1?fim(true,`Acoplamento perfeito a ${fmt(v,1)} m/s! O impulso do retrofoguete cancelou a quantidade de movimento de ${fmt(N.m*8)} kg·m/s.`,comb):fim(false,`Batida! Você encostou a ${fmt(v,1)} m/s. Faltou impulso no sentido contrário ao movimento.`),'';
+   if(m.id==='freio'){if(N.x+4.5>=st.x-8&&Math.abs(dy)<10)return v<1?fim(true,`Acoplamento perfeito a ${fmt(v,1)} m/s! O impulso resultante, de ${fmt(In)} N·s, cancelou quase toda a quantidade de movimento inicial, de ${fmt(N.m*8)} kg·m/s.`,comb):fim(false,`Batida! Você encostou a ${fmt(v,1)} m/s. Faltou impulso no sentido contrário ao movimento.`),'';
     if(N.x<-80||Math.abs(dy)>40)return fim(false,'A nave se afastou da estação. O impulso foi grande demais ou na direção errada.'),'';
-    return v<1?'Devagar e sempre! Agora é só deixar a nave chegar.':Math.cos(N.ang)>-.9?'Primeiro gire a nave de costas para a estação. O motor tem que empurrar contra o movimento.':`Agora queime! Velocidade ${fmt(v,1)} m/s, Q = ${fmt(N.m*v)} kg·m/s.`}
+    return v<.05?'A nave parou longe da porta. Gire para a estação e dê um toque bem curto no motor.':v<1?'Devagar e sempre! Agora é só deixar a nave chegar.':Math.cos(N.ang)>-.9?'Primeiro gire a nave de costas para a estação. O motor tem que empurrar contra o movimento.':`Agora queime! Velocidade ${fmt(v,1)} m/s, Q = ${fmt(N.m*v)} kg·m/s.`}
    if(N.preso)return 'Mire o bico da cápsula na estação e solte o estágio.';const ts=S.t-S.tSep;
    if(dist<5)return fim(v<=5,v<=5?`Resgate concluído! A cápsula chegou a ${fmt(v,1)} m/s e o estágio foi para trás a ${fmt(MOLAS[S.E.ml??0].I/m.m1,1)} m/s. Q total continuou zero.`:`Batida! A cápsula chegou a ${fmt(v,1)} m/s. A mola deu impulso demais para uma massa tão pequena.`,Math.abs(dy)<2),'';
    if(ts>30)return fim(false,'O resgate partiu! A cápsula foi devagar demais: a mola deu pouco impulso.'),'';
@@ -656,7 +750,10 @@ MODOS.espaco={
    if(m.id==='carga'){const cx=nx-Math.sin(N.ang)*S.xcm*K*1.1,cy=ny+Math.cos(N.ang)*S.xcm*K*1.1;c.fillStyle='#fff';c.beginPath();c.arc(cx,cy,6,0,7);c.fill();c.strokeStyle='#14181d';c.lineWidth=2;c.beginPath();c.moveTo(cx-6,cy);c.lineTo(cx+6,cy);c.moveTo(cx,cy-6);c.lineTo(cx,cy+6);c.stroke();T('CM',cx+8,cy+4,'#fff','left',12)}
    if(!S.demo){seta(nx,ny,N.vx*K*1.2,N.vy*K*1.2,'#7fd38a','v');if(N.acc)seta(nx,ny,Math.cos(N.ang)*K*9,Math.sin(N.ang)*K*9,'#ff5a1f','F')}}
   if(alvo){const[ax,ay]=sc(alvo.x,alvo.y);if(ax<0||ax>W||ay<0||ay>H){const a=Math.atan2(ay-H/2,ax-W/2),r=Math.min(W,H)/2-26,px=W/2+Math.cos(a)*r,py=H/2+Math.sin(a)*r;c.save();c.translate(px,py);c.rotate(a);c.fillStyle='#ff5a1f';c.beginPath();c.moveTo(14,0);c.lineTo(-8,-9);c.lineTo(-8,9);c.fill();c.restore();T(fmt(Math.hypot(alvo.x-N.x,alvo.y-N.y))+' m',px,py+24,'#ff8a5c','center',13)}}
-  if(!S.demo){const v=Math.hypot(N.vx,N.vy);const L=['v = '+fmt(v,1)+' m/s','Q = m·v = '+fmt(N.m*v)+' kg·m/s','I total = '+fmt(N.I)+' N·s','massa = '+fmt(N.m)+' kg'];if(m.id==='carga')L.push('torque = '+fmt(4000*Math.abs(S.xcm))+' N·m');
+  if(!S.demo){const v=Math.hypot(N.vx,N.vy);const L=['v = '+fmt(v,1)+' m/s','Q = m·v = '+fmt(N.m*v)+' kg·m/s','impulso resultante = '+fmt(m.mont==='mola'?N.I:Math.hypot(N.Ix,N.Iy))+' N·s','massa = '+fmt(N.m)+' kg'];if(m.id==='carga')L.push('torque = '+fmt(4000*Math.abs(S.xcm))+' N·m');
+   if(m.id==='queima'){const cb=S.obj[0];L.push('comboio: '+fmt(cb.x-N.x)+' m, Δv = '+fmt(N.vx-cb.vx,1)+' m/s')}
+   if(m.id==='freio'||m.id==='estagios'){const st=S.obj.find(o=>o.k==='estacao');L.push('distância à porta = '+fmt(Math.max(0,st.x-8-N.x-(m.id==='freio'?4.5:0)))+' m')}
+   if(m.id==='desvio')L.push('pedra a '+fmt(Math.max(0,75-N.x))+' m · lateral '+fmt(Math.abs(N.y),1)+' m');
    const y=painel(L,W,N.F?16:0);if(N.F)barra(y-18,N.tq/N.tq0,fmt(N.tq,1)+' s');
    if(S.ctl.prog>0)T('queima programada: '+fmt(S.ctl.prog,1)+' s',W-12,28,'#ffb02e','right',14);T('t = '+fmt(S.t,1)+' s',W-12,H-14,'#9aa5b1','right',13)}}
 };
@@ -711,7 +808,7 @@ const esc=H/70,Y=h=>H*.8-(h-Math.max(0,V.h-22))*esc;
    const y=painel(L,W,16);barra(y-18,V.tq/V.tq0,fmt(V.tq,1)+' s');T('g = '+fmt(V.g,2)+' m/s²',W-12,H-14,'#fff','right',13)}}
 };
 function modulo(x,y,s,fogo,f){c.save();c.translate(x,y);
- if(fogo){c.save();c.rotate(Math.PI/2);c.globalAlpha=.4+.6*f;chama(-s*.1,s*.9*(.4+.6*f),s*6*(.3+.7*f));c.restore()}
+ if(fogo){c.save();c.rotate(-Math.PI/2);c.globalAlpha=.4+.6*f;chama(-s*.1,s*.9*(.4+.6*f),s*6*(.3+.7*f));c.restore()}
  c.strokeStyle='#8f99a4';c.lineWidth=3;c.beginPath();c.moveTo(-s*2,-s*1.2);c.lineTo(-s*3,0);c.moveTo(s*2,-s*1.2);c.lineTo(s*3,0);c.stroke();c.fillStyle='#8f99a4';c.fillRect(-s*3.4,-s*.2,s*.9,s*.3);c.fillRect(s*2.5,-s*.2,s*.9,s*.3);
  c.fillStyle='#3b444f';c.beginPath();c.moveTo(-s*.9,-s*.9);c.lineTo(s*.9,-s*.9);c.lineTo(s*1.3,0);c.lineTo(-s*1.3,0);c.fill();
  c.fillStyle=grad(-s*2.4,0,s*2.4,0,[[0,'#8f99a4'],[.45,'#ffffff'],[1,'#8f99a4']]);rr(-s*2.4,-s*3.2,s*4.8,s*2.4,s*.5);c.fill();
@@ -727,7 +824,7 @@ MODOS.reboque={
   if(!R.solto){const a=F/1500;R.T=500*a;if(R.T>R.Tm){R.solto=true;R.T=0;for(let i=0;i<20;i++)S.parts.push({x:R.x-6,y:0,vx:(Math.random()-.5)*8,vy:(Math.random()-.5)*8,v:.8,c:'#ff5a1f'})}
    else{R.v+=a*dt;R.vs=R.v}}
   else{R.v+=F/1000*dt}
-  R.x+=R.v*dt;R.xs+=R.vs*dt;if(F>0)S.parts.push({x:R.x-4.5,y:(Math.random()-.5)*.8,vx:R.v-10-Math.random()*5,vy:(Math.random()-.5)*2,v:.5,c:'#ffb02e'})},
+  R.x+=R.v*dt;R.xs+=R.vs*dt;if(F>0){const q=Math.random()<.5?-1:1;S.parts.push({x:R.x-3.8,y:q*1.2,vx:R.v-8-Math.random()*4,vy:q*(4+Math.random()*2),v:.5,c:'#ffb02e'})}},
  bonusTxt(){return 'Para a segunda estrela, chegue aos 6 m/s em até 4 segundos sem arrebentar o cabo.'},
  regras(S){const R=S.R,fim=(ok,msg,b)=>{S.boom=null;S.acabar(ok,msg,b,{Tm:R.Tm})};
   if(R.solto)return fim(false,`O cabo arrebentou! A tração passou de ${fmt(R.Tm)} N. Com T = F ÷ 3, o motor não podia passar de ${fmt(Math.min(4000,R.Tm*3))} N.`),'';
@@ -741,7 +838,7 @@ MODOS.reboque={
   c.save();c.translate(sx(R.xs),y);c.fillStyle='#1f4fa8';c.fillRect(-K*7,-K*2.5,K*4.5,K*5);c.fillRect(K*2.5,-K*2.5,K*4.5,K*5);c.strokeStyle='#5d8fe0';c.lineWidth=1;for(let i=1;i<3;i++){c.beginPath();c.moveTo(-K*7+i*K*1.5,-K*2.5);c.lineTo(-K*7+i*K*1.5,K*2.5);c.moveTo(K*2.5+i*K*1.5,-K*2.5);c.lineTo(K*2.5+i*K*1.5,K*2.5);c.stroke()}
   c.fillStyle=grad(0,-K*2,0,K*2,[[0,'#ffe27a'],[1,'#c99700']]);rr(-K*2.5,-K*2,K*5,K*4,K*.6);c.fill();c.fillStyle='#cfd6de';c.beginPath();c.ellipse(0,-K*2.6,K*1.2,K*.5,0,0,7);c.fill();c.restore();
   T('satélite 500 kg',sx(R.xs),y+K*4.2,'#cfd6de','center',13);
-  nave(sx(R.x),y,0,K*.9,'#ff5a1f',R.Fat>0,false,R.Fat/R.F);T('rebocador 1 000 kg',sx(R.x),y+K*4.2,'#cfd6de','center',13);
+  nave(sx(R.x),y,0,K*.9,'#ff5a1f',false,false);if(R.Fat>0){const L=9*K*.9;[-1,1].forEach(q=>{c.save();c.translate(sx(R.x)-L*.4,y+q*L*.15);c.rotate(-q*.5);c.globalAlpha=.4+.6*R.Fat/R.F;chama(0,L*.05,L*.55*(.3+.7*R.Fat/R.F));c.restore()})}T('rebocador 1 000 kg',sx(R.x),y+K*4.2,'#cfd6de','center',13);
   if(!R.solto&&R.T>0){const k=Math.min(K*4,60)/R.Tm;seta(sx(R.xs)+K*2.5,y-K*3,R.T*k,0,'#ff8a5c','T');seta(sx(R.x)-K*4.8,y-K*3,-R.T*k,0,'#ff8a5c','T')}
   if(!S.demo){painel([`satélite v = ${fmt(R.vs,1)} m/s`,`motor F = ${fmt(R.Fat||0)} N`,`tração T = ${fmt(R.T)} N`,`limite do cabo = ${fmt(R.Tm)} N`,`a = F ÷ 1 500 = ${fmt((R.Fat||0)/1500,2)} m/s²`],W);
    const fr=Math.min(1,R.T/R.Tm);c.fillStyle='#2b3440';c.fillRect(W-30,20,14,H-60);c.fillStyle=fr>.85?'#ff5a1f':'#7fd38a';c.fillRect(W-30,20+(H-60)*(1-fr),14,(H-60)*fr);T('T',W-23,H-24,'#cfd6de','center',12);T('t = '+fmt(S.t,1)+' s',W-40,H-14,'#9aa5b1','right',13)}}
@@ -772,13 +869,15 @@ MODOS.guindaste={
   c.restore();
   const hx=px+Math.cos(g.ang)*(-K*4)-Math.sin(g.ang)*K*.35,hy0=py+Math.sin(g.ang)*(-K*4)+Math.cos(g.ang)*K*.35;const ey=gy-K*2.2-g.hy*K*.75;c.strokeStyle='#cfd6de';c.lineWidth=2;c.beginPath();c.moveTo(hx,hy0);c.lineTo(hx,ey);c.stroke();c.save();c.translate(hx,ey);c.fillStyle=grad(-K*1.1,0,K*1.1,0,[[0,'#7d8792'],[.45,'#fff'],[1,'#4b545e']]);rr(-K*1.1,0,K*2.2,K*2.2,K*.3);c.fill();c.fillStyle='#ff5a1f';c.fillRect(-K*1.1,K*.8,K*2.2,K*.3);c.restore();T('estágio 800 kg',hx,ey+K*3,'#cfd6de','center',12);
   c.fillStyle='#14181d';c.beginPath();c.arc(px,py,K*.45,0,7);c.fill();c.fillStyle='#f2c21b';c.beginPath();c.arc(px,py,K*.2,0,7);c.fill();
+  if(!S.demo&&g.est!=='tombando'){const kp=K*2.4/Math.max(8000,g.mb*G),bs2=K*(.8+g.mb/2000),cwx=px+Math.cos(g.ang)*g.x*K+Math.sin(g.ang)*(K*.35+bs2/2),cwy=py+Math.sin(g.ang)*g.x*K-Math.cos(g.ang)*(K*.35+bs2/2);
+   seta(hx-K*1.6,ey+K*1.1,0,8000*kp,'#ff6b6b','P₁ 8.000 N');seta(cwx+bs2/2+6,cwy,0,g.mb*G*kp,'#ff6b6b','P₂ '+fmt(g.mb*G)+' N')}
   if(!S.demo){const tl=g.mb*G*g.x;painel(W<520?[`estágio: 32.000 N·m`,`contrapeso: ${fmt(tl)} N·m`]:[`estágio: 8 000 N × 4 m = 32.000 N·m`,`contrapeso: ${fmt(g.mb*G)} N × ${fmt(g.x,1)} m = ${fmt(tl)} N·m`,`diferença = ${fmt(tl-32000)} N·m`,`força na torre = ${fmt((800+g.mb)*G)} N`],W);
    const bal=Math.max(-1,Math.min(1,(tl-32000)/32000));c.fillStyle='rgba(5,9,19,.7)';c.fillRect(W/2-90,H-34,180,22);c.fillStyle='#7fd38a';c.fillRect(W/2-2,H-34,4,22);c.fillStyle=Math.abs(bal)<.05?'#7fd38a':'#ff5a1f';c.beginPath();c.arc(W/2+bal*84,H-23,8,0,7);c.fill();T('estágio',W/2-96,H-18,'#cfd6de','right',12);T('contrapeso',W/2+96,H-18,'#cfd6de','left',12)}}
 };
 
 /* ÓRBITA */
 MODOS.orbita={
- init(S){const m=S.m;const v=m.id==='kepler'?Math.sqrt(GM/150):2.0;S.O={x:0,y:-150,vx:v,vy:0,ang:0,a:.06,dv:m.id==='kepler'?2:3,dv0:m.id==='kepler'?2:3,acc:false,th:0,thPrev:Math.atan2(-150,0),rmin:150,rmax:150,vp:v,va:v,rel:[],fat:[],tf:0,rdotPrev:0,queimou:false};S.warp=10},
+ init(S){const m=S.m;const v=m.id==='kepler'?Math.sqrt(GM/150):2.0;S.O={x:0,y:-150,vx:v,vy:0,ang:0,a:m.id==='kepler'?.06:.12,dv:m.id==='kepler'?2:3,dv0:m.id==='kepler'?2:3,acc:false,th:0,thPrev:Math.atan2(-150,0),rmin:150,rmax:150,vp:v,va:v,rel:[],fat:[],tf:0,rdotPrev:0,queimou:false};S.warp=10},
  inicio(S){return S.m.id==='kepler'?'Aperte Apontar prógrado, segure a ignição um pouquinho e veja a linha tracejada esticar até o anel amarelo.':'Aperte Apontar prógrado e segure a ignição até a linha tracejada dar a volta inteira sem tocar a lua.'},
  passo(S,dtr){const O=S.O,ctl=S.ctl,dt=dtr*S.warp,n=20,h=dt/n;
   O.ang+=(ctl.d-ctl.e)*1.8*dtr;if(ctl.sas){const pa=Math.atan2(O.vy,O.vx)+(ctl.sas<0?Math.PI:0);O.ang=pa}
@@ -932,7 +1031,7 @@ MODOS.eclusa={
   else{if(ctl.pz)E.pc=Math.min(100000,E.pc+9000*dt);E.ps=Math.max(E.ps,E.pc);const bP=$('#bP');if(bP)bP.classList.toggle('on',!!ctl.pz)}
   E.minps=Math.min(E.minps,E.ps)},
  bonusTxt(){return 'Para a segunda estrela, chegue à eclusa antes de o traje cair abaixo de 45.000 Pa.'},
- regras(S){const E=S.Ec;if(E.est==='fora'&&E.ps<35000)return S.boom=null,S.acabar(false,'A pressão do traje caiu demais e o astronauta desmaiou. Lá fora o ar tem só 20.000 Pa: o corpo humano precisa de pressão maior para respirar.'),'';
+ regras(S){const E=S.Ec;if(E.est==='fora'&&E.ps<35000)return S.boom=null,S.acabar(false,'A pressão do traje caiu abaixo do mínimo de segurança (35.000 Pa) e o astronauta desmaiou. O ar do planeta, a 20.000 Pa, é rarefeito demais para respirar.'),'';
   if(E.est==='fora')return `Pressão do traje: ${fmt(E.ps)} Pa e caindo! Eclusa a ${fmt(Math.max(0,50-E.x))} m.`;
   const dp=100000-E.pc;return dp>5000?`Dentro da eclusa. Câmara: ${fmt(E.pc)} Pa. Se abrir agora, a porta leva ${fmt(dp*2)} N. Segure Pressurizar!`:`Pressões quase iguais (${fmt(E.pc)} Pa). Pode abrir a porta interna!`},
  desenha(S,W,H){const E=S.Ec,K=Math.min(W/20,H/8),cam=Math.min(E.x+4,48),gy=H*.8,sx=x=>W/2+(x-cam)*K;
@@ -965,7 +1064,7 @@ MODOS.pascal={
   roverD(bx,ty-K*.15,K*.45,0,2,P.n*.4);
   const fase=S.ctl.i&&P.F1<=100?Math.sin(P.ciclo/.4*Math.PI):0,ly=gy-K*.6+fase*K*.4;c.strokeStyle='#cfd6de';c.lineWidth=5;c.beginPath();c.moveTo(sx0-K*1.4,gy-K*1.2);c.lineTo(sx0+K*.2,ly);c.stroke();c.fillStyle='#5a6470';c.fillRect(sx0-K*.2,ly,K*.4,gy+K*.4-ly);
   astronauta(sx0-K*1.9,gy,K*.55,1,S.t,false);
-  if(!S.demo){seta(sx0+K*.6,gy-K*1.8,0,K*.9,'#ffb02e','F₁');seta(bx+bw/2+K*.4,ty+K*.6,0,-K*.9,'#5fb0ff','F₂');
+  if(!S.demo){const kf=K*1.6/2400;seta(sx0+K*.6,gy-K*1.6,0,Math.max(8,P.F1*kf),'#ffb02e','F₁ = '+fmt(P.F1)+' N');seta(bx+bw/2+K*.4,ty+K*1.4,0,-2400*kf,'#5fb0ff','F₂ = 2.400 N');
    const yb=painel([`F₁ = 2 400 × 0,01 ÷ ${fmt(P.A2,1)} = ${fmt(P.F1)} N`,`pressão = F₁ ÷ A₁ = ${fmt(P.F1/.01)} Pa`,`bombadas: ${P.n}`,`rover subiu: ${fmt(P.sobe*100)} de 50 cm`],W,16);barra(yb-18,P.o2/40,'O₂ '+fmt(Math.max(0,P.o2),0)+' s')}}
 };
 
