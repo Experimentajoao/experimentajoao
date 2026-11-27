@@ -7,6 +7,15 @@
 var MATERIAIS = [
   // ---------- JOGO ----------
   {
+    titulo: "Estação Quântica · jogo de Física Moderna do 3º ano",
+    materia: "fisica",
+    tipo: "Jogo",
+    icone: "⚛️",
+    novo: true,
+    descricao: "5 missões numa estação espacial do futuro: paradoxo dos gêmeos e contração do comprimento, efeito fotoelétrico, fendas de Young, dualidade onda-partícula com elétrons e modelo de Bohr nos fogos de artifício. Cada missão tem aula, laboratório interativo e relatório com os números do próprio experimento.",
+    link: "https://experimentajoao.github.io/experimentajoao/estacao-quantica/"
+  },
+  {
     titulo: "Base de Lançamento · jogo de Física do 1º ano",
     materia: "fisica",
     tipo: "Jogo",

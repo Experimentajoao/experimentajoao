@@ -1,0 +1,501 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Estação Quântica · Experimenta João</title>
+<meta name="description" content="Jogo de Física Moderna do 3º ano do Prof. ExperimentaJoão: paradoxo dos gêmeos, efeito fotoelétrico, experimento de Young, dualidade onda-partícula e modelo de Bohr.">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@500;600;700&family=Nunito+Sans:wght@400;700&display=swap" rel="stylesheet">
+<style>
+/* VOICE: jogo de laboratório futurista para o 3º ano, claro e animado
+   IDEA: estação de pesquisa em órbita; cada setor é um laboratório de Física Moderna e cada missão é uma aula
+   PICTURE: telas de laboratório grandes e vivas (nave, fótons, fendas, átomo); Prof. ExperimentaJoão nos balões
+   COLOUR: casco escuro azul-petróleo, ciano de fóton como destaque, amarelo do jaleco como ação
+   TYPE: Chakra Petch em títulos e números, Nunito Sans no texto; LAYOUT: coluna única até 1000px */
+:root{color-scheme:dark;--bg:#060d16;--card:#0c1826;--card2:#10223a;--ink:#e8f3ff;--mut:#8fa8c4;--line:#1d3550;--cy:#3fe0ff;--cy2:#9ff0ff;--ama:#f2c21b;--ok:#4fd18b;--okbg:#0f2c20;--bad:#ff8a80;--badbg:#341518}
+*{box-sizing:border-box;min-width:0}
+body{margin:0;background:radial-gradient(1200px 600px at 80% -10%,#10324a 0,transparent 60%),radial-gradient(900px 500px at -10% 110%,#1a1840 0,transparent 55%),var(--bg);background-attachment:fixed;color:var(--ink);font:16px/1.55 "Nunito Sans",system-ui,sans-serif;overflow-x:clip;min-height:100vh}
+h1,h2,h3{font-family:"Chakra Petch",system-ui,sans-serif;line-height:1.1;margin:0}
+h1{font-size:clamp(22px,4vw,30px)}h2{font-size:clamp(21px,3.6vw,28px)}h3{font-size:18px}
+header{display:flex;align-items:center;gap:12px;padding:12px max(4vw,14px);background:rgba(8,18,30,.85);border-bottom:2px solid var(--cy);backdrop-filter:blur(6px);position:sticky;top:0;z-index:5}
+.volta-site{margin-left:auto;font:700 14px "Nunito Sans",sans-serif;color:var(--cy2);text-decoration:none;border:2px solid var(--cy);border-radius:99px;padding:5px 12px;white-space:nowrap}@media(max-width:520px){.volta-site{display:none}}
+header .medal{font:700 15px "Chakra Petch";background:var(--ama);color:#3a2d00;padding:6px 12px;border-radius:99px;white-space:nowrap}
+main{max-width:1000px;margin:0 auto;padding:16px max(3vw,12px) 48px}
+#comms{display:flex;gap:10px;align-items:flex-end;margin-bottom:14px}
+#prof{width:clamp(88px,16vw,140px);flex:none;filter:drop-shadow(0 0 18px rgba(63,224,255,.25))}
+.balao{position:relative;flex:1;background:var(--card);border:2px solid var(--cy);border-radius:18px;padding:12px 16px;margin-bottom:26px;min-height:90px;box-shadow:0 0 0 4px rgba(63,224,255,.06),0 10px 30px rgba(0,0,0,.35)}
+.balao::before{content:"";position:absolute;left:-14px;bottom:22px;border:12px solid transparent;border-right-color:var(--cy);border-left:0}
+.balao::after{content:"";position:absolute;left:-10px;bottom:24px;border:10px solid transparent;border-right-color:var(--card);border-left:0}
+.balao .quem{font:700 14px "Chakra Petch";color:var(--ama)}
+.balao p{margin:4px 0 10px;font-size:17px}
+.formula{font:700 clamp(17px,3vw,21px) "Chakra Petch";background:#0a2a3a;color:var(--cy2);border:1px solid var(--cy);border-radius:10px;padding:6px 12px;display:inline-block;margin:0 0 10px}
+.bts{display:flex;gap:8px;flex-wrap:wrap}
+button{font:700 16px "Nunito Sans",sans-serif;min-height:44px;padding:8px 16px;border-radius:12px;border:2px solid var(--line);background:var(--card2);color:var(--ink);cursor:pointer;touch-action:manipulation}
+button:hover:not(:disabled){border-color:var(--cy)}
+button.pri{background:var(--ama);border-color:var(--ama);color:#2a2000}
+button.cy{background:var(--cy);border-color:var(--cy);color:#012}
+button:focus-visible,input:focus-visible{outline:3px solid var(--ama);outline-offset:2px}
+button:disabled{opacity:.4;cursor:default}
+button.on{background:#0f3a4a;border-color:var(--cy);color:var(--cy2)}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,220px),1fr));gap:12px}
+.setor{background:linear-gradient(160deg,#0f2236,#0a1420);border:1px solid var(--line);border-radius:18px;padding:14px;display:flex;flex-direction:column;gap:8px}
+.setor svg{width:64px;height:64px}.setor small{color:var(--mut)}
+.setor h3{color:var(--cy2)}
+.missao{display:flex;gap:10px;align-items:center;background:var(--card2);border:1px solid var(--line);border-radius:12px;padding:10px;width:100%;text-align:left}
+.missao .n{font:700 18px "Chakra Petch";width:38px;height:38px;border-radius:10px;background:var(--cy);color:#012;display:grid;place-items:center;flex:none}
+.missao .st{margin-left:auto;font-size:16px;color:var(--ama);white-space:nowrap;letter-spacing:1px}
+.palco{background:#030810;border:1px solid var(--line);border-radius:16px;overflow:hidden;position:relative;height:clamp(300px,54vw,480px);touch-action:manipulation}
+.palco canvas{position:absolute;inset:0;width:100%;height:100%}
+.ctl{display:flex;flex-wrap:wrap;gap:10px 14px;align-items:flex-end;margin-top:10px;background:var(--card);border:1px solid var(--line);border-radius:14px;padding:12px}
+.ctl label{flex:1 1 220px;display:flex;flex-direction:column;font-weight:700;font-size:14px;color:var(--mut)}
+.ctl label b{font:700 21px "Chakra Petch";color:var(--cy2)}
+.ctl input[type=range]{width:100%;height:36px;accent-color:#3fe0ff}
+.ctl .grupo{display:flex;gap:8px;flex-wrap:wrap}
+.leit{flex:1 1 100%;font:600 15px "Chakra Petch";color:var(--cy2);background:#071a26;border-radius:10px;padding:8px 12px}
+.obj{display:flex;gap:10px;align-items:center;flex-wrap:wrap;background:var(--card);border:1px solid var(--line);border-left:4px solid var(--ama);border-radius:12px;padding:10px 12px;margin:0 0 10px;font-weight:700}
+.obj.feito{border-left-color:var(--ok)}
+.q{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:12px 14px;margin-bottom:10px}
+.q.ok{border-color:var(--ok);background:var(--okbg)}.q.ok .err{color:var(--ok)}.q.no{border-color:var(--bad);background:var(--badbg)}
+.q label{display:flex;gap:8px;align-items:center;padding:6px 0;cursor:pointer}.q input{width:20px;height:20px;accent-color:#3fe0ff;flex:none}
+.qf{display:inline-block;margin:6px 0 2px;font:700 14px "Chakra Petch",sans-serif;background:#0a2a3a;color:var(--cy2);border-radius:8px;padding:3px 10px}
+.fase{display:flex;gap:6px;margin:4px 0 12px;flex-wrap:wrap}
+.fase span{font:700 13px "Chakra Petch";padding:4px 10px;border-radius:99px;background:var(--card);border:1px solid var(--line);color:var(--mut)}
+.fase span.at{background:var(--cy);color:#012;border-color:var(--cy)}
+.voltar{background:none;border:0;color:var(--cy);padding:0;min-height:36px}
+.sub{color:var(--mut);margin:4px 0 12px}
+.medalha{text-align:center;background:var(--card);border:2px solid var(--ama);border-radius:18px;padding:24px}
+.medalha svg{width:100px;height:100px}.estrelas{font-size:40px;color:var(--ama);letter-spacing:6px}
+.err{color:var(--bad);font-size:14px;min-height:18px}
+.nota{font-size:13px;color:var(--mut);margin:8px 0 0}
+@media (prefers-reduced-motion:no-preference){#olhos{animation:pisca 4.5s infinite;transform-origin:70px 60px}#holo{animation:gira 9s linear infinite;transform-origin:70px 60px}}
+@keyframes pisca{0%,94%,100%{transform:scaleY(1)}96%{transform:scaleY(.1)}}
+@keyframes gira{to{transform:rotate(360deg)}}
+@media(max-width:600px){.balao p{font-size:16px}#comms{align-items:flex-start}.balao{margin-bottom:0}.balao::before,.balao::after{bottom:auto;top:28px}.palco{height:340px}}
+</style>
+</head>
+<body>
+<header><svg width="34" height="34" viewBox="0 0 34 34" aria-hidden="true"><circle cx="17" cy="17" r="4" fill="#f2c21b"/><ellipse cx="17" cy="17" rx="15" ry="6" fill="none" stroke="#3fe0ff" stroke-width="2"/><ellipse cx="17" cy="17" rx="15" ry="6" fill="none" stroke="#3fe0ff" stroke-width="2" transform="rotate(60 17 17)"/><ellipse cx="17" cy="17" rx="15" ry="6" fill="none" stroke="#3fe0ff" stroke-width="2" transform="rotate(120 17 17)"/></svg><h1>Estação Quântica</h1><a class="volta-site" href="../alunos.html">Área do Aluno</a><span class="medal" id="cont">★ 0</span></header>
+<main>
+<section id="comms" aria-live="polite">
+<svg id="prof" viewBox="0 0 140 190" role="img" aria-label="Prof. ExperimentaJoão, careca, forte, de jaleco amarelo e headset">
+<g id="holo" opacity=".55"><ellipse cx="70" cy="60" rx="66" ry="20" fill="none" stroke="#3fe0ff" stroke-width="1.2" stroke-dasharray="3 5"/></g>
+<path d="M2 190C4 124 26 110 70 108C114 110 136 124 138 190Z" fill="#f2c21b" stroke="#8f6c00" stroke-width="2"/>
+<path d="M52 110L70 150L88 110Z" fill="#2b3440"/><path d="M52 110L70 150L40 124ZM88 110L70 150L100 124Z" fill="#d9a90e"/>
+<rect x="102" y="140" width="18" height="22" rx="3" fill="#d9a90e"/><rect x="105" y="133" width="3" height="11" fill="#1f6feb"/><rect x="111" y="135" width="3" height="9" fill="#e53935"/>
+<rect x="12" y="146" width="62" height="13" rx="3" fill="#fff"/><text x="43" y="155.5" font-size="6.6" text-anchor="middle" font-family="Chakra Petch,sans-serif" font-weight="700" fill="#14181d">EXPERIMENTAJOÃO</text>
+<path d="M54 84h32v26c-6 6-26 6-32 0z" fill="#a8683f"/>
+<ellipse cx="35" cy="62" rx="7" ry="10" fill="#a0613a"/><ellipse cx="105" cy="62" rx="7" ry="10" fill="#a0613a"/>
+<path d="M35 52C35 17 105 17 105 52C106 74 100 88 89 96C80 101 60 101 51 96C40 88 34 74 35 52Z" fill="#b5764b"/>
+<path d="M41 78C45 92 56 99 70 99C84 99 95 92 99 78C95 86 84 90 70 90C56 90 45 86 41 78Z" fill="#5b3a26" opacity=".35"/>
+<ellipse cx="58" cy="30" rx="14" ry="6" fill="#fff" opacity=".22"/>
+<path d="M47 50h17M76 50h17" stroke="#3b2417" stroke-width="5" stroke-linecap="round"/>
+<g id="olhos"><ellipse cx="56" cy="60" rx="4" ry="4.5" fill="#1b120c"/><ellipse cx="84" cy="60" rx="4" ry="4.5" fill="#1b120c"/></g>
+<path d="M70 62v12h-5" stroke="#7d4b2d" stroke-width="3" fill="none" stroke-linecap="round"/>
+<path d="M56 82C63 89 77 89 84 82" stroke="#3b2417" stroke-width="4" fill="none" stroke-linecap="round"/>
+<path d="M29 60C29 9 111 9 111 60" stroke="#2b3440" stroke-width="5" fill="none"/>
+<rect x="23" y="52" width="12" height="20" rx="5" fill="#2b3440"/><rect x="105" y="52" width="12" height="20" rx="5" fill="#2b3440"/>
+<path d="M29 72C31 88 42 92 54 90" stroke="#2b3440" stroke-width="3" fill="none"/><circle cx="56" cy="90" r="4" fill="#3fe0ff"/>
+</svg>
+<div class="balao"><div class="quem">Prof. ExperimentaJoão</div><p id="fala"></p><div id="extra"></div><div class="bts" id="bts"></div></div>
+</section>
+<section id="tela"></section>
+</main>
+<script>
+{
+const $=s=>document.querySelector(s),tela=$('#tela');
+const fmt=(x,d=0)=>Number(x).toLocaleString('pt-BR',{minimumFractionDigits:d,maximumFractionDigits:d});
+const alt=(certa,erradas,pos)=>{const a=[...erradas];a.splice(pos,0,certa);return{a,c:pos}};
+const H_EV=4.14e-15;
+let prog={};try{prog=JSON.parse(localStorage.getItem('eq_prog')||'{}')}catch(e){prog={}}
+const salva=()=>{try{localStorage.setItem('eq_prog',JSON.stringify(prog))}catch(e){}};
+
+/* ---------- cor de um comprimento de onda ---------- */
+function corLam(l){let r=0,g=0,b=0;
+ if(l<380)return'#b48cff';
+ if(l<440){r=-(l-440)/60;b=1}else if(l<490){g=(l-440)/50;b=1}else if(l<510){g=1;b=-(l-510)/20}else if(l<580){r=(l-510)/70;g=1}else if(l<645){r=1;g=-(l-645)/65}else{r=1}
+ const k=l>700?.3+.7*(780-l)/80:l<420?.3+.7*(l-380)/40:1,f=v=>Math.round(255*Math.pow(Math.max(0,v*k),.8));return`rgb(${f(r)},${f(g)},${f(b)})`}
+function nomeLam(l){return l<400?'ultravioleta (invisível)':l<450?'violeta':l<495?'azul':l<570?'verde':l<590?'amarelo':l<620?'laranja':l<=750?'vermelho':'infravermelho'}
+
+/* ---------- palco (canvas) ---------- */
+let RAF=0,ROS=[],KEY=null;
+function palco(el){const cv=document.createElement('canvas');el.appendChild(cv);const c=cv.getContext('2d'),S={c,W:300,H:300};
+ const fit=()=>{const r=el.getBoundingClientRect(),d=Math.min(2,window.devicePixelRatio||1);cv.width=Math.max(1,r.width*d);cv.height=Math.max(1,r.height*d);c.setTransform(d,0,0,d,0,0);S.W=r.width;S.H=r.height};
+ const ro=new ResizeObserver(fit);ro.observe(el);ROS.push(ro);fit();return S}
+function laco(fn){let t0=performance.now();const f=t=>{const dt=Math.min(.05,(t-t0)/1000);t0=t;fn(dt,t/1000);RAF=requestAnimationFrame(f)};RAF=requestAnimationFrame(f)}
+function parar(){cancelAnimationFrame(RAF);ROS.forEach(r=>r.disconnect());ROS=[];if(KEY){removeEventListener('keydown',KEY);KEY=null}}
+const ESTR=Array.from({length:120},()=>[Math.random(),Math.random(),Math.random()*1.6+.3]);
+function fundo(S,grade){const{c,W,H}=S;const g=c.createLinearGradient(0,0,0,H);g.addColorStop(0,'#05101c');g.addColorStop(1,'#020509');c.fillStyle=g;c.fillRect(0,0,W,H);
+ ESTR.forEach(([a,b,r])=>{c.globalAlpha=.25+r*.3;c.fillStyle='#cfe9ff';c.fillRect(a*W,b*H,r,r)});c.globalAlpha=1;
+ if(grade){c.strokeStyle='rgba(63,224,255,.06)';c.lineWidth=1;for(let x=0;x<W;x+=32){c.beginPath();c.moveTo(x,0);c.lineTo(x,H);c.stroke()}for(let y=0;y<H;y+=32){c.beginPath();c.moveTo(0,y);c.lineTo(W,y);c.stroke()}}}
+function T(c,s,x,y,cor,al,tam,peso){c.fillStyle=cor;c.textAlign=al||'left';c.font=`${peso||600} ${tam||13}px "Chakra Petch",sans-serif`;c.fillText(s,x,y)}
+function caixa(c,x,y,w,h,r){c.beginPath();if(c.roundRect)c.roundRect(x,y,w,h,r);else c.rect(x,y,w,h)}
+function hud(c,x,y,linhas,w){const lh=18,h=12+linhas.length*lh;c.fillStyle='rgba(4,14,24,.82)';caixa(c,x,y,w,h,8);c.fill();c.strokeStyle='rgba(63,224,255,.45)';c.lineWidth=1;c.stroke();linhas.forEach((l,i)=>T(c,l,x+10,y+20+i*lh,i?'#cfe3f5':'#9ff0ff','left',i?12:13,i?500:700))}
+function brilho(c,x,y,r,cor){const g=c.createRadialGradient(x,y,0,x,y,r);g.addColorStop(0,cor);g.addColorStop(1,'rgba(0,0,0,0)');c.fillStyle=g;c.beginPath();c.arc(x,y,r,0,7);c.fill()}
+function onda(c,x0,y0,x1,y1,lpx,cor,amp){const L=Math.hypot(x1-x0,y1-y0),a=Math.atan2(y1-y0,x1-x0);c.save();c.translate(x0,y0);c.rotate(a);c.strokeStyle=cor;c.lineWidth=2;c.beginPath();for(let s=0;s<=L;s+=1.5){const y=Math.sin(s/lpx*6.283)*amp;s?c.lineTo(s,y):c.moveTo(s,y)}c.stroke();c.restore()}
+
+/* ---------- conversa ---------- */
+let ultimaFala='';
+function dizer(t,bts=[],extra=''){ultimaFala=t;$('#fala').textContent=t;$('#extra').innerHTML=extra;const b=$('#bts');b.innerHTML='';
+ bts.forEach(([r,fn,pri])=>{const x=document.createElement('button');x.textContent=r;if(pri)x.className='pri';x.onclick=fn;b.appendChild(x)})}
+function falar(falas,fim,rot='Vamos lá!',extra=''){let i=0;const ir=()=>dizer(falas[i],[...(i?[['◀ Voltar',()=>{i--;ir()}]]:[]),i<falas.length-1?['Próximo ▶',()=>{i++;ir()},1]:[rot,fim,1]],i===falas.length-1?extra:'');ir()}
+
+/* ---------- setores e missões ---------- */
+const SETORES=[
+ {id:'rel',nome:'Setor Relatividade',temas:'Velocidade da luz, dilatação do tempo, paradoxo dos gêmeos, contração do comprimento',
+  ico:'<circle cx="32" cy="32" r="26" fill="#0a2a3a" stroke="#3fe0ff" stroke-width="2"/><path d="M32 14v18l12 8" stroke="#f2c21b" stroke-width="4" fill="none" stroke-linecap="round"/><path d="M8 50l14-6-2 8z" fill="#9ff0ff"/>'},
+ {id:'fot',nome:'Setor Fótons',temas:'Efeito fotoelétrico, fóton, energia E = h · f',
+  ico:'<rect x="40" y="10" width="8" height="44" rx="2" fill="#8fa8c4"/><path d="M6 20q4-6 8 0t8 0 8 0" stroke="#b48cff" stroke-width="3" fill="none"/><circle cx="56" cy="22" r="5" fill="#3fe0ff"/><path d="M48 30l10-6" stroke="#3fe0ff" stroke-width="2"/>'},
+ {id:'ond',nome:'Setor Ondas e Partículas',temas:'Experimento de Thomas Young, interferência, dualidade onda-partícula',
+  ico:'<rect x="26" y="6" width="6" height="18" fill="#8fa8c4"/><rect x="26" y="28" width="6" height="8" fill="#8fa8c4"/><rect x="26" y="40" width="6" height="18" fill="#8fa8c4"/>'+[0,1,2,3,4,5].map(i=>`<rect x="50" y="${6+i*9}" width="8" height="5" fill="#3fe0ff" opacity="${[.3,.7,1,1,.7,.3][i]}"/>`).join('')+'<path d="M6 32h14" stroke="#ff6b6b" stroke-width="3"/>'},
+ {id:'ato',nome:'Setor Átomos',temas:'Modelo de Bohr, níveis de energia, cores dos fogos de artifício',
+  ico:'<circle cx="32" cy="32" r="6" fill="#ff6b6b"/><circle cx="32" cy="32" r="14" fill="none" stroke="#3fe0ff" stroke-dasharray="3 3"/><circle cx="32" cy="32" r="24" fill="none" stroke="#3fe0ff" stroke-dasharray="3 3"/><circle cx="56" cy="32" r="4" fill="#9ff0ff"/><path d="M50 12l4 4m-8-6l1 5m9 3l-5 1" stroke="#f2c21b" stroke-width="2"/>'}
+];
+
+const MISSOES=[
+/* ===== 1. Paradoxo dos gêmeos ===== */
+{id:'gemeas',setor:'rel',titulo:'A viagem das gêmeas',conceito:'dilatação do tempo, contração do comprimento e o paradoxo dos gêmeos',
+ obj:'Leve Bia até a estrela Kepler-Q, a 20 anos-luz, e traga de volta para a Terra envelhecendo no máximo 12 anos.',
+ briefing:['Bem-vinda, tripulação! Eu sou o Prof. ExperimentaJoão, chefe da Estação Quântica. Aqui a gente pilota naves quase tão rápidas quanto a luz.',
+  'As gêmeas Ana e Bia têm 20 anos. Ana fica na Terra. Bia vai pilotar a nave até a estrela Kepler-Q, a 20 anos-luz daqui, e voltar.',
+  'Sua missão: escolher a velocidade da nave e fazer a manobra de retorno na hora certa. Bia só pode envelhecer, no máximo, 12 anos na viagem toda.'],
+ aula:['Primeiro postulado de Einstein: as leis da Física são as mesmas para quem está parado ou em movimento com velocidade constante.',
+  'Segundo postulado: a velocidade da luz no vácuo é a mesma para todos os observadores, c ≈ 300 000 km/s. Se a nave acende o farol, Ana e Bia medem a luz com a mesma velocidade c.',
+  'Para isso dar certo, o tempo não pode passar igual para todos. Para quem se move muito rápido, o tempo passa mais devagar. Isso é a dilatação do tempo.',
+  'O fator de Lorentz, γ (gama), diz quantas vezes o tempo de Bia fica mais lento. Perto da velocidade da luz, γ cresce muito. O tempo de Bia é o tempo de Ana dividido por γ.',
+  'E tem mais: para Bia, a distância até a estrela fica mais curta, também dividida por γ. É a contração do comprimento.',
+  'O paradoxo: Bia não poderia dizer que quem se moveu foi a Terra? Não! Só Bia acelera, freia e vira a nave para voltar. Ela muda de referencial. Ana fica no mesmo referencial o tempo todo.'],
+ formula:'<div class="formula">t<sub>Bia</sub> = t<sub>Ana</sub> ÷ γ &nbsp;·&nbsp; L<sub>Bia</sub> = L ÷ γ</div>',
+ lab:labGemeas,
+ perg:d=>[
+  {p:`Na sua viagem a ${fmt(d.v,2)} c, Ana chegou a ${fmt(d.ana,1)} anos. Com quantos anos Bia voltou?`,f:'t_Bia = t_Ana ÷ γ',...alt(fmt(d.bia,1)+' anos',[fmt(d.ana,1)+' anos, igual a Ana',fmt(20+(d.ana-20)*d.g,1)+' anos'],1)},
+  {p:'Por que a situação das gêmeas não é simétrica?',...alt('Só Bia acelerou, freou e inverteu o sentido do movimento, mudando de referencial.',['Porque Ana estava na Terra, onde o tempo não existe.','Porque a velocidade da luz é diferente para cada gêmea.'],0)},
+  {p:'Durante a viagem, a distância até a estrela medida por Bia foi',f:'L_Bia = L ÷ γ',...alt(`menor que 20 anos-luz (${fmt(20/d.g,1)} anos-luz): contração do comprimento.`,['maior que 20 anos-luz, porque ela estava rápida.','exatamente 20 anos-luz, porque distância não muda.'],2)},
+  {p:'O farol da nave de Bia aponta para a frente. Que velocidade Ana, na Terra, mede para essa luz?',...alt('c, a mesma velocidade da luz para qualquer observador.',['c mais a velocidade da nave.','c menos a velocidade da nave.'],1)}]},
+/* ===== 2. Efeito fotoelétrico ===== */
+{id:'foto',setor:'fot',titulo:'Escotilha fotoelétrica',conceito:'efeito fotoelétrico, fótons e E = h · f',
+ obj:'Junte 25 elétrons no coletor para abrir a escotilha do sódio e, depois, mais 25 com a placa de zinco usando a bateria fraca.',
+ briefing:['A escotilha do laboratório só abre com corrente elétrica. E a corrente vem de elétrons arrancados de uma placa de metal pela luz!',
+  'Você controla a lâmpada: a frequência, que muda a cor, e o brilho. Junte 25 elétrons no coletor.',
+  'Começamos com a placa de sódio. A lâmpada já está ligada no vermelho, no brilho máximo. Será que dá certo?'],
+ aula:['No efeito fotoelétrico, a luz que bate num metal pode arrancar elétrons dele. Os cientistas do século XIX esperavam que luz mais forte arrancasse mais fácil. Não foi o que aconteceu.',
+  'Einstein, em 1905, explicou: a luz chega em pacotinhos de energia, os fótons. Cada fóton entrega sua energia a um único elétron.',
+  'A energia de cada fóton depende só da frequência: E = h · f. A constante de Planck, h, vale cerca de 4,14 × 10⁻¹⁵ eV · s. Mais frequência, mais energia por fóton.',
+  'Cada metal segura seus elétrons com uma energia mínima, a função trabalho. Se o fóton tem menos energia que isso, nenhum elétron sai, não importa o brilho.',
+  'O brilho só muda a quantidade de fótons por segundo. Acima do limite, mais brilho arranca mais elétrons. Abaixo do limite, continua arrancando zero.'],
+ formula:'<div class="formula">E = h · f &nbsp;·&nbsp; h ≈ 4,14 × 10⁻¹⁵ eV · s</div>',
+ lab:labFoto,
+ perg:d=>{const E=H_EV*d.fZ*1e14;return[
+  {p:'Com a luz vermelha no brilho máximo, o sódio soltou elétrons?',...alt('Não, porque cada fóton vermelho tem energia menor que a função trabalho do sódio (2,3 eV).',['Sim, porque luz forte tem mais energia por fóton.','Sim, mas só depois de esquentar a placa.'],0)},
+  {p:`Para o zinco, você usou f = ${fmt(d.fZ,1)} × 10¹⁴ Hz. Qual era a energia de cada fóton?`,f:'E = h · f = 4,14 × 10⁻¹⁵ · f',...alt(fmt(E,2)+' eV',[fmt(E/10,2)+' eV',fmt(E*10,1)+' eV'],1)},
+  {p:'Numa luz que já arranca elétrons, aumentar o brilho faz',...alt('sair mais elétrons por segundo.',['cada elétron sair com muito mais energia.','os elétrons pararem de sair.'],2)},
+  {p:'Os painéis solares dos parques de Arinos geram eletricidade porque',...alt('a energia dos fótons de luz libera elétrons no material e gera corrente elétrica.',['a luz esquenta água e move turbinas.','o vento move as placas e gera energia.'],0)}]}},
+/* ===== 3. Young ===== */
+{id:'young',setor:'ond',titulo:'As fendas de Young',conceito:'interferência da luz e o experimento de Thomas Young (1801)',
+ obj:'Calibre o escudo de interferência: faça as franjas claras caírem em cima dos sensores, primeiro mudando a cor do laser e depois a distância entre as fendas.',
+ briefing:['O escudo da estação usa luz para criar faixas claras e escuras. Os sensores só ligam quando uma franja clara cai em cima de cada um.',
+  'Na etapa 1, a distância entre as fendas está travada. Você ajusta a cor, ou seja, o comprimento de onda do laser.',
+  'Na etapa 2, a cor fica travada no verde-azulado e você ajusta a distância entre as fendas. Teste também fechar uma das fendas e veja o que acontece.'],
+ aula:['Em 1801, Thomas Young fez a luz passar por duas fendas bem estreitas e olhou o anteparo. Não apareceram só duas faixas: apareceram várias faixas claras e escuras.',
+  'Cada fenda vira uma fonte de ondas. As ondas das duas fendas se encontram e se somam. Onde chegam crista com crista, a luz se reforça: franja clara. Onde chega crista com vale, se anulam: franja escura.',
+  'Isso é interferência, algo que só ondas fazem. Por isso o experimento de Young mostrou que a luz se comporta como onda.',
+  'A distância entre duas franjas claras é Δy = λ · L ÷ d. Aqui λ é o comprimento de onda, L é a distância até o anteparo (2 m) e d é a distância entre as fendas.',
+  'Então: luz de λ maior, como o vermelho, afasta as franjas. Fendas mais distantes, d maior, aproximam as franjas.'],
+ formula:'<div class="formula">Δy = λ · L ÷ d</div>',
+ lab:labYoung,
+ perg:d=>[
+  {p:'As faixas claras e escuras no anteparo aparecem por causa',...alt('da interferência entre as ondas que passam pelas duas fendas.',['da sombra das bordas das fendas.','de partículas que batem e se acumulam.'],1)},
+  {p:'Em 1801, o experimento de Young mostrou que a luz',...alt('se comporta como onda.',['é formada só por partículas.','não tem cor própria.'],0)},
+  {p:'Na etapa 1, com d fixo, o que acontece com as franjas quando λ aumenta?',f:'Δy = λ · L ÷ d',...alt('Ficam mais afastadas.',['Ficam mais próximas.','Não mudam.'],0)},
+  {p:'Na etapa 2: λ = 500 nm, L = 2 m e d = 0,40 mm. Qual é a distância entre as franjas?',f:'Δy = λ · L ÷ d',...alt('2,5 mm',['0,25 mm','25 mm'],2)}]},
+/* ===== 4. Dualidade ===== */
+{id:'dual',setor:'ond',titulo:'O elétron fantasma',conceito:'dualidade onda-partícula',
+ obj:'Dispare elétrons um por vez contra as duas fendas, descubra o padrão que aparece e depois repita com o detector ligado.',
+ briefing:['Agora no lugar da luz vamos usar elétrons, que têm massa e carga. Partículas de verdade!',
+  'O canhão dispara um elétron de cada vez. Cada um deixa um pontinho na tela. Dispare pelo menos 400 e observe o desenho que vai se formando.',
+  'Depois a gente liga um detector nas fendas para espiar por qual fenda cada elétron passa.'],
+ aula:['Se os elétrons fossem só bolinhas, cada um passaria por uma fenda e esperaríamos ver duas faixas na tela, uma atrás de cada fenda.',
+  'Mas cada elétron chega como um pontinho, como partícula. E, depois de muitos, os pontinhos formam faixas claras e escuras, igual à interferência da luz no experimento de Young.',
+  'Isso é a dualidade onda-partícula: o elétron se comporta como partícula quando chega na tela e como onda quando passa pelas fendas. A luz também tem esse comportamento duplo.',
+  'Louis de Broglie propôs que toda partícula tem uma onda associada. Quanto maior a velocidade do elétron, menor o comprimento dessa onda.'],
+ formula:'<div class="formula">partícula na chegada · onda no caminho</div>',
+ lab:labDual,
+ perg:d=>[
+  {p:'Cada elétron chegou na tela como',...alt('um pontinho num lugar só, como partícula.',['uma faixa espalhada pela tela toda.','duas manchas, uma atrás de cada fenda.'],0)},
+  {p:`Depois de ${fmt(d.n1)} elétrons sem detector, o padrão na tela foi`,...alt('várias faixas claras e escuras alternadas.',['duas faixas, uma atrás de cada fenda.','uma tela toda clara por igual.'],1)},
+  {p:'Esse resultado mostra que os elétrons',...alt('também têm comportamento de onda: a dualidade onda-partícula.',['são sempre partículas e nunca ondas.','são ondas sonoras.'],2)},
+  {p:'Com o detector ligado nas fendas, o que aconteceu com as faixas de interferência?',...alt('Desapareceram: os elétrons passaram a se comportar só como partículas.',['Ficaram mais nítidas.','Mudaram de cor.'],0)}]},
+/* ===== 5. Bohr ===== */
+{id:'bohr',setor:'ato',titulo:'Fogos de Bohr',conceito:'modelo de Bohr, níveis de energia e emissão de fótons',
+ obj:'Monte o show de Réveillon de Arinos: lance os 5 fogos na sequência de cores pedida, escolhendo o sal certo para cada cor.',
+ briefing:['A prefeitura de Arinos encomendou o show de fogos do Réveillon e mandou uma lista de cores. Quem fabrica as cores somos nós!',
+  'Cada foguete leva um sal: sódio, estrôncio ou cobre. Você escolhe o sal e lança. Olhe o átomo ao lado: ele mostra de onde vem a cor.'],
+ aula:['No modelo de Bohr, os elétrons só podem ocupar certos níveis de energia, como degraus de uma escada. Não existe meio degrau.',
+  'Com o calor da explosão, o elétron absorve energia e salta para um nível mais alto. Logo depois ele volta para o nível de menor energia.',
+  'Ao voltar, ele emite um fóton com a energia exata da diferença entre os dois níveis. Energia definida, frequência definida, cor definida: E = h · f.',
+  'Cada elemento tem seus próprios degraus. Sódio emite amarelo, estrôncio emite vermelho e cobre emite verde-azulado. É a impressão digital do elemento!'],
+ formula:'<div class="formula">E<sub>fóton</sub> = E<sub>alto</sub> − E<sub>baixo</sub> = h · f</div>',
+ lab:labBohr,
+ perg:d=>[
+  {p:'No modelo de Bohr, o elétron só pode ocupar',...alt('certos níveis de energia, como degraus de uma escada.',['qualquer energia, como numa rampa.','o núcleo do átomo.'],0)},
+  {p:'A luz colorida dos fogos é emitida quando o elétron',...alt('volta para um nível de menor energia e emite um fóton.',['sobe para um nível de maior energia.','sai do átomo e vira um próton.'],1)},
+  {p:'Por que cada sal dá uma cor diferente?',...alt('Cada elemento tem diferenças de energia próprias entre os níveis, então emite fótons de energia definida.',['Porque o sal pinta a fumaça.','Porque cada foguete explode numa altura diferente.'],2)},
+  {p:'O fóton do sódio (amarelo) tem cerca de 2,1 eV. O fóton verde-azulado do cobre tem',f:'E = h · f',...alt('mais energia, porque tem frequência maior.',['menos energia, porque tem frequência menor.','a mesma energia, porque todo fóton é igual.'],0)}]}
+];
+
+let M=null,D=null;
+const totalEstrelas=()=>Object.values(prog).reduce((a,b)=>a+b,0);
+function cont(){$('#cont').textContent=`★ ${totalEstrelas()}/${MISSOES.length*3}`}
+const estrelas=n=>'★'.repeat(n)+'☆'.repeat(3-n);
+
+function base(){parar();M=null;cont();
+ tela.innerHTML='<h2 style="margin-bottom:6px">Mapa da estação</h2><p class="sub">Quatro laboratórios de Física Moderna. Cada missão vale até 3 estrelas.</p><div class="grid">'+
+ SETORES.map(s=>{const ms=MISSOES.filter(m=>m.setor===s.id);return`<div class="setor"><svg viewBox="0 0 64 64" aria-hidden="true">${s.ico}</svg><h3>${s.nome}</h3><small>${s.temas}</small>${ms.map(m=>`<button class="missao" data-m="${m.id}"><span class="n">${MISSOES.indexOf(m)+1}</span><span><b>${m.titulo}</b></span><span class="st">${estrelas(prog[m.id]||0)}</span></button>`).join('')}</div>`}).join('')+'</div>';
+ tela.querySelectorAll('[data-m]').forEach(b=>b.onclick=()=>missao(MISSOES.find(m=>m.id===b.dataset.m)));
+ dizer(totalEstrelas()?'Bom te ver de volta! Escolha um laboratório para continuar a pesquisa.':'Olá! Eu sou o Prof. ExperimentaJoão, chefe da Estação Quântica. Aqui a gente estuda o que acontece no muito rápido e no muito pequeno. Escolha uma missão no mapa.',[])}
+
+function cab(n){const F=['Briefing','Aula','Laboratório','Relatório','Medalha'];return`<button class="voltar" id="vb">◀ Mapa da estação</button><div class="fase">${F.map((f,i)=>`<span class="${i===n?'at':''}">${f}</span>`).join('')}</div><h2>${M.titulo}</h2>`}
+function montar(n,html){tela.innerHTML=cab(n)+html;$('#vb').onclick=base;window.scrollTo({top:0})}
+function missao(m){parar();M=m;D=null;
+ montar(0,`<p class="sub">${m.obj}</p>`);
+ falar(m.briefing,()=>aula(),'Entendi, vamos à aula')}
+function aula(){montar(1,`<p class="sub">Conceito: ${M.conceito}.</p>`);
+ falar(M.aula,()=>lab(),'Ir para o laboratório',M.formula)}
+function lab(){parar();
+ montar(2,`<div class="obj" id="obj"></div><div class="palco" id="palco"></div><div class="ctl" id="ctl"></div><div class="bts" style="margin-top:10px"><button class="pri" id="fimLab" disabled>Ir para o relatório ▶</button></div>`);
+ const A={S:palco($('#palco')),ctl:$('#ctl'),obj:(h,ok)=>{const o=$('#obj');o.innerHTML=h;o.classList.toggle('feito',!!ok)},
+  concluir:d=>{D=d;$('#fimLab').disabled=false;$('#fimLab').onclick=relatorio;A.obj('✔ Missão cumprida! Pode ir para o relatório ou continuar testando.',1)}};
+ M.lab(A)}
+function relatorio(){parar();const PS=M.perg(D);
+ montar(3,'<p class="sub">Responda com base no que aconteceu no laboratório.</p>'+PS.map((q,i)=>`<div class="q" id="q${i}"><b>${i+1}. ${q.p}</b>${q.f?`<br><span class="qf">${q.f}</span>`:''}${q.a.map((a,j)=>`<label><input type="radio" name="r${i}" value="${j}">${a}</label>`).join('')}<div class="err" id="e${i}"></div></div>`).join('')+'<div class="bts"><button class="pri" id="corr">Corrigir relatório</button></div>');
+ dizer('Hora do relatório! As perguntas usam os números do seu experimento.',[]);
+ $('#corr').onclick=()=>{let ac=0;PS.forEach((q,i)=>{const r=tela.querySelector(`input[name=r${i}]:checked`),el=$('#q'+i);const ok=r&&+r.value===q.c;if(ok)ac++;el.className='q '+(ok?'ok':'no');$('#e'+i).textContent=ok?'Certo!':r?'Resposta certa: '+q.a[q.c]:'Sem resposta. Certa: '+q.a[q.c]});
+  const n=1+(ac>=3)+(ac===4);prog[M.id]=Math.max(prog[M.id]||0,n);salva();cont();
+  const b=$('#corr');b.textContent='Ver medalha ▶';b.onclick=()=>medalha(n,ac);
+  dizer(`Você acertou ${ac} de 4. ${ac===4?'Relatório perfeito!':ac>=3?'Muito bom!':'Leia as respostas certas em vermelho e tente de novo depois.'}`,[])}}
+function medalha(n,ac){montar(4,`<div class="medalha"><svg viewBox="0 0 110 110" aria-hidden="true"><path d="M38 4h14l8 30H46zM58 4h14l-8 30H50z" fill="#3fe0ff"/><circle cx="55" cy="68" r="36" fill="#f2c21b" stroke="#8f6c00" stroke-width="4"/><circle cx="55" cy="68" r="8" fill="#fff7d6"/><ellipse cx="55" cy="68" rx="26" ry="9" fill="none" stroke="#fff7d6" stroke-width="3"/><ellipse cx="55" cy="68" rx="26" ry="9" fill="none" stroke="#fff7d6" stroke-width="3" transform="rotate(60 55 68)"/><ellipse cx="55" cy="68" rx="26" ry="9" fill="none" stroke="#fff7d6" stroke-width="3" transform="rotate(120 55 68)"/></svg><h2>${M.titulo}</h2><div class="estrelas" aria-label="${n} estrelas">${estrelas(n)}</div><p style="margin:0">Conceito: ${M.conceito}.</p><div class="bts" style="justify-content:center;margin-top:14px"><button id="rep">Refazer missão</button><button class="pri" id="mapa">Mapa da estação</button></div></div>`);
+ $('#rep').onclick=()=>missao(M);$('#mapa').onclick=base;
+ dizer(n===3?'Três estrelas! Você está pronta para a prova.':'Missão registrada. Dá para refazer e buscar as três estrelas.',[])}
+
+/* ================= LAB 1: gêmeas ================= */
+function labGemeas(A){const S=A.S,DIST=20;let v=.5,g=1/Math.sqrt(1-v*v),st='solo',p=0,tm=0,flash=0,res=null,feito=false,trilha=[];
+ A.obj('Escolha a velocidade e decole. Perto da estrela, aperte <b>Manobra de retorno</b> dentro da faixa azul.');
+ A.ctl.innerHTML=`<label>Velocidade da nave <b id="vv"></b><input type="range" id="v" min="10" max="99" value="50" aria-label="velocidade em frações de c"></label><div class="leit" id="gm"></div><div class="grupo"><button class="pri" id="go">Decolar</button><button id="mb" disabled>Manobra de retorno</button></div>`;
+ const upd=()=>{v=+$('#v').value/100;g=1/Math.sqrt(1-v*v);$('#vv').textContent=fmt(v,2)+' c';$('#gm').textContent=`γ = ${fmt(g,2)} · tempo de Ana: ${fmt(2*DIST/v,1)} anos · distância para Bia: 20 ÷ γ = ${fmt(DIST/g,1)} anos-luz`};
+ $('#v').oninput=upd;upd();
+ const go=()=>{if(st!=='solo'&&st!=='fim'&&st!=='falhou')return;st='ida';p=0;res=null;trilha=[];$('#go').disabled=true;$('#v').disabled=true;$('#mb').disabled=false;
+  dizer('Decolagem! Bia acelera até '+fmt(v,2)+' c. Fique de olho na faixa azul perto da estrela.',[])};
+ const manobra=()=>{if(st!=='ida')return;if(p>=.86&&p<=1.02){st='manobra';tm=0;flash=1;$('#mb').disabled=true;dizer('Manobra! Bia freia, vira a nave e acelera de volta. Só ela sente essa aceleração: só ela muda de referencial.',[])}else dizer('Cedo demais! A manobra só funciona dentro da faixa azul perto da estrela.',[])};
+ $('#go').onclick=go;$('#mb').onclick=manobra;
+ KEY=e=>{if(e.code==='Space'){e.preventDefault();st==='ida'?manobra():go()}};addEventListener('keydown',KEY);
+ const fimViagem=()=>{const ana=20+2*DIST/v,bia=20+2*DIST/v/g;res={ana,bia};st='fim';$('#go').disabled=false;$('#v').disabled=false;$('#mb').disabled=true;$('#go').textContent='Nova viagem';
+  if(bia-20<=12){if(!feito){feito=true;A.concluir({v,g,ana,bia})}else D={v,g,ana,bia};
+   dizer(`Pouso perfeito! Ana está com ${fmt(ana,1)} anos e Bia com só ${fmt(bia,1)}. O tempo de Bia passou ${fmt(g,1)} vezes mais devagar.`,[])}
+  else dizer(`Bia voltou com ${fmt(bia,1)} anos: envelheceu ${fmt(bia-20,1)} anos, mais que 12. Ana está com ${fmt(ana,1)}. Para o tempo de Bia passar mais devagar, chegue mais perto da velocidade da luz.`,[])};
+ laco((dt,t)=>{const{c,W,H}=S;fundo(S,false);
+  const x0=W*.12,x1=W*.86,yv=H*.42;
+  // Terra
+  brilho(c,x0,yv,48,'rgba(63,140,255,.35)');c.fillStyle='#2f7fd1';c.beginPath();c.arc(x0,yv,24,0,7);c.fill();c.fillStyle='#3b8f55';c.beginPath();c.arc(x0-7,yv-6,9,0,7);c.fill();c.beginPath();c.arc(x0+9,yv+8,6,0,7);c.fill();
+  T(c,'Terra · Ana',x0,yv+44,'#cfe3f5','center',12);
+  // estrela
+  brilho(c,x1,yv,60,'rgba(255,210,90,.45)');c.fillStyle='#ffe08a';c.beginPath();c.arc(x1,yv,15,0,7);c.fill();T(c,'Kepler-Q',x1,yv+44,'#cfe3f5','center',12);
+  // régua
+  c.strokeStyle='rgba(159,240,255,.35)';c.setLineDash([4,6]);c.beginPath();c.moveTo(x0+30,yv+64);c.lineTo(x1-20,yv+64);c.stroke();c.setLineDash([]);
+  const mov=st==='ida'||st==='manobra'||st==='volta';
+  T(c,mov?`para Bia: ${fmt(DIST/g,1)} anos-luz (contraída)`:'20 anos-luz para Ana',(x0+x1)/2,yv+80,mov?'#9ff0ff':'#8fa8c4','center',12);
+  // faixa de manobra
+  const zA=x0+(x1-x0)*.86,zB=x0+(x1-x0)*1.02;if(st==='ida'||st==='solo'){c.fillStyle='rgba(63,224,255,.12)';c.fillRect(zA,yv-50,zB-zA,100);c.strokeStyle='rgba(63,224,255,.6)';c.strokeRect(zA,yv-50,zB-zA,100);T(c,'manobra',(zA+zB)/2,yv-56,'#9ff0ff','center',11)}
+  // movimento
+  const dur=3.6;
+  if(st==='ida'){p+=dt/dur;if(p>1.12){st='falhou';$('#mb').disabled=true;$('#go').disabled=false;$('#v').disabled=false;$('#go').textContent='Tentar de novo';dizer('Bia passou direto pela estrela! A manobra tem que ser feita dentro da faixa azul. Tente de novo.',[])}}
+  else if(st==='manobra'){tm+=dt;if(tm>.8){st='volta'}}
+  else if(st==='volta'){p-=dt/dur;if(p<=0){p=0;fimViagem()}}
+  flash=Math.max(0,flash-dt*1.2);
+  const xs=x0+(x1-x0)*Math.min(p,1.12),dir=st==='volta'||(st==='manobra'&&tm>.4)?-1:1;
+  if(mov){trilha.push([xs,yv]);if(trilha.length>40)trilha.shift()}
+  trilha.forEach(([a,b],i)=>{c.globalAlpha=i/40*.6;c.fillStyle='#3fe0ff';c.fillRect(a-1,b-1,3,3)});c.globalAlpha=1;
+  naveD(c,st==='solo'||st==='fim'?x0+34:xs,yv,st==='fim'?1:dir,mov,t);
+  // feixe do farol
+  if(mov&&st!=='manobra'){const fx=xs+dir*30,len=Math.min(140,W*.18);c.strokeStyle='rgba(255,255,200,.75)';c.lineWidth=2;c.beginPath();c.moveTo(fx,yv);c.lineTo(fx+dir*len,yv);c.stroke();T(c,'luz do farol: c',fx+dir*len*.5,yv-12,'#fff5c8','center',11)}
+  if(flash>0){c.fillStyle=`rgba(255,220,120,${flash*.35})`;c.fillRect(0,0,W,H);T(c,'ACELERAÇÃO: Bia muda de referencial',W/2,H*.16,'#ffe08a','center',15,700)}
+  // relógios
+  const frac=st==='ida'?Math.min(p,1)/2:st==='manobra'?.5:st==='volta'?.5+(1-p)/2:st==='fim'?1:0;
+  const tA=2*DIST/v*frac,tB=tA/g;
+  relogio(c,W*.3,H*.84,Math.min(36,H*.08),tA,'Ana (Terra)',20+tA,'#7fb6ff');
+  relogio(c,W*.7,H*.84,Math.min(36,H*.08),tB,'Bia (nave)',20+tB,'#3fe0ff');
+  hud(c,10,10,[`v = ${fmt(v,2)} c   γ = ${fmt(g,2)}`,`Bia envelheceu: ${fmt(tB,1)} anos (máx. 12)`],Math.min(260,W*.6))})}
+function naveD(c,x,y,dir,fogo,t){c.save();c.translate(x,y);c.scale(dir,1);
+ if(fogo){const f=18+Math.random()*10;const g=c.createLinearGradient(-22,0,-22-f,0);g.addColorStop(0,'#e9fbff');g.addColorStop(.4,'#3fe0ff');g.addColorStop(1,'rgba(63,224,255,0)');c.fillStyle=g;c.beginPath();c.moveTo(-20,-6);c.lineTo(-22-f,0);c.lineTo(-20,6);c.fill()}
+ c.fillStyle='#c9d6e3';c.beginPath();c.moveTo(28,0);c.quadraticCurveTo(10,-11,-20,-8);c.lineTo(-20,8);c.quadraticCurveTo(10,11,28,0);c.fill();
+ c.fillStyle='#5a6b7d';c.beginPath();c.moveTo(-8,-8);c.lineTo(-22,-18);c.lineTo(-16,-8);c.fill();c.beginPath();c.moveTo(-8,8);c.lineTo(-22,18);c.lineTo(-16,8);c.fill();
+ c.fillStyle='#3fe0ff';c.beginPath();c.ellipse(10,-2,7,3.5,0,0,7);c.fill();c.fillStyle='#f2c21b';c.fillRect(-14,-2,10,4);c.restore()}
+function relogio(c,x,y,r,anos,rot,idade,cor){c.fillStyle='rgba(4,14,24,.85)';c.beginPath();c.arc(x,y,r+6,0,7);c.fill();c.strokeStyle='rgba(143,168,196,.35)';c.lineWidth=4;c.beginPath();c.arc(x,y,r,0,7);c.stroke();
+ const a=(anos%10)/10*6.283;c.strokeStyle=cor;c.lineWidth=4;c.beginPath();c.arc(x,y,r,-1.571,-1.571+a);c.stroke();
+ T(c,fmt(idade,1),x,y+6,'#fff','center',Math.max(14,r*.5),700);T(c,rot,x,y-r-12,cor,'center',12,700);T(c,'anos',x,y+r+16,'#8fa8c4','center',11)}
+
+/* ================= LAB 2: fotoelétrico ================= */
+function labFoto(A){const S=A.S,MET=[{n:'Sódio',W:2.3,cor:'#c9ced6'},{n:'Zinco',W:4.3,cor:'#8d99a8'}];
+ let et=0,f=4.3,I=10,n=0,fot=[],ele=[],acc=0,dica=0,feito=false,fS=0,fZ=0,porta=0,flashes=[];
+ A.ctl.innerHTML=`<label>Frequência da luz <b id="fv"></b><input type="range" id="f" min="40" max="120" value="43" aria-label="frequência"></label><label>Brilho (fótons por segundo) <b id="iv"></b><input type="range" id="i" min="1" max="10" value="10" aria-label="brilho"></label><div class="leit" id="lf"></div>`;
+ const lam=()=>3e8/(f*1e14)*1e9,E=()=>H_EV*f*1e14;
+ const upd=()=>{f=+$('#f').value/10;I=+$('#i').value;const L=lam();$('#fv').textContent=`${fmt(f,1)} × 10¹⁴ Hz · ${nomeLam(L)}`;$('#iv').textContent=I;
+  $('#lf').textContent=`Cada fóton: E = h · f = ${fmt(E(),2)} eV · placa de ${MET[et].n.toLowerCase()}: precisa de ${fmt(MET[et].W,1)} eV`};
+ $('#f').oninput=upd;$('#i').oninput=upd;
+ const etapa=()=>{A.obj(et===0?`Etapa 1 de 2 · Placa de <b>sódio</b> (2,3 eV): junte 25 elétrons. <span id="ne"></span>`:`Etapa 2 de 2 · Placa de <b>zinco</b> (4,3 eV), bateria fraca: brilho máximo 3. Junte 25 elétrons. <span id="ne"></span>`)};
+ etapa();upd();
+ laco((dt,t)=>{const{c,W,H}=S;fundo(S,true);const L=lam(),cor=corLam(L),Ef=E(),met=MET[et];
+  const lx=W*.1,ly=H*.28,px=W*.52,pt=H*.3,pb=H*.74,cx=W*.86;
+  // lâmpada
+  c.fillStyle='#1b2b3e';caixa(c,lx-26,ly-22,52,44,10);c.fill();brilho(c,lx+22,ly,40,L<400?'rgba(180,140,255,.5)':cor.replace('rgb','rgba').replace(')',',.55)'));c.fillStyle=cor;c.beginPath();c.arc(lx+22,ly,9,0,7);c.fill();T(c,'lâmpada',lx,ly+38,'#8fa8c4','center',11);
+  // placa
+  c.fillStyle=met.cor;c.fillRect(px-6,pt,12,pb-pt);c.fillStyle='rgba(255,255,255,.25)';c.fillRect(px-6,pt,3,pb-pt);T(c,met.n+' · '+fmt(met.W,1)+' eV',px,pb+20,'#cfe3f5','center',12,700);
+  // coletor e circuito
+  c.fillStyle='#24384f';caixa(c,cx-10,pt-10,20,pb-pt+20,6);c.fill();c.strokeStyle='#3fe0ff';c.lineWidth=2;c.strokeRect(cx-10,pt-10,20,pb-pt+20);T(c,'coletor',cx,pt-18,'#9ff0ff','center',11);
+  c.strokeStyle='rgba(63,224,255,.5)';c.beginPath();c.moveTo(px,pb);c.lineTo(px,H*.9);c.lineTo(cx,H*.9);c.lineTo(cx,pb+10);c.stroke();
+  const ax=(px+cx)/2,ay=H*.9;c.fillStyle='#0a2a3a';c.beginPath();c.arc(ax,ay,18,0,7);c.fill();c.stroke();T(c,'A',ax,ay+5,'#9ff0ff','center',14,700);
+  // escotilha
+  porta+=((n/25)-porta)*Math.min(1,dt*4);const hw=Math.min(160,W*.42);hud(c,W-hw-10,10,[`Elétrons: ${n} de 25`,et?'Escotilha do zinco':'Escotilha do sódio'],hw);c.fillStyle='#1d3550';c.fillRect(W-hw,52,hw-20,6);c.fillStyle='#4fd18b';c.fillRect(W-hw,52,(hw-20)*Math.min(1,porta),6);
+  // emite fótons
+  acc+=dt*I*2.2;while(acc>=1){acc--;const ty=pt+8+Math.random()*(pb-pt-16);fot.push({x:lx+30,y:ly,tx:px-6,ty,k:0})}
+  fot=fot.filter(o=>{o.k+=dt/.9;const x=o.x+(o.tx-o.x)*o.k,y=o.y+(o.ty-o.y)*o.k,lp=Math.max(5,L/45);
+   const a=Math.atan2(o.ty-o.y,o.tx-o.x);onda(c,x-Math.cos(a)*16,y-Math.sin(a)*16,x,y,lp,L<400?'#b48cff':cor,3);
+   if(o.k>=1){if(Ef>=met.W){const sp=90+160*Math.sqrt(Ef-met.W);ele.push({x:px+6,y:o.ty,vx:sp,vy:(Math.random()-.5)*40})}else flashes.push({x:px-6,y:o.ty,a:1});return false}return true});
+  flashes=flashes.filter(q=>{q.a-=dt*3;c.fillStyle=`rgba(255,160,90,${q.a*.6})`;c.beginPath();c.arc(q.x,q.y,5,0,7);c.fill();return q.a>0});
+  ele=ele.filter(e=>{e.x+=e.vx*dt;e.y+=e.vy*dt;brilho(c,e.x,e.y,9,'rgba(63,224,255,.7)');c.fillStyle='#e9fbff';c.beginPath();c.arc(e.x,e.y,3,0,7);c.fill();T(c,'e⁻',e.x,e.y-7,'#9ff0ff','center',9);
+   if(e.x>=cx-10){n++;return false}return true});
+  if(Ef<met.W)T(c,W<600?'pouca energia: nenhum e⁻ sai':'fóton com pouca energia: nenhum elétron sai',W<600?px-20:px,pt-28,'#ffb38a','center',12,700);
+  const ne=$('#ne');if(ne)ne.textContent=`(${n}/25)`;
+  // dica
+  if(et===0&&Ef<met.W&&I>=8){dica+=dt;if(dica>3.5&&dica<99){dica=99;dizer('Brilho no máximo e nenhum elétron! O brilho só aumenta a quantidade de fótons. O que precisa mudar é a energia de cada fóton. Mexa na frequência.',[])}}
+  if(n>=25&&et===0){fS=f;et=1;n=0;porta=0;ele=[];fot=[];$('#i').max=3;$('#i').value=Math.min(3,I);$('#f').value=60;upd();etapa();
+   dizer('Escotilha do sódio aberta! Agora a placa é de zinco, que segura os elétrons com 4,3 eV, e a bateria só aguenta brilho 3. Que luz você vai usar?',[])}
+  else if(n>=25&&et===1&&!feito){feito=true;fZ=f;A.concluir({fS,fZ});dizer(`Funcionou! Luz fraca, mas com fótons de ${fmt(Ef,2)} eV, acima dos 4,3 eV do zinco. Foi isso que Einstein explicou em 1905.`,[])}
+  if(et===1&&Ef<met.W&&!feito){dica+=dt;if(dica>104){dica=-50;dizer('A luz visível não passa de uns 3,1 eV por fóton. Para o zinco, vá além do violeta: ultravioleta!',[])}}})}
+
+/* ================= LAB 3: Young ================= */
+function labYoung(A){const S=A.S,Lm=2;let et=0,lam=650,d=.2,fechada=false,fechou=false,hold=0,feito=false,ph=0;
+ const alvo=()=>et===0?6:2.5;
+ const dy=()=>lam*0.002/d;
+ A.ctl.innerHTML=`<label id="ll">Comprimento de onda λ <b id="lv"></b><input type="range" id="lam" min="400" max="700" step="5" value="650" aria-label="comprimento de onda"></label><label id="dl">Distância entre as fendas d <b id="dv"></b><input type="range" id="d" min="10" max="50" step="2" value="20" aria-label="distância entre fendas"></label><div class="grupo"><button id="fec">Fechar a fenda B</button></div><div class="leit" id="ly"></div>`;
+ const upd=()=>{lam=+$('#lam').value;d=+$('#d').value/100;$('#lv').textContent=`${lam} nm · ${nomeLam(lam)}`;$('#dv').textContent=fmt(d,2)+' mm';
+  $('#ly').textContent=`Δy = λ · L ÷ d = ${lam} nm · 2 m ÷ ${fmt(d,2)} mm = ${fmt(dy(),2)} mm   ·   sensores a ${fmt(alvo(),1)} mm`};
+ const trava=()=>{$('#d').disabled=et===0;$('#lam').disabled=et===1;
+  A.obj(et===0?'Etapa 1 de 2 · d travado em 0,20 mm. Ajuste λ até a distância entre franjas ficar em <b>6,0 mm</b>.':'Etapa 2 de 2 · λ travado em 500 nm. Ajuste d até a distância entre franjas ficar em <b>2,5 mm</b>.')};
+ $('#lam').oninput=upd;$('#d').oninput=upd;
+ $('#fec').onclick=()=>{fechada=!fechada;if(fechada)fechou=true;$('#fec').textContent=fechada?'Abrir a fenda B':'Fechar a fenda B';$('#fec').classList.toggle('on',fechada);
+  dizer(fechada?'Com uma fenda só não há duas ondas para se somar: as franjas somem e fica uma mancha larga no meio.':'Duas fendas de novo: as ondas voltam a interferir e as franjas reaparecem.',[])};
+ trava();upd();
+ laco((dt,t)=>{const{c,W,H}=S;fundo(S,true);ph+=dt;const cor=corLam(lam),Dy=dy(),cy=H*.5;
+  const lx=W*.06,bx=W*.36,sx=W*.7,esc=(H*.42)/15,sep=8+d*70,lpx=lam/34;
+  // laser
+  c.fillStyle='#1b2b3e';caixa(c,lx-18,cy-14,40,28,6);c.fill();c.fillStyle=cor;c.fillRect(lx+20,cy-3,6,6);T(c,'laser',lx,cy+30,'#8fa8c4','center',11);
+  // frentes de onda planas
+  c.strokeStyle=cor;c.lineWidth=2;for(let x=lx+26+(ph*60)%lpx;x<bx;x+=lpx){c.globalAlpha=.55;c.beginPath();c.moveTo(x,cy-sep-14);c.lineTo(x,cy+sep+14);c.stroke()}c.globalAlpha=1;
+  // barreira
+  const ya=cy-sep,yb=cy+sep;c.fillStyle='#8fa8c4';c.fillRect(bx-4,0,8,ya-3);c.fillRect(bx-4,ya+3,8,yb-ya-6);c.fillRect(bx-4,yb+3,8,H-yb-3);
+  if(fechada){c.fillStyle='#ff8a80';c.fillRect(bx-4,yb-3,8,6)}
+  T(c,'A',bx-14,ya+4,'#cfe3f5','center',11,700);T(c,'B',bx-14,yb+4,'#cfe3f5','center',11,700);
+  // ondas circulares
+  c.save();c.beginPath();c.rect(bx+4,0,sx-bx-4,H);c.clip();c.lineWidth=1.6;
+  [ya,...(fechada?[]:[yb])].forEach(y0=>{for(let r=(ph*60)%lpx;r<sx-bx;r+=lpx){c.globalAlpha=Math.max(0,.55-r/(sx-bx)*.45);c.strokeStyle=cor;c.beginPath();c.arc(bx,y0,r,-1.3,1.3);c.stroke()}});c.restore();c.globalAlpha=1;
+  // anteparo com intensidade
+  const Ifn=y=>{const b=Math.PI*.05*y/(lam*0.002),s=Math.abs(b)<1e-6?1:Math.sin(b)/b,env=s*s;return fechada?env:env*Math.cos(Math.PI*y/Dy)**2};
+  for(let py=0;py<H;py+=2){const y=(py-cy)/esc,I=Ifn(y);c.globalAlpha=Math.min(1,I*1.1);c.fillStyle=cor;c.fillRect(sx,py,16,2)}c.globalAlpha=1;c.strokeStyle='#cfe3f5';c.strokeRect(sx,0,16,H);
+  // gráfico
+  const gx=sx+28,gw=W-gx-10;c.strokeStyle=cor;c.lineWidth=2;c.beginPath();for(let py=0;py<=H;py+=2){const I=Ifn((py-cy)/esc),x=gx+I*gw;py?c.lineTo(x,py):c.moveTo(x,py)}c.stroke();
+  // sensores
+  const al=alvo();let ok=!fechada&&Math.abs(Dy-al)<=.12;
+  for(let k=-2;k<=2;k++){const py=cy+k*al*esc;if(py<6||py>H-6)continue;c.fillStyle=ok?'#4fd18b':'#f2c21b';c.beginPath();c.moveTo(sx-2,py);c.lineTo(sx-12,py-6);c.lineTo(sx-12,py+6);c.fill()}
+  T(c,'anteparo (L = 2 m)',sx+8,H-8,'#8fa8c4','center',10);
+  hud(c,10,10,[`Δy = ${fmt(Dy,2)} mm`,`sensores: ${fmt(al,1)} mm ${ok?'✔ alinhados':''}`],Math.min(200,W*.45));
+  if(ok&&!feito){hold+=dt;if(hold>1.2){hold=0;if(et===0){et=1;$('#lam').value=500;$('#d').value=20;upd();trava();dizer('Etapa 1 completa! Com λ = 600 nm as franjas ficaram a 6 mm. Agora a cor está travada e você muda a distância entre as fendas.',[])}
+   else{feito=true;A.concluir({fechou});dizer('Escudo calibrado! Fendas mais afastadas deixaram as franjas mais próximas. Se ainda não testou, feche uma fenda e veja o que acontece com as franjas.',[])}}}else hold=0})}
+
+/* ================= LAB 4: dualidade ================= */
+function labDual(A){const S=A.S;let et=0,det=false,raj=false,n=0,pontos=[],voo=[],acc=0,feito=false,pergunta=false,n1=0,ph=0;const NB=90,hist=new Array(NB).fill(0);
+ A.ctl.innerHTML=`<div class="grupo"><button class="pri" id="um">Disparar 1 elétron</button><button id="raj">Rajada: desligada</button><button id="det" disabled>Detector nas fendas: desligado</button><button id="lim">Limpar a tela</button></div><div class="leit" id="ld"></div>`;
+ const meta=()=>et===0?400:300;
+ const etapa=()=>A.obj(et===0?'Etapa 1 de 2 · Sem detector: dispare pelo menos <b>400</b> elétrons e observe o desenho na tela.':et===1?'Etapa 2 de 2 · Ligue o <b>detector</b> nas fendas e dispare pelo menos <b>300</b> elétrons.':'Tudo pronto! Pode ir para o relatório.',et===2);
+ etapa();
+ const limpa=()=>{pontos=[];hist.fill(0);n=0};
+ $('#um').onclick=()=>disparar();$('#raj').onclick=()=>{raj=!raj;$('#raj').textContent='Rajada: '+(raj?'ligada':'desligada');$('#raj').classList.toggle('on',raj)};
+ $('#det').onclick=()=>{det=!det;$('#det').textContent='Detector nas fendas: '+(det?'ligado':'desligado');$('#det').classList.toggle('on',det);limpa();
+  if(det)dizer('Detector ligado! Agora sabemos por qual fenda cada elétron passa. Dispare e veja o que acontece com as faixas.',[])};
+ $('#lim').onclick=limpa;
+ const amostra=()=>{for(;;){const y=(Math.random()*2-1)*15;let P;if(det){P=Math.exp(-((y-1.6)**2)/22)+Math.exp(-((y+1.6)**2)/22);P/=1.6}else{const b=y/4.6,s=Math.abs(b)<1e-6?1:Math.sin(b)/b;P=s*s*Math.cos(Math.PI*y/3.8)**2}if(Math.random()<P)return y}};
+ const disparar=()=>{if(pergunta)return;voo.push({k:0,y:amostra(),fenda:Math.random()<.5?-1:1})};
+ const perguntar=()=>{pergunta=true;A.obj('Responda à pergunta do Prof. ExperimentaJoão no balão lá em cima.');try{$('#comms').scrollIntoView({behavior:'smooth',block:'start'})}catch(e){}raj=false;$('#raj').textContent='Rajada: desligada';$('#raj').classList.remove('on');
+  if(et===0)dizer(`${n} elétrons! Olhe a tela: que desenho apareceu?`,[['Duas faixas, uma atrás de cada fenda',()=>dizer('Olhe de novo com calma: são bem mais que duas faixas. Repare nas faixas escuras entre as claras.',[['Olhar de novo',perguntar]])],['Várias faixas claras e escuras',()=>{n1=n;et=1;pergunta=false;$('#det').disabled=false;etapa();dizer('Isso! Cada elétron chegou como um pontinho, mas juntos eles desenharam a interferência, como a luz no experimento de Young. O elétron passou pelas duas fendas como onda!',[])},1]]);
+  else dizer('E agora, com o detector ligado, o que aconteceu?',[['As faixas de interferência sumiram',()=>{et=2;pergunta=false;etapa();if(!feito){feito=true;A.concluir({n1})}dizer('Exato! Ao medir por qual fenda o elétron passa, ele se comporta só como partícula e a interferência desaparece. Isso é a dualidade onda-partícula.',[])},1],['Ficaram mais fortes',()=>dizer('Compare com a etapa 1: as faixas escuras no meio ainda existem? Olhe de novo.',[['Olhar de novo',perguntar]])]])};
+ laco((dt,t)=>{const{c,W,H}=S;fundo(S,true);ph+=dt;const cy=H*.5,gx=W*.08,bx=W*.36,sx=W*.7,esc=(H*.44)/15,sep=22;
+  if(raj&&!pergunta){acc+=dt*45;while(acc>=1){acc--;disparar()}}
+  // canhão
+  c.fillStyle='#1b2b3e';caixa(c,gx-20,cy-16,44,32,6);c.fill();c.fillStyle='#3fe0ff';c.fillRect(gx+24,cy-4,8,8);T(c,'canhão de elétrons',gx+4,cy+32,'#8fa8c4','center',11);
+  // barreira
+  c.fillStyle='#8fa8c4';c.fillRect(bx-4,0,8,cy-sep-4);c.fillRect(bx-4,cy-sep+4,8,2*sep-8);c.fillRect(bx-4,cy+sep+4,8,H-cy-sep-4);
+  if(det){[-1,1].forEach(s=>{c.fillStyle='#f2c21b';caixa(c,bx+6,cy+s*sep-6,14,12,3);c.fill()});T(c,'detector',bx+30,cy-sep-12,'#f2c21b','center',10,700)}
+  // tela
+  c.fillStyle='#0a1622';c.fillRect(sx,0,36,H);c.strokeStyle='#cfe3f5';c.strokeRect(sx,0,36,H);
+  pontos.forEach(([y,j])=>{c.fillStyle='rgba(159,240,255,.85)';c.fillRect(sx+2+j*31,cy+y*esc,2,2)});
+  // histograma
+  const hx=sx+44,hw=W-hx-10,mx=Math.max(1,...hist),bh=H/NB;hist.forEach((v,i)=>{c.fillStyle='rgba(63,224,255,.55)';c.fillRect(hx,i*bh,v/mx*hw,bh-1)});
+  // voos
+  voo=voo.filter(e=>{e.k+=dt/.7;const ex=gx+32+(bx-gx-32)*Math.min(1,e.k/.45);
+   if(e.k<.45){brilho(c,ex,cy,10,'rgba(63,224,255,.8)');c.fillStyle='#e9fbff';c.beginPath();c.arc(ex,cy,3,0,7);c.fill()}
+   else{const q=(e.k-.45)/.55;
+    if(det){const y0=cy+e.fenda*sep,yt=cy+e.y*esc,x=bx+(sx-bx)*q,y=y0+(yt-y0)*q;brilho(c,x,y,10,'rgba(63,224,255,.8)');c.fillStyle='#e9fbff';c.beginPath();c.arc(x,y,3,0,7);c.fill();if(q<.2){c.fillStyle='rgba(242,194,27,.8)';c.beginPath();c.arc(bx+13,y0,8,0,7);c.fill()}}
+    else{const r=(sx-bx)*q;c.strokeStyle=`rgba(63,224,255,${.5*(1-q)})`;c.lineWidth=1.5;[-1,1].forEach(s=>{c.beginPath();c.arc(bx,cy+s*sep,r,-1.2,1.2);c.stroke()})}}
+   if(e.k>=1){pontos.push([e.y,Math.random()]);if(pontos.length>2500)pontos.shift();const b=Math.floor((cy+e.y*esc)/bh);if(b>=0&&b<NB)hist[b]++;n++;
+    if(!pergunta&&et<2&&n>=meta()&&(et===0||det))perguntar();return false}return true});
+  $('#ld').textContent=`Elétrons na tela: ${n}${et<2?' de '+meta():''} · ${det?'detector ligado: sabemos a fenda de cada um':'detector desligado'}`;
+  hud(c,10,10,[`Elétrons: ${n}`,det?'detector: ligado':'detector: desligado'],150);
+  if(et===1&&!det&&n>20){T(c,'Ligue o detector para a etapa 2',W/2,H-12,'#f2c21b','center',13,700)}})}
+
+/* ================= LAB 5: Bohr ================= */
+function labBohr(A){const S=A.S,SAIS=[{n:'Sódio',lam:589,E:2.1,cor:'amarelo'},{n:'Estrôncio',lam:650,E:1.9,cor:'vermelho'},{n:'Cobre',lam:515,E:2.4,cor:'verde-azulado'}];
+ const ped=[];let ult=-1;for(let i=0;i<5;i++){let k;do k=Math.floor(Math.random()*3);while(k===ult);ped.push(k);ult=k}
+ let sel=0,idx=0,erros=0,fog=null,part=[],est='pronto',ta=0,feito=false,feitos=[];
+ A.ctl.innerHTML=`<div class="grupo" id="sais">${SAIS.map((s,i)=>`<button data-s="${i}">${s.n}</button>`).join('')}</div><div class="grupo"><button class="pri" id="lan">Lançar foguete</button></div><div class="leit" id="lb"></div>`;
+ const pinta=()=>{A.ctl.querySelectorAll('[data-s]').forEach(b=>b.classList.toggle('on',+b.dataset.s===sel));const s=SAIS[sel];$('#lb').textContent=`${s.n}: o elétron cai de um degrau de ${fmt(s.E,1)} eV e emite um fóton de ${s.lam} nm`;
+  A.obj(idx<5?`Pedido ${idx+1} de 5 da prefeitura: <b style="color:${corLam(SAIS[ped[idx]].lam)}">${SAIS[ped[idx]].cor.toUpperCase()}</b>. Escolha o sal e lance.`:'Show completo!',idx>=5)};
+ A.ctl.querySelectorAll('[data-s]').forEach(b=>b.onclick=()=>{sel=+b.dataset.s;pinta()});
+ $('#lan').onclick=()=>{if(est!=='pronto'||idx>=5)return;est='sobe';ta=0;fog={s:sel,y:1}};
+ pinta();
+ laco((dt,t)=>{const{c,W,H}=S;fundo(S,false);const ax=W*.24,ay=H*.46,s=SAIS[fog?fog.s:sel],cor=corLam(s.lam);
+  // céu e cidade
+  c.fillStyle='#0a1420';for(let i=0;i<14;i++){const x=W*.48+i*(W*.52/14),h=12+((i*37)%5)*9;c.fillRect(x,H-h,W*.52/14-3,h)}
+  T(c,'Arinos',W*.74,H-6,'#8fa8c4','center',11);
+  // painel do átomo
+  c.fillStyle='rgba(4,14,24,.8)';caixa(c,8,8,W*.44,H-16,12);c.fill();c.strokeStyle='rgba(63,224,255,.35)';c.stroke();
+  T(c,'Átomo de '+s.n.toLowerCase(),ax,30,'#9ff0ff','center',13,700);
+  const r1=Math.min(W,H)*.07,r2=r1*2.1;
+  [r1,r2].forEach((r,i)=>{c.strokeStyle='rgba(159,240,255,.4)';c.setLineDash([3,4]);c.beginPath();c.arc(ax,ay,r,0,7);c.stroke();c.setLineDash([]);T(c,'n = '+(i+1),ax+r+4,ay-4,'#8fa8c4','left',10)});
+  brilho(c,ax,ay,r1*.7,'rgba(255,107,107,.6)');c.fillStyle='#ff6b6b';c.beginPath();c.arc(ax,ay,r1*.35,0,7);c.fill();
+  // escada de energia
+  const ex=W*.36,e1=H*.82,e2=H*.82-s.E*H*.16;c.strokeStyle='#cfe3f5';c.lineWidth=2;[e1,e2].forEach(y=>{c.beginPath();c.moveTo(ex-24,y);c.lineTo(ex+24,y);c.stroke()});
+  T(c,fmt(s.E,1)+' eV',ex-28,(e1+e2)/2+4,'#f2c21b','right',11,700);T(c,'níveis',ex,e1+16,'#8fa8c4','center',10);
+  // estados
+  let rr=r1,eletronY=e1;
+  if(est==='sobe'){ta+=dt;fog.y=1-ta/1.1;const q=Math.min(1,ta/1.1);rr=r1+(r2-r1)*q;eletronY=e1+(e2-e1)*q;if(ta>=1.1){est='emite';ta=0}}
+  else if(est==='emite'){ta+=dt;const q=Math.min(1,ta/.6);rr=r2+(r1-r2)*q;eletronY=e2+(e1-e2)*q;
+   const tx=W*.74,ty=H*.3;onda(c,ax+r2,ay,ax+r2+(tx-ax-r2)*Math.min(1,ta/.6),ay+(ty-ay)*Math.min(1,ta/.6),Math.max(6,s.lam/50),cor,4);
+   if(ta>=.6){est='estoura';ta=0;for(let i=0;i<70;i++){const a=Math.random()*6.283,v=60+Math.random()*120;part.push({x:tx,y:ty,vx:Math.cos(a)*v,vy:Math.sin(a)*v,a:1,cor})}
+    const ok=fog.s===ped[idx];if(ok){feitos.push(fog.s);idx++;dizer(idx<5?`Isso! O ${s.n.toLowerCase()} emitiu ${s.cor}: fótons de ${fmt(s.E,1)} eV. Próximo pedido!`:'Show completo! Cada cor veio de elétrons voltando para o nível de menor energia.',[])}
+    else{erros++;dizer(`Ops! O pedido era ${SAIS[ped[idx]].cor}, mas o ${s.n.toLowerCase()} emite ${s.cor}. Cada elemento tem sua cor: escolha outro sal.`,[])}
+    pinta();if(idx>=5&&!feito){feito=true;A.concluir({erros})}}}
+  else if(est==='estoura'){ta+=dt;rr=r1;if(ta>1.4){est='pronto'}}
+  const ang=t*2.2;c.fillStyle='#e9fbff';brilho(c,ax+Math.cos(ang)*rr,ay+Math.sin(ang)*rr,10,'rgba(63,224,255,.8)');c.beginPath();c.arc(ax+Math.cos(ang)*rr,ay+Math.sin(ang)*rr,4,0,7);c.fill();
+  c.fillStyle='#3fe0ff';c.beginPath();c.arc(ex,eletronY,5,0,7);c.fill();
+  if(est==='sobe')T(c,W<600?'calor: o elétron sobe':'calor: o elétron absorve energia e sobe',ax,50,'#ffb38a','center',11,700);
+  if(est==='emite')T(c,W<600?'o elétron volta: fóton!':'o elétron volta e emite um fóton',ax,50,cor,'center',11,700);
+  // foguete
+  if(fog&&est==='sobe'){const x=W*.74,y=H*.3+(H*.65)*Math.max(0,fog.y);c.fillStyle='#cfd6de';c.fillRect(x-3,y-12,6,14);brilho(c,x,y+6,10,'rgba(255,190,90,.8)')}
+  part=part.filter(p=>{p.vy+=40*dt;p.x+=p.vx*dt;p.y+=p.vy*dt;p.a-=dt*.6;c.globalAlpha=Math.max(0,p.a);c.fillStyle=p.cor;c.beginPath();c.arc(p.x,p.y,2.4,0,7);c.fill();c.globalAlpha=1;return p.a>0});
+  // fila de pedidos
+  ped.forEach((k,i)=>{const x=W*.52+i*26,y=22;c.fillStyle=corLam(SAIS[k].lam);c.globalAlpha=i<idx?.35:1;c.beginPath();c.arc(x,y,9,0,7);c.fill();c.globalAlpha=1;if(i<idx)T(c,'✔',x,y+5,'#022','center',12,700);if(i===idx){c.strokeStyle='#fff';c.lineWidth=2;c.beginPath();c.arc(x,y,12,0,7);c.stroke()}})})}
+
+cont();base();
+}
+</script>
+</body>
+</html>
