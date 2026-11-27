@@ -7,12 +7,12 @@
 var MATERIAIS = [
   // ---------- JOGO ----------
   {
-    titulo: "Estação Quântica · jogo de Física Moderna do 3º ano",
+    titulo: "Estação Quântica · história da Física Moderna para o 3º ano",
     materia: "fisica",
     tipo: "Jogo",
     icone: "⚛️",
     novo: true,
-    descricao: "5 missões numa estação espacial do futuro: paradoxo dos gêmeos e contração do comprimento, efeito fotoelétrico, fendas de Young, dualidade onda-partícula com elétrons e modelo de Bohr nos fogos de artifício. Cada missão tem aula, laboratório interativo e relatório com os números do próprio experimento.",
+    descricao: "Uma viagem pela história da Física Moderna em 5 capítulos, de Thomas Young em 1801 aos elétrons de 1989: interferência da luz, efeito fotoelétrico, relatividade e paradoxo dos gêmeos, modelo de Bohr nos fogos de artifício e dualidade onda-partícula. Em cada capítulo o aluno dá um palpite, experimenta no laboratório, descobre o que os cientistas descobriram e registra no diário de bordo.",
     link: "https://experimentajoao.github.io/experimentajoao/estacao-quantica/"
   },
   {
